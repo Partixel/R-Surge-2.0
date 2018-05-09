@@ -605,7 +605,7 @@ if IsServer then
 	
 	Module.DamageInfos = setmetatable( { }, { __mode = "k" } )
 
-	function Module.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial, ID )
+	function Module.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
 		if type( DamageInfos ) ~= "table" then
 			
