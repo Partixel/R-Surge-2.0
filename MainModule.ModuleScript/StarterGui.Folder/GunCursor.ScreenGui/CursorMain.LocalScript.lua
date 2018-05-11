@@ -206,7 +206,7 @@ Core.WeaponSelected.Event:Connect( function ( Mod )
 		
 		GunCursor.Center.Visible = true
 		
-		GunCursor.Center.BackgroundTransparency = _G.S20Config.ShowCursorDot
+		GunCursor.Center.BackgroundTransparency = _G.S20Config.ShowCursorDot ~= true and 1 or 0
 		
 		game:GetService( "UserInputService" ).MouseIconEnabled = false
 		
