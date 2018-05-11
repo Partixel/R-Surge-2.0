@@ -278,7 +278,7 @@ Core.Visuals.HitIndicator = Core.DamagedObj.Event:Connect( function ( Humanoids 
 		
 	end
 	
-	local HitSound = script.HitSound:Clone( )
+	local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
 	
 	HitSound.Pitch = HitSound.Pitch * Type
 	
