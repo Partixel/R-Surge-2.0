@@ -86,7 +86,11 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 	
 	do local Perc = not Weapon.GunStats.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.GunStats.ReloadDelay + ( Weapon.GunStats.InitialReloadDelay or 0 ) + ( Weapon.GunStats.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.GunStats.ClipSize )
 	
-	GunCursor.Center.Rotation = Perc * 360
+	if not _G.S20Config.DisableCursorRotation or Weapon.Reloading then
+		
+		GunCursor.Center.Rotation = Perc * 360
+		
+	end
 	
 	if FireMode.CanFire == false then Perc = 1 end
 	
@@ -201,6 +205,8 @@ Core.WeaponSelected.Event:Connect( function ( Mod )
 	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor then
 		
 		GunCursor.Center.Visible = true
+		
+		GunCursor.Center.BackgroundTransparency = _G.S20Config.ShowCursorDot
 		
 		game:GetService( "UserInputService" ).MouseIconEnabled = false
 		
