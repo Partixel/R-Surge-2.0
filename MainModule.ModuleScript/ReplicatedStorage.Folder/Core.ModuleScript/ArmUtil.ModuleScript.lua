@@ -14,17 +14,21 @@ function GetArmWelds( Char )
 	
 end
 
-local Welds = { }
+local Welds = setmetatable( { }, { __mode = "k" } )
 
 local function UnWeld( Plr, Tool )
 	
-	for a, b in pairs( Welds ) do
+	if Welds[ Plr ] then
+	
+		for a, b in pairs( Welds[ Plr ] ) do
+			
+			b.Part1 = a.Part1
+			
+			a:Destroy( )
+			
+		end
 		
-		b.Part1 = a.Part1
-		
-		a:Destroy( )
-		
-		Welds[ a ] = nil
+		Welds[ Plr ] = nil
 		
 	end
 	
@@ -37,6 +41,8 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 	local Char = Plr.Character
 	
 	local LS, RS, LE, RE = GetArmWelds( Char )
+	
+	Welds[ Plr ] = { }
 	
 	if LS then
 		
@@ -54,9 +60,9 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 		
 		Weld.C1 = CF1
 		
-		Welds[ Weld ] = LS
+		Welds[ Plr ][ Weld ] = LS
 		
-		Weld.Parent = Tool.Handle
+		Weld.Parent = LS.Parent
 		
 	end
 	
@@ -76,9 +82,9 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 		
 		Weld.C1 = CF2
 		
-		Welds[ Weld ] = RS
+		Welds[ Plr ][ Weld ] = RS
 		
-		Weld.Parent = Tool.Handle
+		Weld.Parent = RS.Parent
 		
 	end
 	
@@ -98,9 +104,9 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 		
 		Weld.C1 = LE.C1
 		
-		Welds[ Weld ] = LE
+		Welds[ Plr ][ Weld ] = LE
 		
-		Weld.Parent = Tool.Handle
+		Weld.Parent = LE.Parent
 		
 	end
 	
@@ -120,9 +126,9 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 		
 		Weld.C1 = RE.C1
 		
-		Welds[ Weld ] = RE
+		Welds[ Plr ][ Weld ] = RE
 		
-		Weld.Parent = Tool.Handle
+		Weld.Parent = RE.Parent
 		
 	end
 	
