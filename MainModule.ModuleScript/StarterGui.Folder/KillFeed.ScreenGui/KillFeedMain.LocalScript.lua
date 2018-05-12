@@ -108,7 +108,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 	
 	for a = 1, #DeathInfo.VictimInfos do
 		
-		if not DeathInfo.VictimInfos.NoFeed then
+		if not DeathInfo.VictimInfos[ a ].NoFeed then
 			
 			NumVictims = NumVictims + 1
 			
@@ -120,7 +120,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			ApplyTextStroke( Victim.VictimName )
 			
-			Victim.Name = "Victim" .. a
+			Victim.Name = "Victim" .. NumVictims
 			
 			local Type = VictimTypes[ DeathInfo.VictimInfos[ a ].Hit ]
 			
@@ -134,9 +134,9 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 				
 			end
 			
-			Victim.Position = UDim2.new( 1, 0, 1 * ( a - 1 ), 0 )
+			Victim.Position = UDim2.new( 1, 0, 1 * ( NumVictims - 1 ), 0 )
 			
-			if a > 1 then
+			if NumVictims > 1 then
 				
 				script.VictimFrame:Clone( ).Parent = Victim
 				
@@ -147,6 +147,8 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		end
 		
 	end
+	
+	if NumVictims == 0 then return end
 	
 	NewFeed.Killer.KillerName.Text = DeathInfo.Killer and DeathInfo.Killer.Name or NewFeed[ "Victim1" ].VictimName.Text
 	
