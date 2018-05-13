@@ -974,6 +974,36 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 		end )( )
 		
+	elseif Material == Enum.Material.Grass or Material == Enum.Material.Ground or Material == Enum.Material.LeafyGrass then
+		
+		HitSound = "BulletHitGrass"
+		
+		coroutine.wrap( function ( )
+			
+			local HitParticle = script.HitParticle:Clone( )
+			
+			HitParticle.LightEmission = 0.1
+			
+			local Col = Color3.new( 0, 0.8, 0 )
+			
+			HitParticle.Color = ColorSequence.new( Col )
+			
+			HitParticle.Transparency = NumberSequence.new( 0, 0 )
+			
+			HitParticle.Size = NumberSequence.new( { NumberSequenceKeypoint.new( 0, 0.4, 0.2 ), NumberSequenceKeypoint.new( 0.279, 0.4, 0.0625 ), NumberSequenceKeypoint.new( 1, 0, 0 ) } )
+			
+			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
+			
+			HitParticle.Parent = Par1
+			
+			wait( )
+			
+			HitParticle:Emit( 20 )
+			
+			Debris:AddItem( Par1, 2 )
+			
+		end )( )
+		
 	elseif Material == Enum.Material.Glacier or Material == Enum.Material.Ice or Material == Enum.Material.Neon or Hit.Transparency > 0 then
 		
 		HitSound = "BulletHitGlass"
