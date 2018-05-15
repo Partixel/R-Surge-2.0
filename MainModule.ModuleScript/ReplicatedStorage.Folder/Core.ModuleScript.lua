@@ -111,7 +111,7 @@ end
 Module.BulletTypes = {
 
 	Kinetic = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
-
+		
 		local WeaponName = Module.GetGunName( StatObj )
 	
 		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, Module.DamageType.Kinetic, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
@@ -619,21 +619,21 @@ if IsServer then
 		
 		for a = 1, #DamageInfos do
 			
-			local Damageable, Amount = DamageInfos[ a ][ 1 ], DamageInfos[ a ][ 2 ]
-
+			local Damageable, Damage = DamageInfos[ a ][ 1 ], DamageInfos[ a ][ 2 ]
+			
 			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) then
 				
-				local PrevHealth = nil
+				local Amount, PrevHealth
 				
 				if Damageable:IsA( "Humanoid" ) then
-	
+					
 					PrevHealth = Damageable.Health
-	
+					
+					Amount = Damage > 0 and math.min( Damageable.Health - math.max( Damageable.Health - Damage, 0 ), Damage ) or math.max( Damageable.Health - Damageable.MaxHealth, Damage )
+					
 					Damageable:TakeDamage( Amount )
 					
 					if Damageable.Health <= 0 then
-						
-						Amount = PrevHealth
 						
 						Killed[ Damageable ] = DamageInfos[ a ][ 3 ]
 						
@@ -646,14 +646,14 @@ if IsServer then
 					end
 	
 				else
-	
+					
 					PrevHealth = Damageable.Value
 	
+					Amount = Damage > 0 and math.min( Damageable.Value - math.max( Damageable.Value - Damage, 0 ), Damage ) or ( Damageable:FindFirstChild( "MaxHealth" ) and math.max( Damageable.Value - Damageable.MaxHealth.Value, Damage ) or Damage )
+					
 					Damageable.Value = Damageable.Value - Amount
 					
 					if Damageable.Value <= 0 then
-						
-						Amount = PrevHealth
 						
 						Killed[ Damageable ] = DamageInfos[ a ][ 3 ]
 						
@@ -1775,7 +1775,7 @@ function Module.GetValidHumanoid( Obj )
 
 end
 
-function Module.GetDamage( User, Hit, Damage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill )
+function Module.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill )
 
 	local Humanoid = Module.GetValidHumanoid( Hit )
 
@@ -1786,6 +1786,8 @@ function Module.GetDamage( User, Hit, Damage, Type, Distance, DistanceModifier, 
 	local hitName = Hit.Name:lower( )
 
 	if not Module.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
+	
+	local Damage = OrigDamage
 
 	if hitName == "head" or hitName == "uppertorso" or hitName:find( "weak" ) then
 
@@ -1808,12 +1810,6 @@ function Module.GetDamage( User, Hit, Damage, Type, Distance, DistanceModifier, 
 		Distance = Distance * ( DistanceModifier or Config.DistanceDamageMultiplier )
 
 		Damage = Damage * ( 1 - Distance )
-
-	end
-
-	if Damage <= 0 then
-
-		return false
 
 	end
 
@@ -1842,6 +1838,14 @@ function Module.GetDamage( User, Hit, Damage, Type, Distance, DistanceModifier, 
 	end
 
 	Damage = Damage * Resistance * ( Config.GlobalDamageMultiplier or 1 )
+
+	if Damage == 0 or ( OrigDamage > 0 and Damage < 0 ) or ( OrigDamage < 0 and Damage > 0 ) then
+
+		return false
+
+	end
+	
+	if Damage < 0 and Humanoid.Health == Humanoid.MaxHealth then return false end
 
 	return Humanoid, Damage
 
