@@ -1599,7 +1599,7 @@ function Module.Fire( Weapon )
 
 					end
 
-					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + Weapon.GunStats.Damage / 50, Weapon.GunStats.Damage / 5 * ShotsPerClick )
+					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.GunStats.Damage ) / 50, math.abs( Weapon.GunStats.Damage ) / 5 * ShotsPerClick )
 
 					local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
 
