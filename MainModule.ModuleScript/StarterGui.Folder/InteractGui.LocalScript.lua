@@ -75,7 +75,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 		
 		Gui = script.InteractGui:Clone( )
 		
-		local Rotate = InteractObj:FindFirstChild( "SpriteRotation" ) and InteractObj.SpriteRotation or math.random( 1, 4 ) - 1
+		local Rotate = InteractObj:FindFirstChild( "SpriteRotation" ) and InteractObj.SpriteRotation or 0
 		
 		Gui.Back.Rotation = 90 * Rotate
 		
@@ -85,7 +85,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 		
 		Gui.Progress.Rotation = 90 * Rotate
 		
-		local Chosen = InteractObj:FindFirstChild( "SpriteSheet" ) and InteractObj.SpriteSheet or Sprites[ math.random( 1, #Sprites ) ]
+		local Chosen = InteractObj:FindFirstChild( "SpriteSheet" ) and InteractObj.SpriteSheet or Sprites[ 1 ]
 		
 		Gui.Back.Image = Chosen
 		
