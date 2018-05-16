@@ -255,7 +255,7 @@ Interactables.MinimiseGui:Connect( function ( InteractObj, Gui, CooldownLeft )
 	
 	Tween.Completed:Connect( function ( State )
 		
-		if State == Enum.PlaybackState.Completed and Gui and Gui:FindFirstChild("Back") then
+		if State == Enum.PlaybackState.Completed and Gui and Gui.Name ~= "Destroying" then
 			
 			Gui.Back.Visible = false
 			
