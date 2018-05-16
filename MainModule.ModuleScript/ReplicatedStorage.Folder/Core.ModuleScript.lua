@@ -633,7 +633,7 @@ if IsServer then
 					
 					Damageable:TakeDamage( Amount )
 					
-					if Damageable.Health <= 0 then
+					if PrevHealth > 0 and Damageable.Health <= 0 then
 						
 						Killed[ Damageable ] = DamageInfos[ a ][ 3 ]
 						
@@ -653,7 +653,7 @@ if IsServer then
 					
 					Damageable.Value = Damageable.Value - Amount
 					
-					if Damageable.Value <= 0 then
+					if PrevHealth > 0 and Damageable.Value <= 0 then
 						
 						Killed[ Damageable ] = DamageInfos[ a ][ 3 ]
 						
