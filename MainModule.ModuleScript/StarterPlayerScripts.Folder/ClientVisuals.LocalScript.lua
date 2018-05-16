@@ -986,7 +986,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			HitParticle.LightEmission = 0.1
 			
-			local Col = Color3.new( 0, 0.8, 0 )
+			local Col = Color3.fromRGB( 106, 127, 63 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
