@@ -695,7 +695,7 @@ if IsServer then
 	
 				end
 	
-				if typeof( User ) == "Instance" then
+				if typeof( User ) == "Instance" and Damageable.Parent then
 	
 					ClntDmg:FireClient( User, Damageable.Parent.Name, Amount, true )
 	
