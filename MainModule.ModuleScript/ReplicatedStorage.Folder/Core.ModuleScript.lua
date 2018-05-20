@@ -1602,6 +1602,8 @@ function Module.Fire( Weapon )
 					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.GunStats.Damage ) / 50, math.abs( Weapon.GunStats.Damage ) / 5 * ShotsPerClick )
 
 					local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
+					
+					if Offset then Offset = Vector3.new( Offset.X / Hit.Size.X, Offset.Y / Hit.Size.Y, Offset.Z / Hit.Size.Z ) end
 
 					if IsClient then
 

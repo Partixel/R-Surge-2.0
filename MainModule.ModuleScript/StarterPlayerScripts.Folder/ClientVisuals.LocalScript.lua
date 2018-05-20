@@ -724,7 +724,9 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 		
 		BulletHit.Color3 = Color3.new( 0.1 + ( Hit.BrickColor.Color.r / 5 ), 0.1 + ( Hit.BrickColor.Color.g / 5 ), 0.1 + ( Hit.BrickColor.Color.b / 5 ) )
 		
-		BulletHit.CFrame = CFrame.new( Offset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( Offset ) + Normal ) )
+		local ActualOffset = Vector3.new( Offset.X * Hit.Size.X, Offset.Y * Hit.Size.Y, Offset.Z * Hit.Size.Z )
+		
+		BulletHit.CFrame = CFrame.new( ActualOffset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( ActualOffset ) + Normal ) )
 		
 		local BulletHit2 = Instance.new( "CylinderHandleAdornment" )
 		
@@ -770,6 +772,14 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 			
 		end )
 		
+		local Event3; Event3 = Hit:GetPropertyChangedSignal( "Size" ):Connect( function ( )
+			
+			local ActualOffset = Vector3.new( Offset.X * Hit.Size.X, Offset.Y * Hit.Size.Y, Offset.Z * Hit.Size.Z )
+			
+			BulletHit.CFrame = CFrame.new( ActualOffset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( ActualOffset ) + Normal ) )
+			
+		end )
+		
 		Debris:AddItem( BulletHit, 120 )
 		
 		delay( 120, function ( )
@@ -779,6 +789,8 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 			Event:Disconnect( )
 			
 			Event2:Disconnect( )
+			
+			Event3:Disconnect( )
 			
 		end )
 		
@@ -899,6 +911,8 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 	local HitSound = "BulletHitConcrete"
 	
 	local HitPos = Hit.CFrame:pointToWorldSpace( Offset or Vector3.new( ) )
+	
+	HitPos = Vector3.new( HitPos.X * Hit.Size.X, HitPos.Y * Hit.Size.Y, HitPos.Z * Hit.Size.Z )
 	
 	local Humanoid = Core.GetValidHumanoid( Hit )
 	
