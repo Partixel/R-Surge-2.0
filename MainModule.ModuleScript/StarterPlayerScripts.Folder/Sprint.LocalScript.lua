@@ -1,3 +1,11 @@
+if script.Parent.Name ~= "PlayerScripts" then
+	
+	wait( )
+	
+	script.Parent = script.Parent.Parent:WaitForChild( "PlayerScripts" )
+	
+end
+
 local Plr = game:GetService( "Players" ).LocalPlayer
 
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )

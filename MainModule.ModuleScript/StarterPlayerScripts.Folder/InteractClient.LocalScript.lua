@@ -1,3 +1,11 @@
+if script.Parent.Name ~= "PlayerScripts" then
+	
+	wait( )
+	
+	script.Parent = script.Parent.Parent:WaitForChild( "PlayerScripts" )
+	
+end
+
 local InteractObjs = { }
 
 local Plr, UserInputService = game:GetService( "Players" ).LocalPlayer, game:GetService("UserInputService" )

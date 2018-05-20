@@ -1,5 +1,15 @@
+if script.Parent.Name ~= "PlayerScripts" then
+	
+	wait( )
+	
+	script.Parent = script.Parent.Parent:WaitForChild( "PlayerScripts" )
+	
+end
+
 local Config, Core = _G.S20Config, require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+
 repeat wait( ) until Config
+
 local RunService, Debris, Plr = game:GetService( "RunService" ), game:GetService( "Debris" ), game:GetService( "Players" ).LocalPlayer
 
 local TweenService = game:GetService( "TweenService" )

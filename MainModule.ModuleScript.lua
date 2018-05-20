@@ -74,7 +74,7 @@ local function AddObjs( PermPar, Name )
 	
 end
 
-AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "PlayerScripts" )
+AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "Backpack" )
 
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterCharacterScripts" ), "Character" )
 
