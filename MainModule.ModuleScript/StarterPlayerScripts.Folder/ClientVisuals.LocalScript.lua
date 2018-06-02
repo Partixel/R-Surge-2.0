@@ -922,34 +922,6 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 		end )( )
 	
-	elseif Hit == workspace.Terrain then
-		
-		HitSound == ( Material == Enum.Material.Grass or Material == Enum.Material.Ground or Material == Enum.Material.LeafyGrass ) and "BulletHitGrass" or "BulletHitConcrete"
-		
-		coroutine.wrap( function ( )
-			
-			local HitParticle = script.HitParticle:Clone( )
-			
-			local Col = Color3.fromRGB( 106, 127, 63 )
-			
-			HitParticle.Color = ColorSequence.new( workspace.Terrain:GetMaterialColor( Material ) )
-			
-			HitParticle.Transparency = NumberSequence.new( 0, 0 )
-			
-			HitParticle.Size = NumberSequence.new( { NumberSequenceKeypoint.new( 0, 0.4, 0.2 ), NumberSequenceKeypoint.new( 0.279, 0.4, 0.0625 ), NumberSequenceKeypoint.new( 1, 0, 0 ) } )
-			
-			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
-			
-			HitParticle.Parent = Par1
-			
-			wait( )
-			
-			HitParticle:Emit( 20 )
-			
-			Debris:AddItem( Par1, 2 )
-			
-		end )( )
-		
 	elseif Material == Enum.Material.Metal or Material == Enum.Material.CorrodedMetal or Material == Enum.Material.DiamondPlate then
 		
 		HitSound = "BulletHitMetal"
@@ -958,7 +930,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			local HitParticle = script.HitParticle:Clone( )
 			
-			local Col = Color3.new( Hit.BrickColor.r - 15 / 255, Hit.BrickColor.g - 15 / 255, Hit.BrickColor.b - 15 / 255 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Color3.new( Hit.Color.r - 15 / 255, Hit.Color.g - 15 / 255, Hit.Color.b - 15 / 255 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
@@ -986,7 +958,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			HitParticle.LightEmission = 0.1
 			
-			local Col = Color3.new( Hit.BrickColor.r - 5 / 255, Hit.BrickColor.g - 5 / 255, Hit.BrickColor.b - 5 / 255 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Color3.new( Hit.Color.r - 5 / 255, Hit.Color.g - 5 / 255, Hit.Color.b - 5 / 255 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
@@ -1012,7 +984,9 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			local HitParticle = script.HitParticle:Clone( )
 			
-			HitParticle.Color = ColorSequence.new( Hit.BrickColor.Color )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
+			
+			HitParticle.Color = ColorSequence.new( Col )
 			
 			HitParticle.Transparency = NumberSequence.new( 0, 0 )
 			
@@ -1040,7 +1014,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			HitParticle.LightEmission = 0.1
 			
-			local Col = Color3.new( 0.9, 0.9, 0.9 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Color3.new( 0.9, 0.9, 0.9 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
