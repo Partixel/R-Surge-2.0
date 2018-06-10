@@ -988,6 +988,8 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			local HitParticle = script.HitParticle:Clone( )
 			
+			HitParticle.LightEmission = 0.1 
+			
 			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
 			
 			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
