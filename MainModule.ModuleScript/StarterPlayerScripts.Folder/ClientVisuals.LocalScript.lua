@@ -945,7 +945,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			Debris:AddItem( Par1, 2 )
 			
 		end )( )
-		
+	
 	elseif Material == Enum.Material.Metal or Material == Enum.Material.CorrodedMetal or Material == Enum.Material.DiamondPlate then
 		
 		HitSound = "BulletHitMetal"
@@ -954,7 +954,9 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			local HitParticle = script.HitParticle:Clone( )
 			
-			local Col = Color3.new( Hit.BrickColor.r - 15 / 255, Hit.BrickColor.g - 15 / 255, Hit.BrickColor.b - 15 / 255 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
+			
+			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
@@ -982,7 +984,9 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			HitParticle.LightEmission = 0.1
 			
-			local Col = Color3.new( Hit.BrickColor.r - 5 / 255, Hit.BrickColor.g - 5 / 255, Hit.BrickColor.b - 5 / 255 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
+			
+			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
@@ -1008,9 +1012,11 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			local HitParticle = script.HitParticle:Clone( )
 			
-			HitParticle.LightEmission = 0.1
+			HitParticle.LightEmission = 0.1 
 			
-			local Col = Color3.new( 0, 0.8, 0 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
+			
+			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
@@ -1040,7 +1046,9 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 			
 			HitParticle.LightEmission = 0.1
 			
-			local Col = Color3.new( 0.9, 0.9, 0.9 )
+			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
+			
+			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
 			
 			HitParticle.Color = ColorSequence.new( Col )
 			
