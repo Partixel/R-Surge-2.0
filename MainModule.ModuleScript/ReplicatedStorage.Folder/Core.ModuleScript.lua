@@ -136,7 +136,7 @@ Module.BulletTypes = {
 
 		if( Material[ 1 ][ 1 ][ 1 ] == Enum.Material.Water ) then
 
-			local Radius = GunStats.BulletType.Radius or 0
+			local Radius = GunStats.BulletType.Radius or 15
 
 			local Type = type( GunStats.BulletType.Type ) == "function" and GunStats.BulletType.Type or GunStats.BulletType.Type == "Stun" and Stun
 
@@ -170,7 +170,7 @@ Module.BulletTypes = {
 
 		if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
 			
-			Humanoids[ ResH ] = { ResH, Hit.Name }
+			Humanoids[ ResH ] = { ResD, Hit.Name }
 			
 		end
 
