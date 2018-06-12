@@ -621,7 +621,7 @@ if IsServer then
 			
 			local Damageable, Damage = DamageInfos[ a ][ 1 ], DamageInfos[ a ][ 2 ]
 			
-			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) then
+			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
 				
 				local Amount, PrevHealth
 				
@@ -661,47 +661,51 @@ if IsServer then
 	
 				end
 				
-				Damaged[ #Damaged + 1 ] = { Damageable, Amount }
-				
-				Module.DamageInfos[ Damageable ] = Module.DamageInfos[ Damageable ] or { }
-				
-				Module.DamageInfos[ Damageable ][ User ] = ( Module.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
-				
-				delay( 30, function ( )
-	
-					if Module.DamageInfos[ Damageable ] and Module.DamageInfos[ Damageable ][ User ] then
-						
-						Module.DamageInfos[ Damageable ][ User ] = Module.DamageInfos[ Damageable ][ User ] - Amount
-						
-						if Module.DamageInfos[ Damageable ][ User ] <= 0 then
+				if Amount ~= 0 then
+					
+					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
+					
+					Module.DamageInfos[ Damageable ] = Module.DamageInfos[ Damageable ] or { }
+					
+					Module.DamageInfos[ Damageable ][ User ] = ( Module.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
+					
+					delay( 30, function ( )
+		
+						if Module.DamageInfos[ Damageable ] and Module.DamageInfos[ Damageable ][ User ] then
 							
-							Module.DamageInfos[ Damageable ][ User ] = nil
+							Module.DamageInfos[ Damageable ][ User ] = Module.DamageInfos[ Damageable ][ User ] - Amount
 							
-							if not next( Module.DamageInfos[ Damageable ] ) then
+							if Module.DamageInfos[ Damageable ][ User ] <= 0 then
 								
-								Module.DamageInfos[ Damageable ] = nil
+								Module.DamageInfos[ Damageable ][ User ] = nil
+								
+								if not next( Module.DamageInfos[ Damageable ] ) then
+									
+									Module.DamageInfos[ Damageable ] = nil
+									
+								end
 								
 							end
 							
 						end
-						
+		
+					end )
+		
+					if Players:GetPlayerFromCharacter( Damageable.Parent ) then
+		
+						ClntDmg:FireClient( Players:GetPlayerFromCharacter( Damageable.Parent ), User.Name, Amount )
+		
 					end
-	
-				end )
-	
-				if Players:GetPlayerFromCharacter( Damageable.Parent ) then
-	
-					ClntDmg:FireClient( Players:GetPlayerFromCharacter( Damageable.Parent ), User.Name, Amount )
-	
+		
+					if typeof( User ) == "Instance" and Damageable.Parent then
+		
+						ClntDmg:FireClient( User, Damageable.Parent.Name, Amount, true )
+		
+					end
+		
+					Module.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
+					
 				end
-	
-				if typeof( User ) == "Instance" and Damageable.Parent then
-	
-					ClntDmg:FireClient( User, Damageable.Parent.Name, Amount, true )
-	
-				end
-	
-				Module.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
 				
 			end
 	
