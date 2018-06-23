@@ -1,7 +1,5 @@
 local Plr = game:GetService( "Players" ).LocalPlayer
 
-local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
-
 local CloseColsCache = { }
 
 function CloseCols( Col )
@@ -50,14 +48,6 @@ local VIPEvent = game:GetService( "ReplicatedStorage" ):WaitForChild( "VIPEvent"
 
 local ChosenCol = { }
 
-local VIPGui = script.Parent
-
-local Buttons = VIPGui:WaitForChild( "Buttons" )
-
-local KeybindGui = VIPGui:WaitForChild( "KeybindFrame" )
-
-local ColGui = VIPGui:WaitForChild( "Color" )
-
 local SparklesEnabled = false
 
 local NeonEnabled = false
@@ -68,7 +58,7 @@ local function UpdateColGui( )
 	
 	for a = 1, 6 do
 		
-		local Col = ColGui:FindFirstChild( a )
+		local Col = script.Parent.ColorFrame:FindFirstChild( a )
 		
 		if Col then
 			
@@ -122,101 +112,9 @@ local function ChangeCol( Num )
 	
 end
 
-local function Redraw( )
-	
-	local Old = KeybindGui.Main:GetChildren( )
-	
-	for a = 1, #Old do
-		
-		if Old[ a ]:IsA( "Frame" ) then Old[ a ]:Destroy( ) end
-		
-	end
-	
-	local Binds = KBU.GetBinds( )
-	
-	local Txt = KeybindGui.Search.Text
-	
-	local Found = 0
-	
-	for a, b in ipairs( Binds ) do
-		
-		if b.Name:lower( ):find( Txt ) and not b.NonRebindable then
-			
-			Found = Found + 1
-			
-			local Base = KeybindGui.Base:Clone( )
-			
-			Base.Name = b.Name
-			
-			Base.Visible = true
-			
-			Base.Main.Text = b.Name
-			
-			Base.Main.MouseButton1Click:Connect( function ( )
-				
-				KBU.Defaults( b.Name )
-				
-				KBU.WriteToObj( Base.Keyboard, b.Key )
-				
-				KBU.WriteToObj( Base.Gamepad, b.PadKey )
-				
-				KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
-				
-			end )
-			
-			KBU.WriteToObj( Base.Keyboard, b.Key )
-			
-			Base.Keyboard.MouseButton1Click:Connect( function ( )
-				
-				KBU.Rebind( b.Name, Enum.UserInputType.Keyboard, Base.Keyboard )
-				
-				KBU.WriteToObj( Base.Keyboard, b.Key )
-				
-			end )
-			
-			KBU.WriteToObj( Base.Gamepad, b.PadKey )
-			
-			Base.Gamepad.MouseButton1Click:Connect( function ( )
-				
-				KBU.Rebind( b.Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
-				
-				KBU.WriteToObj( Base.Gamepad, b.PadKey )
-				
-			end )
-			
-			if b.CanToggle then
-				
-				KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
-				
-				Base.Toggle.MouseButton1Click:Connect( function ( )
-					
-					KBU.Rebind( b.Name, "Toggle", Base.Toggle )
-					
-					KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
-					
-				end )
-				
-			else
-				
-				Base.Toggle.Visible = false
-				
-			end
-			
-			Base.Parent = KeybindGui.Main
-			
-		end
-		
-	end
-	
-	KeybindGui.Main.CanvasSize = UDim2.new( 0, 0, 0, 40 * Found )
-	
-	KeybindGui.Context.CanvasSize = UDim2.new( 0, 0, 0, 40 * Found )
-	
-end
-
 for a = 1, 6 do
 	
-	ColGui:WaitForChild( a ).MouseButton1Click:Connect( function ( )
+	script.Parent.ColorFrame:WaitForChild( a ).MouseButton1Click:Connect( function ( )
 		
 		ChangeCol( a )
 		
@@ -224,53 +122,9 @@ for a = 1, 6 do
 	
 end
 
--------------- STUPID WORKAROUND UNTIL PLACEHOLDER IS OFFICIALlY RELEASED, PLS
-KeybindGui.Search.PlaceholderText = "Search all keybinds"
-KeybindGui.Search.PlaceholderColor3 = Color3.fromRGB( 27, 42, 53 )
-
-KeybindGui.Search:GetPropertyChangedSignal( "Text" ):Connect( function ( )
-	
-	Redraw( KeybindGui )
-	
-end )
-
-KBU.BindAdded:Connect( function ( ) Redraw( ) end )
-
-KBU.BindChanged:Connect( function ( Name )
-	
-	if not KBU.GetBind( Name ) or not KeybindGui.Main:FindFirstChild( Name ) then Redraw( ) end
-	
-end )
-
-Redraw( )
-
-local KeybindOpen = false
-
-Buttons:WaitForChild( "Keybinds" ).MouseButton1Click:Connect( function ( )
-	
-	KeybindOpen = not KeybindOpen
-	
-	if KeybindOpen then
-		
-		script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 0.43, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
-		
-		Buttons.Keybinds.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-		
-	else
-		
-		KBU.Rebinding = nil
-		
-		script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 1, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
-		
-		Buttons.Keybinds.TextColor3 = Color3.new( 1, 1, 1 )
-		
-	end
-	
-end )
-
 local SparklesUse = false
 
-Buttons:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
+script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 	
 	if SparklesUse then return end
 	
@@ -282,7 +136,7 @@ Buttons:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 		
 		if OwnSparkles then
 			
-			Buttons.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
+			script.Parent.Sparkles.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
 			
 		end
 		
@@ -294,11 +148,11 @@ Buttons:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 		
 		if SparklesEnabled then
 			
-			Buttons.Sparkles.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+			script.Parent.Sparkles.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
 			
 		else
 			
-			Buttons.Sparkles.TextColor3 = Color3.new( 1, 1, 1 )
+			script.Parent.Sparkles.TextColor3 = Color3.new( 1, 1, 1 )
 			
 		end
 		
@@ -310,7 +164,7 @@ end )
 
 local NeonUse = false
 
-Buttons:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
+script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 	
 	if NeonUse then return end
 	
@@ -322,7 +176,7 @@ Buttons:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 		
 		if OwnNeon then
 			
-			Buttons.Neon.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
+			script.Parent.Neon.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
 			
 		end
 		
@@ -334,11 +188,11 @@ Buttons:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 		
 		if NeonEnabled then
 			
-			Buttons.Neon.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+			script.Parent.Neon.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
 			
 		else
 			
-			Buttons.Neon.TextColor3 = Color3.new( 1, 1, 1 )
+			script.Parent.Neon.TextColor3 = Color3.new( 1, 1, 1 )
 			
 		end
 		
@@ -352,7 +206,7 @@ local ColUse = false
 
 local ColShow = false
 
-Buttons:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
+script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 	
 	if ColUse then return end
 	
@@ -364,7 +218,7 @@ Buttons:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 		
 		if OwnCol then
 			
-			Buttons.Color.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
+			script.Parent.Color.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
 			
 		end
 		
@@ -374,17 +228,17 @@ Buttons:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 		
 		if ColShow then
 			
-			Buttons.Color.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+			script.Parent.Color.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
 			
 			UpdateColGui( )
 			
-			Buttons.Parent.Color.Visible = true
+			script.Parent.ColorFrame.Visible = true
 			
 		else
 			
-			Buttons.Color.TextColor3 = Color3.new( 1, 1, 1 )
+			script.Parent.Color.TextColor3 = Color3.new( 1, 1, 1 )
 			
-			Buttons.Parent.Color.Visible = false
+			script.Parent.ColorFrame.Visible = false
 			
 		end
 		
@@ -396,15 +250,15 @@ end )
 
 if OwnNeon then
 	
-	Buttons.Neon.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
+	script.Parent.Neon.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
 	
 	if NeonEnabled then
 		
-		Buttons.Neon.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+		script.Parent.Neon.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
 		
 	else
 		
-		Buttons.Neon.TextColor3 = Color3.new( 1, 1, 1 )
+		script.Parent.Neon.TextColor3 = Color3.new( 1, 1, 1 )
 		
 	end
 	
@@ -412,7 +266,7 @@ end
 
 if OwnCol then
 	
-	Buttons.Color.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
+	script.Parent.Color.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
 	
 	UpdateColGui( )
 	
@@ -420,15 +274,15 @@ end
 
 if OwnSparkles then
 	
-	Buttons.Sparkles.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
+	script.Parent.Sparkles.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
 	
 	if SparklesEnabled then
 		
-		Buttons.Sparkles.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+		script.Parent.Sparkles.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
 		
 	else
 		
-		Buttons.Sparkles.TextColor3 = Color3.new( 1, 1, 1 )
+		script.Parent.Sparkles.TextColor3 = Color3.new( 1, 1, 1 )
 		
 	end
 	
