@@ -98,11 +98,9 @@ KeybindGui.Search.PlaceholderColor3 = Color3.fromRGB( 27, 42, 53 )
 
 local Invalid = true
 
-local KeybindOpen
-
 KeybindGui.Search:GetPropertyChangedSignal( "Text" ):Connect( function ( )
 	
-	if KeybindOpen then
+	if script.Parent.KeybindFrame.Visible then
 		
 		Redraw( )
 		
@@ -116,7 +114,7 @@ end )
 
 KBU.BindAdded:Connect( function ( )
 	
-	if KeybindOpen then
+	if script.Parent.KeybindFrame.Visible then
 		
 		Redraw( )
 		
@@ -132,7 +130,7 @@ KBU.BindChanged:Connect( function ( Name )
 	
 	if not KBU.GetBind( Name ) or not KeybindGui.Main:FindFirstChild( Name ) then
 		
-		if KeybindOpen then
+		if script.Parent.KeybindFrame.Visible then
 			
 			Redraw( )
 			
@@ -146,26 +144,56 @@ KBU.BindChanged:Connect( function ( Name )
 	
 end )
 
-script.Parent:WaitForChild( "Keybinds" ).MouseButton1Click:Connect( function ( )
+if script.Parent:FindFirstChild( "Keybinds" ) then
 	
-	KeybindOpen = not KeybindOpen
+	local KeybindOpen
 	
-	if KeybindOpen then
+	script.Parent.Keybinds.MouseButton1Click:Connect( function ( )
 		
-		if Invalid then Redraw( ) Invalid = nil end
+		KeybindOpen = not KeybindOpen
 		
-		script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 0.43, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
+		if KeybindOpen then
+			
+			if Invalid then Redraw( ) Invalid = nil end
+			
+			script.Parent.KeybindFrame.Visible = true
+			
+			script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 0.43, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
+			
+			script.Parent.Keybinds.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+			
+		else
+			
+			KBU.Rebinding = nil
+			
+			script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 1, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true, function ( )
+				
+				script.Parent.KeybindFrame.Visible = false
+				
+			end )
+			
+			script.Parent.Keybinds.TextColor3 = Color3.new( 1, 1, 1 )
+			
+		end
 		
-		script.Parent.Keybinds.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-		
-	else
-		
-		KBU.Rebinding = nil
-		
-		script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 1, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
-		
-		script.Parent.Keybinds.TextColor3 = Color3.new( 1, 1, 1 )
-		
-	end
+	end )
 	
-end )
+else
+	
+	KeybindOpen = true
+	
+	script.Parent.KeybindFrame.Visible = true
+	
+	script.Parent.KeybindFrame:GetPropertyChangedSignal( "Visible" ):Connect( function ( )
+		
+		if script.Parent.KeybindFrame.Visible and Invalid then
+			
+			Redraw( )
+			
+		end
+		
+	end )
+	
+	Redraw( )
+	
+end
