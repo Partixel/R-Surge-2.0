@@ -135,6 +135,7 @@ local Cooldowns = { }
 local HBEvent
 
 local function GetSubject( )
+	
 	local Subject = workspace.CurrentCamera.CameraSubject
 	
 	if Subject and Subject:IsA( "Humanoid" ) then

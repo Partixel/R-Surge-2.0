@@ -20,6 +20,8 @@ repeat wait( ) until _G.Interactables
 	
 	Font = StringValue = The name of the font that you want the text to use ( The name + key ) ( Should be the end of the enum, e.g. Fantasy for Enum.Font.Fantasy )
 	
+	ProgressColor = Color3Value = The color of the Progress outline
+	
 	SpriteSheet = StringValue = Assetid:// of your custom sprite sheet ( sprites must be 83 pixels tall and wide, with a 1 pixel gap around it and must be 1024x1024 in total
 	
 	SpriteRotation = IntValue = Rotation of the SpriteSheet
@@ -74,6 +76,12 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	if not Gui then
 		
 		Gui = script.InteractGui:Clone( )
+		
+		if InteractObj:FindFirstChild( "ProgressColor" ) then
+			
+			Gui.Progress.ImageColor3 = InteractObj.ProgressColor.Value
+			
+		end
 		
 		local Rotate = InteractObj:FindFirstChild( "SpriteRotation" ) and InteractObj.SpriteRotation or 0
 		
