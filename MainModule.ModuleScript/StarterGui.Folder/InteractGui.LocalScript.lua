@@ -28,6 +28,9 @@ repeat wait( ) until _G.Interactables
 	
 	ClientOnly = Folder = Prevents the interactable sending it's interaction to the server ( use this if the interactable is only used on the client to save networking )
 	
+	CustomFuncs = ObjectValue = It's value should be a ModuleScript that returns a table with the following functions you want to override:
+		{ ShouldOpen = function ( InteractObj, Plr, DefaultShouldOpen ) end -- return true if the InteractGui should open }
+	
 	CustomGui = Folder = If your interactable has a custom gui, use this to hide the default GUI
 	
 	CustomFrame = ObjectValue = The value of this is cloned into the extra space in the GUI when it's first opened ( can include scripts if you want it dynamic! )

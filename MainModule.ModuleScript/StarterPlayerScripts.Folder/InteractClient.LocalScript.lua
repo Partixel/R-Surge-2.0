@@ -148,6 +148,12 @@ local function GetSubject( )
 	
 end
 
+function DefaultShouldOpen( InteractObj, Plr )
+	
+	return Plr.Character and not Plr.Character:FindFirstChildOfClass( "Tool" )
+	
+end
+
 function StartInteractables( )
 	
 	HBEvent = game:GetService( "RunService" ).Heartbeat:Connect( function ( )
@@ -156,7 +162,7 @@ function StartInteractables( )
 			
 			local Subject, Humanoid = GetSubject( ), Plr.Character and Plr.Character:FindFirstChildOfClass( "Humanoid" ) 
 			
-			if Subject and Humanoid and Humanoid:GetState( ) ~= Enum.HumanoidStateType.Dead and Interactables.Visible ~= false and not Plr.Character:FindFirstChildOfClass( "Tool" ) then
+			if Subject and Humanoid and Humanoid:GetState( ) ~= Enum.HumanoidStateType.Dead and Interactables.Visible ~= false then
 				
 				local Nearest, NearestDist
 				
@@ -176,7 +182,7 @@ function StartInteractables( )
 								
 								local Dist = ( a.Parent.Position - Subject.Position ).magnitude
 								
-								if Dist <= ( a:FindFirstChild( "Distance" ) and a.Distance.Value or 16 ) and select( 2, workspace.CurrentCamera:WorldToViewportPoint( a.Parent.Position ) ) and not Obscured( a.Parent ) then
+								if Dist <= ( a:FindFirstChild( "Distance" ) and a.Distance.Value or 16 ) and select( 2, workspace.CurrentCamera:WorldToViewportPoint( a.Parent.Position ) ) and not Obscured( a.Parent ) and ( a:FindFirstChild( "CustomFuncs" ) and require( a.CustomFuncs.Value ).ShouldOpen or DefaultShouldOpen )( a, Plr, DefaultShouldOpen ) then
 									
 									if not a:FindFirstChild( "Disabled" ) and not Interactables.LocalDisabled[ a ] then
 										
