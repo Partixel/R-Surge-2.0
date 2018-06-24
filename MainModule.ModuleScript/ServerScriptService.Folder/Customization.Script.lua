@@ -46,6 +46,7 @@ local function GetWep( Plr )
 	
 end
 
+local CollectionService = game:GetService( "CollectionService" )
 
 local function ColorGun( Mod, User )
 	
@@ -57,7 +58,15 @@ local function ColorGun( Mod, User )
 	
 	for a = 1, #Descendants do
 		
-		if Descendants[ a ]:IsA( "BasePart" ) and string.find( string.lower( Descendants[ a ].Name ), "color" ) then
+		if Descendants[ a ]:IsA( "BasePart" ) and string.find( Descendants[ a ].Name:lower( ), "color" ) and not CollectionService:HasTag( Descendants[ a ], "s2color" ) then
+			
+			warn( Mod.Parent:GetFullName( ) .. " needs to be updated to use the Tag 's2color' instead of the name" )
+			
+			CollectionService:AddTag( Descendants[ a ], "s2color" )
+				
+		end
+		
+		if CollectionService:HasTag( Descendants[ a ], "s2color" ) then
 			
 			Descendants[ a ].BrickColor = Col
 			
