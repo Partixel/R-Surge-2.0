@@ -59,7 +59,7 @@ local function ColorGun( Mod, User )
 	for a = 1, #Descendants do
 		
 		if Descendants[ a ]:IsA( "BasePart" ) and string.find( Descendants[ a ].Name:lower( ), "color" ) and not CollectionService:HasTag( Descendants[ a ], "s2color" ) then
-			
+			-------------- TODO REMOVE
 			warn( Mod.Parent:GetFullName( ) .. " needs to be updated to use the Tag 's2color' instead of the name" )
 			
 			CollectionService:AddTag( Descendants[ a ], "s2color" )
