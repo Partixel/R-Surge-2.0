@@ -1265,36 +1265,6 @@ function Module.GetBulletType( GunStats )
 
 end
 
-function Module.GetBoxAdornee( )
-
-	if workspace.CurrentCamera:FindFirstChild( "BoxAdornee" ) then
-
-		return workspace.CurrentCamera.BoxAdornee
-
-	end
-
-	local P = Instance.new( "Part" )
-
-	P.Name = "BoxAdornee"
-
-	P.Size = Vector3.new( 1, 1, 1 )
-
-	P.CanCollide = false
-
-	P.Transparency = 1
-
-	P.Anchored = true
-
-	P.Locked = true
-
-	P.CFrame = CFrame.new( 0, 0, 0 )
-
-	P.Parent = workspace.CurrentCamera
-
-	return P
-
-end
-
 function Module.IgnoreFunction( Part )
 	
     if CollectionService:HasTag( Part, "nopen" ) then return false end

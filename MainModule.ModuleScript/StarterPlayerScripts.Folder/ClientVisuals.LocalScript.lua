@@ -462,13 +462,11 @@ end )
 
 local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
-	local Adornee = Core.GetBoxAdornee( )
-	
 	local Bullet = Instance.new( "BoxHandleAdornment" )
 	
 	Bullet.Name = "GunBullet"
 	
-	Bullet.Adornee = Adornee
+	Bullet.Adornee = workspace.Terrain
 	
 	local Col = User.TeamColor.Color
 	
@@ -494,7 +492,7 @@ local function RenderSegment( User, GunStats, Start, End, Thickness )
 		
 	Bullet.CFrame = CFrame.new( ( Start + End ) / 2, End )
 	
-	Bullet.Parent = Adornee
+	Bullet.Parent = workspace.CurrentCamera
 	
 	return Bullet
 	
@@ -604,13 +602,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	elseif GunStats.BulletType and GunStats.BulletType.Name == "Laser" then
 		
-		local Adornee = Core.GetBoxAdornee( )
-		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		
 		Bullet.Name = "GunBullet"
 		
-		Bullet.Adornee = Adornee
+		Bullet.Adornee = workspace.Terrain
 		
 		local Col = User.TeamColor.Color
 		
@@ -638,7 +634,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.CFrame = CF + CF.lookVector * ( ( Barrel.Position - End ).magnitude / 2 )
 		
-		Bullet.Parent = Adornee
+		Bullet.Parent = workspace.CurrentCamera
 		
 		BulletArrived:Fire( GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
@@ -654,13 +650,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	else
 		
-		local Adornee = Core.GetBoxAdornee( )
-		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		
 		Bullet.Name = "GunBullet"
 		
-		Bullet.Adornee = Adornee
+		Bullet.Adornee = workspace.Terrain
 		
 		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
 		
@@ -680,7 +674,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Debris:AddItem( Bullet, 3 )
 		
-		Bullet.Parent = Adornee
+		Bullet.Parent = workspace.CurrentCamera
 		
 		RunService.RenderStepped:wait( )
 		
@@ -717,8 +711,6 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 	if not BulletType or BulletType.Name == "Kinectic" or BulletType.Name == "Laser" then
 		
 		if not Hit or not Hit.Parent then return end
-		
-		local Adornee = Core.GetBoxAdornee( )
 		
 		local BulletHit = Instance.new( "CylinderHandleAdornment" )
 		
@@ -804,9 +796,9 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 			
 		end )
 		
-		BulletHit2.Parent = Adornee
+		BulletHit2.Parent = workspace.CurrentCamera
 		
-		BulletHit.Parent = Adornee
+		BulletHit.Parent = workspace.CurrentCamera
 		
 		for a = 1, 6 do
 			
