@@ -1,5 +1,5 @@
 function HandlePart( Part )
-	print( Part )
+	
 	local Event Event = Part:GetPropertyChangedSignal( "LocalTransparencyModifier" ):Connect( function ( )
 		
 		if not Part:IsDescendantOf( script.Parent ) then Event:Disconnect( ) return end
