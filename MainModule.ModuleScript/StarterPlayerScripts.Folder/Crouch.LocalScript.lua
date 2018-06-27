@@ -54,6 +54,8 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 			
 			if State then
 				
+				if WSMod then WSMod:Destroy( ) WSMod = nil end
+				
 				WSMod = Instance.new( "NumberValue" )
 				
 				WSMod.Name = "WalkSpeedModifier"
