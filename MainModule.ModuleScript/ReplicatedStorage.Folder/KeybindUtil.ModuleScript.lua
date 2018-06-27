@@ -390,7 +390,7 @@ local function NameOfKey( Key )
 	
 	if type( Key ) == "string" then return Key end
 	
-	return Key.Name
+	return Key.Name:gsub( "Button", "" )
 	
 end
 
