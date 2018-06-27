@@ -94,8 +94,6 @@ local function Redraw( )
 	
 end
 
-KeybindGui.Search.PlaceholderColor3 = Color3.fromRGB( 27, 42, 53 )
-
 local Invalid = true
 
 KeybindGui.Search:GetPropertyChangedSignal( "Text" ):Connect( function ( )
