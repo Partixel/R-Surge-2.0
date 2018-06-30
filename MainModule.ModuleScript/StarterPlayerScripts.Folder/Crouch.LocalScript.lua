@@ -52,9 +52,11 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 		
 		if Hum then
 			
+			if WSMod then WSMod:Destroy( ) end
+			
+			if JPMod then JPMod:Destroy( ) end
+			
 			if State then
-				
-				if WSMod then WSMod:Destroy( ) WSMod = nil end
 				
 				WSMod = Instance.new( "NumberValue" )
 				
@@ -74,10 +76,6 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 				
 			else
 				
-				WSMod:Destroy( )
-				
-				JPMod:Destroy( )
-				
 				WSMod, JPMod = nil, nil
 				
 			end
@@ -86,61 +84,65 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 		
 	end
 	
-	local Torso = NPlr.Character:FindFirstChild("Torso")
-	
-	local Hum = NPlr.Character and NPlr.Character:FindFirstChild( "Humanoid" )
-	
-	if Torso and Hum then
+	if NPlr.Character then
 		
-		local Time
+		local Torso = NPlr.Character:FindFirstChild("Torso")
 		
-		local LeftHip = Torso:FindFirstChild("Left Hip")
+		local Hum = NPlr.Character:FindFirstChild( "Humanoid" )
 		
-		if LeftHip then
+		if Torso and Hum then
 			
-			local TargetA, TargetB = State and AnimationB.Left[ 1 ] or AnimationA.Left[ 1 ], State and AnimationB.Left[ 2 ] or AnimationA.Left[ 2 ]
+			local Time
 			
-			Time =  LeftHip.C0:toObjectSpace( TargetA ).p.magnitude
+			local LeftHip = Torso:FindFirstChild("Left Hip")
 			
-			local Perc = math.min( Offset / Time, 1 )
-			
-			LeftHip.C0, LeftHip.C1 = LeftHip.C0:lerp( TargetA, Perc ), LeftHip.C1:lerp( TargetB, Perc )
-			
-			if Perc < 1 then
+			if LeftHip then
 				
-				TweenService:Create( LeftHip, TweenInfo.new( Time - Offset ), { C0 = TargetA, C1 = TargetB } ):Play( )
+				local TargetA, TargetB = State and AnimationB.Left[ 1 ] or AnimationA.Left[ 1 ], State and AnimationB.Left[ 2 ] or AnimationA.Left[ 2 ]
 				
-			end
-			
-		end
-		
-		local RightHip = Torso:FindFirstChild("Right Hip")
-		
-		if RightHip then
-			
-			local TargetA, TargetB = State and AnimationB.Right[ 1 ] or AnimationA.Right[ 1 ], State and AnimationB.Right[ 2 ] or AnimationA.Right[ 2 ]
-			
-			Time = Time or RightHip.C0:toObjectSpace( TargetA ).p.magnitude
-			
-			local Perc = math.min( Offset / Time, 1 )
-			
-			RightHip.C0, RightHip.C1 = RightHip.C0:lerp( TargetA, Perc ), RightHip.C1:lerp( TargetB, Perc )
-			
-			if Perc < 1 then
+				Time =  LeftHip.C0:toObjectSpace( TargetA ).p.magnitude
 				
-				TweenService:Create( RightHip, TweenInfo.new( Time - Offset ), { C0 = TargetA, C1 = TargetB } ):Play( )
+				local Perc = math.min( Offset / Time, 1 )
+				
+				LeftHip.C0, LeftHip.C1 = LeftHip.C0:lerp( TargetA, Perc ), LeftHip.C1:lerp( TargetB, Perc )
+				
+				if Perc < 1 then
+					
+					TweenService:Create( LeftHip, TweenInfo.new( Time - Offset ), { C0 = TargetA, C1 = TargetB } ):Play( )
+					
+				end
 				
 			end
 			
-		end
-		
-		local Perc = math.min( Offset / ( Time or 1 ), 1 )
-		
-		Hum.HipHeight = lerp( Hum.HipHeight, State and -1 or 0, Perc )
-		
-		if Perc < 1 then
+			local RightHip = Torso:FindFirstChild("Right Hip")
 			
-			TweenService:Create( Hum, TweenInfo.new( ( Time or 1 ) - Offset ), { HipHeight = State and -1 or 0 } ):Play( )
+			if RightHip then
+				
+				local TargetA, TargetB = State and AnimationB.Right[ 1 ] or AnimationA.Right[ 1 ], State and AnimationB.Right[ 2 ] or AnimationA.Right[ 2 ]
+				
+				Time = Time or RightHip.C0:toObjectSpace( TargetA ).p.magnitude
+				
+				local Perc = math.min( Offset / Time, 1 )
+				
+				RightHip.C0, RightHip.C1 = RightHip.C0:lerp( TargetA, Perc ), RightHip.C1:lerp( TargetB, Perc )
+				
+				if Perc < 1 then
+					
+					TweenService:Create( RightHip, TweenInfo.new( Time - Offset ), { C0 = TargetA, C1 = TargetB } ):Play( )
+					
+				end
+				
+			end
+			
+			local Perc = math.min( Offset / ( Time or 1 ), 1 )
+			
+			Hum.HipHeight = lerp( Hum.HipHeight, State and -1 or 0, Perc )
+			
+			if Perc < 1 then
+				
+				TweenService:Create( Hum, TweenInfo.new( ( Time or 1 ) - Offset ), { HipHeight = State and -1 or 0 } ):Play( )
+				
+			end
 			
 		end
 		

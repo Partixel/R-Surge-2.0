@@ -90,9 +90,9 @@ PU.Watch( "Sprinting", "Sprint", function ( NPlr, State, Offset )
 		
 		if Hum then
 			
+			if WSMod then WSMod:Destroy( ) end
+			
 			if State then
-				
-				if WSMod then WSMod:Destroy( ) WSMod = nil end
 				
 				WSMod = Instance.new( "NumberValue" )
 				
@@ -113,8 +113,6 @@ PU.Watch( "Sprinting", "Sprint", function ( NPlr, State, Offset )
 				end
 				
 			else
-				
-				WSMod:Destroy( )
 				
 				WSMod = nil
 				
