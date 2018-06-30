@@ -1828,8 +1828,6 @@ function Module.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifi
 		return false
 
 	end
-	
-	if Damage < 0 and Humanoid.Health == Humanoid.MaxHealth then return false end
 
 	return Humanoid, Damage
 
