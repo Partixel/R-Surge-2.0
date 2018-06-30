@@ -20,7 +20,9 @@ Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( St
 	
 	local HumanoidRootPart, Humanoid = Plr.Character and Plr.Character:FindFirstChild( "HumanoidRootPart" ), Plr.Character and Plr.Character:FindFirstChildOfClass( "Humanoid" )
 	
-	if Weapon and HumanoidRootPart and Humanoid and Humanoid:GetState( ) ~= Enum.HumanoidStateType.Dead and not Humanoid.Sit then
+	local ValidState = Humanoid and ( Humanoid:GetState( ) == Enum.HumanoidStateType.FallingDown or Humanoid:GetState( ) == Enum.HumanoidStateType.Flying or Humanoid:GetState( ) == Enum.HumanoidStateType.Freefall or Humanoid:GetState( ) == Enum.HumanoidStateType.Jumping or Humanoid:GetState( ) == Enum.HumanoidStateType.Landed or Humanoid:GetState( ) == Enum.HumanoidStateType.Running or Humanoid:GetState( ) == Enum.HumanoidStateType.RunningNoPhysics or Humanoid:GetState( ) == Enum.HumanoidStateType.StrafingNoPhysics )
+	
+	if Weapon and HumanoidRootPart and ValidState then
 		
 		if not Until then
 			
@@ -31,6 +33,10 @@ Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( St
 				if Until < tick( ) or not Weapon.Selected then Event:Disconnect( ) Until = nil return end
 				
 				if not HumanoidRootPart or ( workspace.CurrentCamera.CoordinateFrame.p - workspace.CurrentCamera.Focus.p ).magnitude <= 0.55 then return end
+				
+				ValidState = Humanoid and ( Humanoid:GetState( ) == Enum.HumanoidStateType.FallingDown or Humanoid:GetState( ) == Enum.HumanoidStateType.Flying or Humanoid:GetState( ) == Enum.HumanoidStateType.Freefall or Humanoid:GetState( ) == Enum.HumanoidStateType.Jumping or Humanoid:GetState( ) == Enum.HumanoidStateType.Landed or Humanoid:GetState( ) == Enum.HumanoidStateType.Running or Humanoid:GetState( ) == Enum.HumanoidStateType.RunningNoPhysics or Humanoid:GetState( ) == Enum.HumanoidStateType.StrafingNoPhysics )
+				
+				if not ValidState then return end
 				
 				HumanoidRootPart.CFrame = CFrame.new( HumanoidRootPart.Position, Vector3.new( Core.LPlrsTarget[ 2 ].X, HumanoidRootPart.Position.Y, Core.LPlrsTarget[ 2 ].Z ) )
 				
