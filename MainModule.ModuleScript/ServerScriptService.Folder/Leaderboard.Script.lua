@@ -199,15 +199,19 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 		
 	end
 	
+	DeathInfo.KillerDamage = Assisters[ Killer ]
+	
 	local Assister, AssisterDamage
 	
 	for a, b in pairs( Assisters ) do
 		
-		DeathInfo.TotalDamage = ( DeathInfo.TotalDamage or 0 ) + b
+		DeathInfo.TotalDamage = DeathInfo.TotalDamage + b
 		
 		if not AssisterDamage or b > AssisterDamage then
 			
-			Assisters[ a ] = ( Assisters[ a ] or 0 ) + b
+			Assister = a
+			
+			AssisterDamage = b
 			
 	    end
 		
