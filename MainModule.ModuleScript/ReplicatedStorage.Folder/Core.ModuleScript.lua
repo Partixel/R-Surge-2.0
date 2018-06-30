@@ -442,13 +442,13 @@ function Module.ToolAdded( Tool, Plr )
 			Module.Weapons[ StatObj ] = true
 
 			Tool.Equipped:Connect( function ( Mouse )
-
+				
 				Module.WeaponSelected:Fire( StatObj, Plr )
 
 			end )
 
 			Tool.Unequipped:Connect( function ( Mouse )
-
+				
 				Module.WeaponDeselected:Fire( StatObj, Plr )
 
 			end )
@@ -487,7 +487,7 @@ if IsServer then
 
 	Module.HandleServer = function ( Plr, Time, StatObj, Hit, End, Normal, Material, Offset, BulNum, User, BarrelNum )
 
-		if not StatObj then return end
+		if not StatObj or not StatObj.Parent then return end
 
 		User = User or Plr
 
@@ -759,17 +759,21 @@ if IsClient then
 
 			Module.DamagedObj:Fire( StatObj )
 
-		else
+		elseif StatObj then
 
 			local GunStats = Module.GetGunStats( StatObj )
-
-			local Barrel = GunStats.Barrels( StatObj )
-
-			Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
-
-			if not Barrel then return end
-
-			Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
+			
+			if GunStats then
+	
+				local Barrel = GunStats.Barrels( StatObj )
+	
+				Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
+	
+				if not Barrel then return end
+	
+				Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
+				
+			end
 
 		end
 
@@ -1148,13 +1152,13 @@ function Module.Setup( StatObj )
 	if StatObj.Parent and StatObj.Parent:IsA( "Tool" ) then
 
 		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Equipped:Connect( function ( )
-
+			
 			Module.WeaponSelected:Fire( StatObj, Weapon.User )
 
 		end )
 
 		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Unequipped:Connect( function ( )
-
+			
 			Module.WeaponDeselected:Fire( StatObj, Weapon.User )
 
 		end )
@@ -1168,8 +1172,12 @@ end
 function Module.Destroy( Weapon )
 
 	if not Weapon.StatObj then return end
-
-	Module.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
+	
+	if Weapon.Selected then
+		
+		Module.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
+		
+	end
 
 	for a, b in pairs( Selected ) do if b == Weapon then Selected [ a ] = nil end end
 
