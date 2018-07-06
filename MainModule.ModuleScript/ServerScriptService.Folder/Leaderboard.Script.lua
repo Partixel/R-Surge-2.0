@@ -171,6 +171,7 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 	
 	for Damageable, Hit in pairs( Damageables ) do
 		
+		if Damageable.Parent then
 			
 			if not CollectionService:HasTag( Damageable, "s2nokos" ) then KOs = KOs + 1 end
 			
