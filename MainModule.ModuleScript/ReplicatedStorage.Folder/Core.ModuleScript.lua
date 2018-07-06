@@ -113,12 +113,14 @@ Module.BulletTypes = {
 	Kinetic = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 		
 		local WeaponName = Module.GetGunName( StatObj )
+		
+		local DamageType = GunStats.BulletType and GunStats.BulletType.DamageType or Module.DamageType.Kinetic
 	
-		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, Module.DamageType.Kinetic, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 	
 		if ResH then
 			
-			return Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, Module.DamageType.Kinetic )
+			return Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, DamageType )
 	
 		end
 
@@ -148,11 +150,11 @@ Module.BulletTypes = {
 				
 				if Type then
 					
-					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, Module.DamageType.Electricity, WeaponName )
+					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, GunStats.BulletType.DamageType or Module.DamageType.Electricity, WeaponName )
 					
 				else
 					
-					ResH, ResD = Module.GetDamage( User, Part, GunStats.Damage, Module.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+					ResH, ResD = Module.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 					
 				end
 
@@ -166,7 +168,7 @@ Module.BulletTypes = {
 
 		end
 
-		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, Module.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 
 		if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
 			
@@ -184,7 +186,7 @@ Module.BulletTypes = {
 				
 			end
 
-			return Module.DamageObj( User, Hums, WeaponName, Module.DamageType.Electricity )
+			return Module.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Electricity )
 
 		end
 
@@ -194,11 +196,11 @@ Module.BulletTypes = {
 		
 		local WeaponName = Module.GetGunName( StatObj )
 		
-		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, Module.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 		
 		if ResH then
 			
-			local Damaged = Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, Module.DamageType.Fire )
+			local Damaged = Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Fire )
 			
 			if next( Damaged ) then
 				
@@ -244,7 +246,7 @@ Module.BulletTypes = {
 							
 						end
 						
-						Module.DamageObj( User, { { ResH, ResD, HitName } }, WeaponName, Module.DamageType.Fire )
+						Module.DamageObj( User, { { ResH, ResD, HitName } }, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Fire )
 						
 						wait( 0.3 )
 						
@@ -268,11 +270,11 @@ Module.BulletTypes = {
 
 	Stun = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 
-		local ResH, ResD = Stun( StatObj, GunStats, User, Hit, ( Barrel.Position - End ).magnitude / GunStats.Range, Module.DamageType.Electricity )
+		local ResH, ResD = Stun( StatObj, GunStats, User, Hit, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.BulletType.DamageType or Module.DamageType.Electricity )
 
 		if ResH then
 
-			return Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, Module.GetGunName( StatObj ), Module.DamageType.Electricity )
+			return Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, Module.GetGunName( StatObj ), GunStats.BulletType.DamageType or Module.DamageType.Electricity )
 
 		end
 
@@ -300,11 +302,11 @@ Module.BulletTypes = {
 			
 			if Type then
 				
-				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, Module.DamageType.Explosive, WeaponName )
+				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, GunStats.BulletType.DamageType or Module.DamageType.Explosive, WeaponName )
 				
 			else
 				
-				ResH, ResD = Module.GetDamage( User, Part, GunStats.Damage, Module.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+				ResH, ResD = Module.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 				
 			end
 
@@ -333,7 +335,7 @@ Module.BulletTypes = {
 				
 			end
 
-			return Module.DamageObj( User, Hums, WeaponName, Module.DamageType.Explosive )
+			return Module.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Explosive )
 
 		end
 
