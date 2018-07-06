@@ -639,9 +639,11 @@ if IsServer then
 		
 		local Damaged = { }
 		
-		for a = 1, #DamageInfos do
+		local a, b = next( DamageInfos )
+		
+		while a do
 			
-			local Damageable, Damage = DamageInfos[ a ][ 1 ], DamageInfos[ a ][ 2 ]
+			local Damageable, Damage = b[ 1 ], b[ 2 ]
 			
 			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
 				
@@ -730,6 +732,8 @@ if IsServer then
 				end
 				
 			end
+			
+			a, b = next( DamageInfos, a )
 	
 		end
 		
