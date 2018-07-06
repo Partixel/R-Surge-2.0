@@ -653,17 +653,17 @@ if IsServer then
 					
 					PrevHealth = Damageable.Health
 					
-					Amount = Damage > 0 and math.min( Damageable.Health - math.max( Damageable.Health - Damage, 0 ), Damage ) or math.max( Damageable.Health - Damageable.MaxHealth, Damage )
+					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
 					
-					Damageable:TakeDamage( Amount )
+					Damageable:TakeDamage( Damage )
 					
 					if PrevHealth > 0 and Damageable.Health <= 0 then
 						
-						Killed[ Damageable ] = DamageInfos[ a ][ 3 ]
+						Killed[ Damageable ] = b[ 3 ]
 						
 					end
 	
-					if Amount > Damageable.MaxHealth - ( Damageable.MaxHealth / 20 ) then
+					if Damage > Damageable.MaxHealth - ( Damageable.MaxHealth / 20 ) then
 	
 						Damageable:AddCustomStatus( "Vital" )
 	
@@ -679,10 +679,24 @@ if IsServer then
 					
 					if PrevHealth > 0 and Damageable.Value <= 0 then
 						
-						Killed[ Damageable ] = DamageInfos[ a ][ 3 ]
+						Killed[ Damageable ] = b[ 3 ]
 						
 					end
 	
+				end
+				
+				if Damage ~= Amount then
+					
+					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
+						
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, b[ 3 ] }
+						
+					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
+						
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, b[ 3 ] }
+						
+					end
+					
 				end
 				
 				if Amount ~= 0 then
