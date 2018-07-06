@@ -1771,7 +1771,7 @@ function Module.GetValidHumanoid( Obj )
 
 	if not Obj or not Obj:IsDescendantOf( game ) then return end
 
-	local Hum = Obj:FindFirstChild( "Health" ) or Obj.Parent:FindFirstChild( "Humanoid" ) or Obj.Parent:FindFirstChild( "Health" ) or Obj.Parent.Parent:FindFirstChild( "Humanoid" ) or Obj.Parent.Parent:FindFirstChild( "Health" )
+	local Hum = Obj:FindFirstChild( "Health" ) or Obj.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent:FindFirstChild( "Health" ) or Obj.Parent.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent.Parent:FindFirstChild( "Health" )
 	
 	if Hum and ( ( Hum:IsA( "Humanoid" ) and Hum.Health > 0 ) or ( not Hum:IsA( "Humanoid" ) and Hum.Value > 0 ) ) then
 		
