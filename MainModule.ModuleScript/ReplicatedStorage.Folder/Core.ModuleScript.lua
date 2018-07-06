@@ -344,6 +344,32 @@ Module.BulletTypes = {
 }
 
 Module.Damageables = setmetatable( { }, { __mode = "k" } )
+----------- TODO REMOVE BACKWARDS COMPAT
+Module.DamageableAdded.Event:Connect( function ( Damageable )
+	
+	if Damageable:FindFirstChild( "NoFeed" ) then
+		
+		CollectionService:AddTag( Damageable, "s2nofeed" )
+		
+		warn( Damageable:GetFullName( ) .. " has the 'NoFeed' instance inside of it which is deprecated, please instead tag this with 's2nofeed'" )
+		
+	end
+	
+	if Damageable:FindFirstChild( "NoKOs" ) then
+		
+		CollectionService:AddTag( Damageable, "s2nokos" )
+		
+		warn( Damageable:GetFullName( ) .. " has the 'NoKOs' instance inside of it which is deprecated, please instead tag this with 's2nokos'" )
+		
+	end
+	
+	if not Damageable:IsA( "Humanoid" ) and not Damageable:IsA( "DoubleConstrainedValue" ) then
+		
+		warn( Damageable:GetFullName( ) .. " is a value type that is no longer supported, please change it to a DoubleConstrainedValue and set its MaxValue to its MaxHealth" )
+		
+	end
+	
+end )
 
 workspace.DescendantAdded:Connect( function ( Child )
 	
