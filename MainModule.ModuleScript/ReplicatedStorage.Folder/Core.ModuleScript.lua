@@ -635,12 +635,6 @@ if IsServer then
 
 	function Module.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
-		if type( DamageInfos ) ~= "table" then
-			
-			error( "Surge 2.0 Core.DamageObj has been updated to combine the ResH, ResD and HitName into a table as the secopnd argument such as; Core.DamageObj( User, { { ResH, ResD, HitName } } .... )" )
-			
-		end
-		
 		local Killed = { }
 		
 		local Damaged = { }
