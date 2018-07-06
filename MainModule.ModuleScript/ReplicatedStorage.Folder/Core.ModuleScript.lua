@@ -1689,7 +1689,9 @@ Module.DamageType = {
 
 	Fire = "Fire",
 
-	Electricity = "Electricity"
+	Electricity = "Electricity",
+	
+	Heal = "Heal"
 
 }
 
