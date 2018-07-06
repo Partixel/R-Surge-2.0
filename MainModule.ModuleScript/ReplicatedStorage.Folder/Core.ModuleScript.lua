@@ -668,12 +668,26 @@ if IsServer then
 						Damageable:AddCustomStatus( "Vital" )
 	
 					end
-	
+					
+				elseif Damageable:IsA( "DoubleConstrainedValue" ) then
+					
+					PrevHealth = Damageable.Value
+					
+					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
+					
+					Damageable.Value = Damageable.Value - Damage
+					
+					if PrevHealth > 0 and Damageable.Value <= 0 then
+						
+						Killed[ Damageable ] = b[ 3 ]
+						
+					end
+					
 				else
 					
 					PrevHealth = Damageable.Value
-	
-					Amount = Damage > 0 and math.min( Damageable.Value - math.max( Damageable.Value - Damage, 0 ), Damage ) or ( Damageable:FindFirstChild( "MaxHealth" ) and math.max( Damageable.Value - Damageable.MaxHealth.Value, Damage ) or Damage )
+					
+					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable:FindFirstChild( "MaxHealth" ) and ( Damageable.Value - Damage < Damageable.MaxHealth.Value and Damage or Damageable.Value - Damageable.MaxHealth.Value ) or ( warn( Damageable:GetFullName( ) .. " cannot be healed as it has no 'MaxHealth' child to act as upper limit" ) and 0 ) )
 					
 					Damageable.Value = Damageable.Value - Amount
 					
