@@ -1,31 +1,3 @@
--- TODO
-
--- Directional damage indicator
-
--- Bullet penetration/ricochet
-
--- Animated Poses - Sprint, Crouch, Safety
-
--- Kinematic based animations - Arms point towards attachments
-
--- Barrels to folder of attachments
-
--- First person visuals ( Sway when moving, Sway when rotating ) ( Weapon.CanZoom )
-
--- Scope system ( must work in third person too )
-
--- Reload animation system ( Based on kinematic anims - fake magazine drop )
-
--- Improve particles / sound effects ( And add more )
-
--- Improve cursor display of accuracy
-
--- Tracers every x shots, per weapon, default 4
--- Smoke trail behind projectile, normal shots go much faster then current tracer
--- Tracer does less damage, config
-
--- DON’T IGNORE WATER UNTIL HIT WATER, AT WHICH POINT SLOW REDUCE RANGE TO WATER + WATERPENETRATIONDISTANCE
-
 if _G.S20 and _G.S20.Config then
 	
 	error"S2.0 now uses _G.S20Config instead of _G.S20.Config, please update your S2.0 Config to reflect this change. If you need help, PM Partixel"
