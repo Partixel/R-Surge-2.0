@@ -161,6 +161,22 @@ for a, b in pairs( Core.Damageables ) do
 	
 end
 
+Core.ObjDamaged.Event:Connect( function ( User, Damageable, Amount, PrevHealth )
+	
+	if _G.S20Config.CreditsPerKill or _G.S20Config.CreditsPerHeal then
+		
+		local Credits = User:FindFirstChild( "Credits", true )
+		
+		if Credits then
+			
+			Credits.Value = math.floor( Credits.Value + Amount * ( ( Amount > 0 and _G.S20Config.CreditsPerDamage or _G.S20Config.CreditsPerHeal ) or 0 ), 0 )
+			
+		end
+		
+	end
+	
+end )
+
 Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName, TypeName )
 	
 	local DeathInfo = { VictimInfos = { }, TotalDamage = 0, With = WeaponName, Type = TypeName, Killer = Killer }

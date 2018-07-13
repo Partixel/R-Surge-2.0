@@ -93,4 +93,8 @@ _G.S20Config.PaydayDelay = 1
 -- How many points a player gets for kills ( They get half of this for assists ) ( Default - 40 )
 _G.S20Config.CreditsPerKill = 40
 
+_G.S20Config.CreditsPerDamage = 0
+
+_G.S20Config.CreditsPerHeal = 0
+
 return nil
