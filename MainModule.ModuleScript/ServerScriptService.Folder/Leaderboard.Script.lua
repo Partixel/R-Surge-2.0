@@ -277,7 +277,7 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 			
 			if DeathInfo.Assister.UserId and _G.S20Config.SaveCredits ~= 1 and _G.S20Config.PlayerPointsPerKO ~= 0 and DeathInfo.Assister.UserId > 0 then
 				
-				AwardPoints( DeathInfo.Assister.UserId, KOs * ( _G.S20Config.PlayerPointsPerKO or 2 ) / 2 )
+				AwardPoints( DeathInfo.Assister.UserId, KOs * ( _G.S20Config.PlayerPointsPerAssist or ( _G.S20Config.PlayerPointsPerKO or 2 ) / 2 ) )
 				
 			end
 			

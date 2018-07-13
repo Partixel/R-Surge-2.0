@@ -78,6 +78,8 @@ _G.S20Config.ShowCredits = false
 -- The amount of player points a player will be given for a KO ( Default - 2 )
 _G.S20Config.PlayerPointsPerKO = 2
 
+_G.S20Config.PlayerPointsPerAssist = 1
+
 -- The default amount of credits a player will start with ( Default - 100 )
 _G.S20Config.DefaultCredits = 100
 
