@@ -255,17 +255,15 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 				
 			end
 			
-			local Plr = Players:FindFirstChild( DeathInfo.Killer.Name )
-			
-			if Plr then
+			if typeof( DeathInfo.Killer ) == "Instance" then
 				
-				Plr:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Plr.leaderstats.KOs.Value + KOs
+				DeathInfo.Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = DeathInfo.Killer.leaderstats.KOs.Value + KOs
 				
 				if _G.S20Config.CreditsPerKill then
 					
-					local Credits = Plr:FindFirstChild( "Credits", true )
+					local Credits = DeathInfo.Killer:FindFirstChild( "Credits", true )
 					
-					if Credits then Credits.Value = math.floor( Credits.Value + ( KOs * _G.S20Config.CreditsPerKill ), 0 ) end
+					if Credits then Credits.Value = math.floor( Credits.Value + KOs * _G.S20Config.CreditsPerKill, 0 ) end
 					
 				end
 				
@@ -281,17 +279,15 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 				
 			end
 			
-			local Plr = Players:FindFirstChild( DeathInfo.Assister.Name )
-			
-			if Plr then
+			if typeof( DeathInfo.Assister ) == "Instance" then
 				
-				Plr:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = Plr.leaderstats.Assists.Value + KOs
+				DeathInfo.Assister:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = DeathInfo.Assister.leaderstats.Assists.Value + KOs
 				
 				if _G.S20Config.CreditsPerKill then
 					
-					local Credits = Plr:FindFirstChild( "Credits", true )
+					local Credits = DeathInfo.Assister:FindFirstChild( "Credits", true )
 					
-					if Credits then Credits.Value = math.floor( Credits.Value + ( KOs * _G.S20Config.CreditsPerKill / 2 ), 0 ) end
+					if Credits then Credits.Value = math.floor( Credits.Value + KOs * ( _G.S20Config.CreditsPerAssist or _G.S20Config.CreditsPerKill / 2 ), 0 ) end
 					
 				end
 				
