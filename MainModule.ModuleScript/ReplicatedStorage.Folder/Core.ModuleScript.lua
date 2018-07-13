@@ -655,7 +655,7 @@ if IsServer then
 					
 					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
 					
-					Damageable:TakeDamage( Damage )
+					Damageable.Health = Damageable.Health - Amount
 					
 					if PrevHealth > 0 and Damageable.Health <= 0 then
 						
@@ -675,7 +675,7 @@ if IsServer then
 					
 					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
 					
-					Damageable.Value = Damageable.Value - Damage
+					Damageable.Value = Damageable.Value - Amount
 					
 					if PrevHealth > 0 and Damageable.Value <= 0 then
 						
