@@ -163,13 +163,13 @@ end
 
 Core.ObjDamaged.Event:Connect( function ( User, Damageable, Amount, PrevHealth )
 	
-	if _G.S20Config.CreditsPerKill or _G.S20Config.CreditsPerHeal then
+	if ( _G.S20Config.CreditsPerKill or _G.S20Config.CreditsPerHeal ) and not CollectionService:HasTag( Damageable, "s2nokos" ) then
 		
 		local Credits = User:FindFirstChild( "Credits", true )
 		
 		if Credits then
 			
-			Credits.Value = math.floor( Credits.Value + Amount * ( ( Amount > 0 and _G.S20Config.CreditsPerDamage or _G.S20Config.CreditsPerHeal ) or 0 ), 0 )
+			Credits.Value = math.floor( Credits.Value + math.abs( Amount ) * ( ( Amount > 0 and _G.S20Config.CreditsPerDamage or _G.S20Config.CreditsPerHeal ) or 0 ), 0 )
 			
 		end
 		
