@@ -1,9 +1,3 @@
-if _G.S20 and _G.S20.Config then
-	
-	error"S2.0 now uses _G.S20Config instead of _G.S20.Config, please update your S2.0 Config to reflect this change. If you need help, PM Partixel"
-	
-end
-
 local function AddObjs( PermPar, Name )
 	
 	local Objs = script:FindFirstChild( PermPar.Name ):GetChildren( )
