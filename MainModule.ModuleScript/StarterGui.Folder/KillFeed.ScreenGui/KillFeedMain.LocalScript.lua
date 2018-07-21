@@ -1,5 +1,7 @@
 local Players, TweenService = game:GetService( "Players" ), game:GetService("TweenService" )
 
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+
 local function Scale( Feed )
 	
 	Feed.Killer.Size = UDim2.new( 10, 0, 1, 0 )
@@ -56,7 +58,7 @@ workspace.CurrentCamera:GetPropertyChangedSignal( "ViewportSize" ):Connect( func
 	
 	wait( )
 	
-	local Feeds = script.Parent:GetChildren( )
+	local Feeds = script.Parent.Container:GetChildren( )
 	
 	for a = 1, #Feeds do
 		
@@ -77,32 +79,21 @@ local function PctStr( Num, Decimals )
 	return string.format( "%." .. Decimals .. "f", Num > 0 and Num < Min and Min or Num > 100 - Min and Num < 100 and 100 - Min or Num )
 end
 
-local function ApplyTextStroke( Obj )
-	
-	local _, _, V = Color3.toHSV( Obj.TextColor3 )
-	
-	if V > 0.85 then
-		
-		Obj.TextStrokeColor3 = Color3.fromRGB( 77, 77, 77 )
-		
-	end
-	
-end
-
-
 local VictimTypes = { Head = "rbxassetid://1693819171" }
 -- Need suicide dmgtype
 local DmgTypes = { Kinetic = "rbxassetid://1693831893", Explosive = "rbxassetid://1693825708" }
 
-local Neutral = Color3.fromRGB( 77, 77, 77 )
-
 local Zero = UDim2.new( 0, 0, 0, 0 )
+
+local function UpdateContrastTextStroke( Obj )
+	
+	ThemeUtil.ContrastTextStroke( Obj, Obj.Parent.ImageColor3 )
+	
+end
 
 game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEvent:Connect( function ( DeathInfo )
 	
 	local NewFeed = script.Feed:Clone( )
-	
-	NewFeed.Type.Image = DmgTypes[ DeathInfo.Type ] or DmgTypes[ "Kinetic" ]
 	
 	local NumVictims = 0
 	
@@ -114,11 +105,13 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			local Victim = script.Victim:Clone( )
 			
+			ThemeUtil.BindUpdate( Victim, "ImageColor3", "Background" )
+			
 			Victim.VictimName.Text = DeathInfo.VictimInfos[ a ].User.Name
 			
-			Victim.VictimName.TextColor3 = DeathInfo.VictimInfos[ a ].User.TeamColor and DeathInfo.VictimInfos[ a ].User.TeamColor.Color or Neutral
+			Victim.VictimName.TextColor3 = DeathInfo.VictimInfos[ a ].User.TeamColor and DeathInfo.VictimInfos[ a ].User.TeamColor.Color or ThemeUtil.GetThemeFor( "TextColor", "InvertedBackground" )
 			
-			ApplyTextStroke( Victim.VictimName )
+			ThemeUtil.BindUpdate( Victim.VictimName, "TextStrokeColor3", UpdateContrastTextStroke )
 			
 			Victim.Name = "Victim" .. NumVictims
 			
@@ -138,7 +131,11 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			if NumVictims > 1 then
 				
-				script.VictimFrame:Clone( ).Parent = Victim
+				local VictimFrame = script.VictimFrame:Clone( )
+				
+				ThemeUtil.BindUpdate( VictimFrame, "BackgroundColor3", "Background" )
+				
+				VictimFrame.Parent = Victim
 				
 			end
 			
@@ -150,21 +147,33 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 	
 	if NumVictims == 0 then return end
 	
+	NewFeed.Type.Image = DmgTypes[ DeathInfo.Type ] or DmgTypes[ "Kinetic" ]
+	
+	ThemeUtil.BindUpdate( NewFeed.Type, "ImageColor3", { "TextColor", "InvertedBackground" } )
+	
+	ThemeUtil.BindUpdate( NewFeed.Killer, "ImageColor3", "Background" )
+	
+	ThemeUtil.BindUpdate( NewFeed.Frame, "BackgroundColor3", "Background" )
+	
 	NewFeed.Killer.KillerName.Text = DeathInfo.Killer and DeathInfo.Killer.Name or NewFeed[ "Victim1" ].VictimName.Text
 	
 	NewFeed.Killer.KillerName.TextColor3 = DeathInfo.Killer and DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or NewFeed[ "Victim1" ].VictimName.TextColor3
 	
-	ApplyTextStroke( NewFeed.Killer.KillerName )
+	ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, "TextStrokeColor3", UpdateContrastTextStroke )
 	
 	if DeathInfo.Assister then
 		
 		local Assister = script.Assister:Clone( )
 		
+		ThemeUtil.BindUpdate( Assister, "ImageColor3", "Background" )
+		
+		ThemeUtil.BindUpdate( Assister.Frame, "BackgroundColor3", "Background" )
+		
 		Assister.AssisterName.Text = DeathInfo.Assister.Name
 		
-		Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or Neutral
+		Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor( "TextColor", "InvertedBackground" )
 		
-		ApplyTextStroke( Assister.AssisterName )
+		ThemeUtil.BindUpdate( Assister.AssisterName, "TextStrokeColor3", UpdateContrastTextStroke )
 		
 		Assister.AssisterPct.Text = PctStr( DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
 		
@@ -178,7 +187,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		
 	end
 	
-	local Feeds = script.Parent:GetChildren( )
+	local Feeds = script.Parent.Container:GetChildren( )
 	
 	for a = 1, #Feeds do
 		
@@ -236,7 +245,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		
 	end
 	
-	NewFeed.Parent = script.Parent
+	NewFeed.Parent = script.Parent.Container
 	
 	Scale( NewFeed )
 	
