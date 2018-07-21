@@ -38,6 +38,8 @@ repeat wait( ) until _G.Interactables
 	
 --]]
 
+local Plr = game:GetService( "Players" ).LocalPlayer
+
 local Interactables = _G.Interactables
 
 local TweenService = game:GetService("TweenService" )
@@ -72,6 +74,8 @@ local function NotMyGui( InteractObj )
 	
 end
 
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+
 Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	if NotMyGui( InteractObj ) then return end
@@ -84,7 +88,25 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 			
 			Gui.Progress.ImageColor3 = InteractObj.ProgressColor.Value
 			
+		else
+			
+			ThemeUtil.BindUpdate( Gui.Progress, "ImageColor3", "PositiveColor" )
+			
 		end
+		
+		ThemeUtil.BindUpdate( Gui.KeyBack, "ImageColor3", function ( Obj )
+			
+			Obj.ImageColor3 = ( Obj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ Obj ] ) and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+			
+		end )
+		
+		ThemeUtil.ApplyBasicTheming( { Gui.KeyBack.KeyText, Gui.NameBack.AddonFrame } )
+		
+		ThemeUtil.BindUpdate( Gui.Back, "ImageColor3", { "SecondaryBackground", "InvertedBackground" } )
+		
+		ThemeUtil.BindUpdate( Gui.NameBack, "BackgroundColor3", "InvertedBackground" )
+		
+		ThemeUtil.BindUpdate( Gui.NameBack.NameText, "TextColor3", { "InvertedTextColor", "Background" } )
 		
 		local Rotate = InteractObj:FindFirstChild( "SpriteRotation" ) and InteractObj.SpriteRotation or 0
 		
@@ -116,6 +138,8 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 		
 		Interactables.Guis[ InteractObj ] = Gui
 		
+		
+		
 	end
 	
 	Gui.Adornee = InteractObj.Parent
@@ -124,7 +148,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	Gui.KeyBack.KeyText.Text = Key
 	
-	Gui.KeyBack.ImageColor3 = ( InteractObj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ InteractObj ] ) and Color3.fromRGB( 0, 170, 0 ) or Color3.fromRGB( 77, 77, 77 )
+	Gui.KeyBack.ImageColor3 = ( InteractObj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ InteractObj ] ) and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
 	
 	if InteractObj:FindFirstChild( "Disabled" )  then
 		
@@ -166,7 +190,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	Gui.Name = "InteractGui"
 	
-	Gui.Parent = workspace.CurrentCamera
+	Gui.Parent = Plr:WaitForChild( "PlayerGui" )
 	
 	TweenService:Create( Gui, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 0, MinXSize, 0, MinXSize / Ratio ) } ):Play( )
 	
@@ -196,7 +220,7 @@ Interactables.EnableGui:Connect( function ( InteractObj, Gui, Key )
 	
 	if NotMyGui( InteractObj ) then return end
 	
-	TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = Color3.fromRGB( 77, 77, 77 ) } ):Play( )
+	TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "Background" ) } ):Play( )
 	
 	Gui.KeyBack.KeyText.Text = Key
 	
@@ -244,7 +268,7 @@ Interactables.MinimiseGui:Connect( function ( InteractObj, Gui, CooldownLeft )
 	
 	if CooldownLeft then
 		
-		TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = Color3.fromRGB( 0, 170, 0 ) } ):Play( )
+		TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "PositiveColor" ) } ):Play( )
 		
 		Gui.KeyBack.KeyText.Text = CooldownLeft == true and "∞" or CooldownLeft
 		
@@ -306,7 +330,7 @@ Interactables.EndHold:Connect( function ( InteractObj, Gui, Completed, Cooldown 
 		
 		Gui.KeyBack.KeyText.Text = Cooldown and math.ceil( Cooldown ) or "1" 
 		
-		TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = Color3.fromRGB( 0, 170, 0 ) } ):Play( )
+		TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "PositiveColor" ) } ):Play( )
 		
 	else
 		
