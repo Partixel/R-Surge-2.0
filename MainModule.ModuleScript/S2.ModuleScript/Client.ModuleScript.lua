@@ -8,6 +8,8 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local KeybindUtil = require( ReplicatedStorage:WaitForChild( "KeybindUtil" ) )
 	
+	local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+	
 	_G.S20Config.AllowSprinting = ReplicatedStorage:WaitForChild( "Sprint" ).Value
 	
 	_G.S20Config.AllowCrouching = ReplicatedStorage:WaitForChild( "Crouch" ).Value
@@ -83,6 +85,14 @@ return function ( Main, ModFolder, VH_Events )
 			KeybindUtil.SetToggle( "s2_Salute", false )
 			
 		end
+		
+	end )
+	
+	ThemeUtil.SetBaseTheme( ReplicatedStorage:WaitForChild( "BaseTheme" ).Value )
+	
+	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.BaseTheme.Changed:Connect( function( Value )
+		
+		ThemeUtil.SetBaseTheme( Value )
 		
 	end )
 
