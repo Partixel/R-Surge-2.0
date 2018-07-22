@@ -1,5 +1,7 @@
 local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
 
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+
 local KeybindGui = script.Parent:WaitForChild( "KeybindFrame" )
 
 local function Redraw( )
@@ -146,6 +148,16 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 	
 	local KeybindOpen
 	
+	function UpdateColor( )
+		
+		script.Parent.Keybinds.BackgroundColor3 = KeybindOpen and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+		
+		script.Parent.Keybinds.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+		
+	end
+	
+	ThemeUtil.BindUpdate( script.Parent.Keybinds, "BackgroundColor3", UpdateColor )
+	
 	script.Parent.Keybinds.MouseButton1Click:Connect( function ( )
 		
 		KeybindOpen = not KeybindOpen
@@ -158,7 +170,7 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 			
 			script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 0.43, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
 			
-			script.Parent.Keybinds.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
+			UpdateColor( )
 			
 		else
 			
@@ -170,7 +182,7 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 				
 			end )
 			
-			script.Parent.Keybinds.TextColor3 = Color3.new( 1, 1, 1 )
+			UpdateColor( )
 			
 		end
 		
