@@ -2,47 +2,23 @@ local ThemeUtil = { }
 
 while not _G.S20Config and wait( ) do end
 
-local S2Theme = _G.S20Config.Theme or { }
-
-ThemeUtil.LightTheme = { }
-
-ThemeUtil.OLEDLightTheme = { }
-
-ThemeUtil.DarkTheme = { }
-
-ThemeUtil.OLEDDarkTheme = { }
-
-ThemeUtil.Defaults = _G.S20Config.ThemeType and ThemeUtil[ _G.S20Config.ThemeType ] or ThemeUtil.DarkTheme
-
 local BoundUpdates = { }
 
-local ObjBoundUpdates = { }-- setmetatable( { }, { __mode = "k" } )
-
-function ThemeUtil.AddDefaultColor( Key, Light, Dark, OLEDLight, OLEDDark )
+local ObjBoundUpdates = setmetatable( { }, { __newindex = function ( self, Key, Value )
 	
-	ThemeUtil.LightTheme[ Key ] = Light
+	Key:GetPropertyChangedSignal( "Parent" ):Connect( function ( )
+		
+		if not Key.Parent then
+			
+			rawset( self, Key, nil )
+			
+		end
+		
+	end )
 	
-	ThemeUtil.DarkTheme[ Key ] = Dark or Light
+	rawset( self, Key, Value )
 	
-	ThemeUtil.OLEDLightTheme[ Key ] = OLEDLight or Light
-	
-	ThemeUtil.OLEDDarkTheme[ Key ] = OLEDDark or Dark or Light
-	
-end
-
-ThemeUtil.AddDefaultColor( "Background", Color3.fromRGB( 255, 255, 255 ), Color3.fromRGB( 46, 46, 46 ), Color3.fromRGB( 255, 255, 255 ), Color3.fromRGB( 0, 0, 0 ) )
-
-ThemeUtil.AddDefaultColor( "InvertedBackground", Color3.fromRGB( 46, 46, 46 ), Color3.fromRGB( 255, 255, 255 ), Color3.fromRGB( 0, 0, 0 ), Color3.fromRGB( 255, 255, 255 ) )
-
-ThemeUtil.AddDefaultColor( "SecondaryBackground", nil, Color3.fromRGB( 77, 77, 77 ), nil, Color3.fromRGB( 0, 0, 0 ) )
-
-ThemeUtil.AddDefaultColor( "TextColor", Color3.fromRGB( 46, 46, 46 ), Color3.fromRGB( 255, 255, 255 ), Color3.fromRGB( 0, 0, 0 ), Color3.fromRGB( 255, 255, 255 ) )
-
-ThemeUtil.AddDefaultColor( "InvertedTextColor", Color3.fromRGB( 255, 255, 255 ), Color3.fromRGB( 46, 46, 46 ), Color3.fromRGB( 255, 255, 255 ), Color3.fromRGB( 0, 0, 0 ) )
-
-ThemeUtil.AddDefaultColor( "PositiveColor", Color3.fromRGB( 0, 170, 0 ) )
-
-ThemeUtil.AddDefaultColor( "NegativeColor", Color3.fromRGB( 170, 0, 0 ) )
+end } )
 
 function ThemeUtil.BindUpdate( Obj, Properties, Keys )
 	
@@ -198,7 +174,7 @@ function ThemeUtil.UpdateColor( Key, Value )
 							
 						end
 						
-					elseif S2Theme[ d[ e ] ] or ThemeUtil.Defaults[ d[ e ] ] then
+					elseif ThemeUtil.Theme[ d[ e ] ] then
 						
 						break
 						
@@ -220,13 +196,9 @@ function ThemeUtil.GetThemeFor( ... )
 	
 	for a = 1, #Keys do
 		
-		if S2Theme[ Keys[ a ] ] then
+		if ThemeUtil.Theme[ Keys[ a ] ] then
 			
-			return S2Theme[ Keys[ a ] ]
-			
-		elseif ThemeUtil.Defaults[ Keys[ a ] ] then
-			
-			return ThemeUtil.Defaults[ Keys[ a ] ]
+			return ThemeUtil.Theme[ Keys[ a ] ]
 			
 		end
 		
@@ -307,6 +279,120 @@ function ThemeUtil.ApplyBasicTheming( Objs, Subtype, DontInvert )
 	end
 	
 end
+
+function ThemeUtil.UpdateAll( )
+	
+	for a, b in pairs( BoundUpdates ) do
+		
+		coroutine.wrap( function( )
+			
+			local Ran, Error = pcall( b )
+			
+			if not Ran then
+				
+				warn( "ThemeUtil - Bound Update " .. a .. " errored when updating all themes\n" .. Error .. "\n" .. debug.traceback( ) )
+				
+			end
+			
+		end )( )
+		
+	end
+	
+	for a, b in pairs( ObjBoundUpdates ) do
+		
+		for c, d in pairs( b ) do
+			
+			if type( d ) == "function" then
+				
+				coroutine.wrap( function( )
+					
+					local Ran, Error = pcall( d, a )
+					
+					if not Ran then
+						
+						warn( "ThemeUtil - Object Bound Update " .. a:GetFullName( ) .. " errored when updating all themes\n" .. Error .. "\n" .. debug.traceback( ) )
+						
+					end
+					
+				end )( )
+				
+			else
+				
+				local Ran, Error = pcall( function ( ) a[ c ] = ThemeUtil.GetThemeFor( unpack( d ) ) end )
+				
+				if not Ran then
+					
+					warn( "ThemeUtil - Object Bound Update " .. a:GetFullName( ) .. " errored when updating all themes for the property '" .. c .. "\n" .. Error .. "\n" .. debug.traceback( ) )
+					
+				end
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+ThemeUtil.BaseThemes = { Light = { } }
+
+function ThemeUtil.AddBaseTheme( Name, Inherits )
+	
+	ThemeUtil.BaseThemes[ Name ] = setmetatable( { }, { __index = ThemeUtil.BaseThemes[ Inherits ] } )
+	
+end
+
+ThemeUtil.AddBaseTheme( "OLEDLight", "Light" )
+
+ThemeUtil.AddBaseTheme( "Dark", "Light" )
+
+ThemeUtil.AddBaseTheme( "OLEDDark", "Dark" )
+
+ThemeUtil.Theme = { }
+
+function ThemeUtil.SetBaseTheme( NewBase )
+	
+	if not ThemeUtil.BaseThemes[ NewBase ] then warn( "ThemeUtil - " .. NewBase .. " is not a valid base theme\n" .. debug.traceback( ) ) end
+	
+	setmetatable( ThemeUtil.Theme, { __index = ThemeUtil.BaseThemes[ NewBase ] } )
+	
+	ThemeUtil.UpdateAll( )
+	
+end
+
+ThemeUtil.SetBaseTheme( "Dark" )
+
+function ThemeUtil.AddDefaultColor( Key, Themes )
+	
+	for a, b in pairs( Themes ) do
+		
+		ThemeUtil.BaseThemes[ a ][ Key ] = b
+		
+	end
+	
+	ThemeUtil.UpdateAll( )
+	
+end
+
+ThemeUtil.AddDefaultColor( "Background", { Light = Color3.fromRGB( 255, 255, 255 ), Dark = Color3.fromRGB( 46, 46, 46 ), OLEDDark = Color3.fromRGB( 0, 0, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "InvertedBackground", { Light = Color3.fromRGB( 46, 46, 46 ), Dark = Color3.fromRGB( 255, 255, 255 ), OLEDLight = Color3.fromRGB( 0, 0, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "SecondaryBackground", { Light = Color3.fromRGB( 180, 180, 180 ), Dark = Color3.fromRGB( 77, 77, 77 ), OLEDLight = Color3.fromRGB( 255, 255, 255 ), OLEDDark = Color3.fromRGB( 0, 0, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "TextColor", { Light = Color3.fromRGB( 46, 46, 46 ), Dark = Color3.fromRGB( 255, 255, 255 ), OLEDLight = Color3.fromRGB( 0, 0, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "InvertedTextColor", { Light = Color3.fromRGB( 255, 255, 255 ), Dark = Color3.fromRGB( 46, 46, 46 ), OLEDLight = Color3.fromRGB( 255, 255, 255 ), OLEDDark = Color3.fromRGB( 0, 0, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "SecondaryTextColor", { Light = Color3.fromRGB( 100, 100, 100 ), Dark = Color3.fromRGB( 170, 170, 170 ), OLEDLight = Color3.fromRGB( 70, 70, 70 ), OLEDDark = Color3.fromRGB( 200, 200, 200 ) } )
+
+ThemeUtil.AddDefaultColor( "PositiveColor", { Light =  Color3.fromRGB( 0, 150, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "NegativeColor", { Light = Color3.fromRGB( 255, 0, 0 ) } )
+
+ThemeUtil.AddDefaultColor( "ProgressColor", { Light =  Color3.fromRGB( 255, 255, 50 ) } )
+
+ThemeUtil.AddDefaultColor( "SelectionColor", { Light =  Color3.fromRGB( 0, 100, 255 ) } )
 
 if _G.S20Config.DebugTheme then
 	
