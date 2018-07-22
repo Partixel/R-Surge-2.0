@@ -1,5 +1,7 @@
 local Plr = game:GetService( "Players" ).LocalPlayer
 
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+
 local CloseColsCache = { }
 
 function CloseCols( Col )
@@ -120,9 +122,21 @@ for a = 1, 6 do
 		
 	end )
 	
+	ThemeUtil.BindUpdate( script.Parent.ColorFrame[ a ], "BorderColor3", "SelectionColor" )
+	
 end
 
 local SparklesUse = false
+
+function UpdateSparklesColor( )
+	
+	script.Parent.Sparkles.BackgroundColor3 = not OwnSparkles and ThemeUtil.GetThemeFor( "NegativeColor" ) or SparklesEnabled and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+	
+	script.Parent.Sparkles.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+	
+end
+
+ThemeUtil.BindUpdate( script.Parent.Sparkles, "BackgroundColor3", UpdateSparklesColor )
 
 script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 	
@@ -134,11 +148,7 @@ script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 		
 		OwnSparkles = VIPFunc:InvokeServer( "BuySparkles" )
 		
-		if OwnSparkles then
-			
-			script.Parent.Sparkles.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
-			
-		end
+		UpdateSparklesColor( )
 		
 	else
 		
@@ -146,15 +156,7 @@ script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 		
 		VIPEvent:FireServer( "SetSparkles", SparklesEnabled )
 		
-		if SparklesEnabled then
-			
-			script.Parent.Sparkles.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-			
-		else
-			
-			script.Parent.Sparkles.TextColor3 = Color3.new( 1, 1, 1 )
-			
-		end
+		UpdateSparklesColor( )
 		
 	end
 	
@@ -163,6 +165,16 @@ script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 end )
 
 local NeonUse = false
+
+function UpdateNeonColor( )
+	
+	script.Parent.Neon.BackgroundColor3 = not OwnNeon and ThemeUtil.GetThemeFor( "NegativeColor" ) or NeonEnabled and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+	
+	script.Parent.Neon.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+	
+end
+
+ThemeUtil.BindUpdate( script.Parent.Neon, "BackgroundColor3", UpdateNeonColor )
 
 script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 	
@@ -174,11 +186,7 @@ script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 		
 		OwnNeon = VIPFunc:InvokeServer( "BuyNeon" )
 		
-		if OwnNeon then
-			
-			script.Parent.Neon.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
-			
-		end
+		UpdateNeonColor( )
 		
 	else
 		
@@ -186,15 +194,7 @@ script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 		
 		VIPEvent:FireServer( "SetNeon", NeonEnabled and "Neon" or "" )
 		
-		if NeonEnabled then
-			
-			script.Parent.Neon.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-			
-		else
-			
-			script.Parent.Neon.TextColor3 = Color3.new( 1, 1, 1 )
-			
-		end
+		UpdateNeonColor( )
 		
 	end
 	
@@ -206,6 +206,22 @@ local ColUse = false
 
 local ColShow = false
 
+if OwnCol then
+	
+	UpdateColGui( )
+	
+end
+
+function UpdateColor( )
+	
+	script.Parent.Color.BackgroundColor3 = not OwnCol and ThemeUtil.GetThemeFor( "NegativeColor" ) or ColShow and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+	
+	script.Parent.Color.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+	
+end
+
+ThemeUtil.BindUpdate( script.Parent.Color, "BackgroundColor3", UpdateColor )
+
 script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 	
 	if ColUse then return end
@@ -216,29 +232,19 @@ script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 		
 		OwnCol = VIPFunc:InvokeServer( "BuyCol" )
 		
-		if OwnCol then
-			
-			script.Parent.Color.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
-			
-		end
+		UpdateColor( )
 		
 	else
 		
 		ColShow = not ColShow
 		
+		UpdateColor( )
+		
+		script.Parent.ColorFrame.Visible = ColShow
+		
 		if ColShow then
 			
-			script.Parent.Color.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-			
 			UpdateColGui( )
-			
-			script.Parent.ColorFrame.Visible = true
-			
-		else
-			
-			script.Parent.Color.TextColor3 = Color3.new( 1, 1, 1 )
-			
-			script.Parent.ColorFrame.Visible = false
 			
 		end
 		
@@ -247,43 +253,3 @@ script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 	ColUse = false
 	
 end )
-
-if OwnNeon then
-	
-	script.Parent.Neon.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
-	
-	if NeonEnabled then
-		
-		script.Parent.Neon.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-		
-	else
-		
-		script.Parent.Neon.TextColor3 = Color3.new( 1, 1, 1 )
-		
-	end
-	
-end
-
-if OwnCol then
-	
-	script.Parent.Color.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
-	
-	UpdateColGui( )
-	
-end
-
-if OwnSparkles then
-	
-	script.Parent.Sparkles.BackgroundColor3 = Color3.new( 77 / 255, 77 / 255, 77 / 255 )
-	
-	if SparklesEnabled then
-		
-		script.Parent.Sparkles.TextColor3 = Color3.new( 1, 100 / 255, 100 / 255 )
-		
-	else
-		
-		script.Parent.Sparkles.TextColor3 = Color3.new( 1, 1, 1 )
-		
-	end
-	
-end
