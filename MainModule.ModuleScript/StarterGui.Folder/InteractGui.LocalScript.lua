@@ -100,13 +100,15 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 			
 		end )
 		
-		ThemeUtil.ApplyBasicTheming( { Gui.KeyBack.KeyText, Gui.NameBack.AddonFrame } )
+		ThemeUtil.ApplyBasicTheming( Gui.KeyBack.KeyText )
 		
 		ThemeUtil.BindUpdate( Gui.Back, "ImageColor3", { "SecondaryBackground", "InvertedBackground" } )
 		
-		ThemeUtil.BindUpdate( Gui.NameBack, "BackgroundColor3", "InvertedBackground" )
+		ThemeUtil.BindUpdate( Gui.NameBack.AddonFrame, "BackgroundColor3", { "SecondaryBackground", "InvertedBackground" } )
 		
-		ThemeUtil.BindUpdate( Gui.NameBack.NameText, "TextColor3", { "InvertedTextColor", "Background" } )
+		ThemeUtil.BindUpdate( Gui.NameBack, "BackgroundColor3", { "SecondaryBackground", "InvertedBackground" } )
+		
+		ThemeUtil.BindUpdate( Gui.NameBack.NameText, "TextColor3", { "TextColor", "InvertedBackground" } )
 		
 		local Rotate = InteractObj:FindFirstChild( "SpriteRotation" ) and InteractObj.SpriteRotation or 0
 		
