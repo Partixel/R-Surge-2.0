@@ -2,7 +2,7 @@ repeat wait( ) until _G.S20Config
 
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
-local PointsService, Players = game:GetService( "PointsService" ), game:GetService( "Players" )
+local Players = game:GetService( "Players" )
 
 local CollectionService = game:GetService( "CollectionService" )
 
@@ -20,14 +20,6 @@ RemoteKilled.Name = "RemoteKilled"
 
 RemoteKilled.Parent = game:GetService( "ReplicatedStorage" )
 
-local Points = { }
-
-local function AwardPoints( UserId, Value )
-	
-	Points[ UserId ] = ( Points[ UserId ] or 0 ) + Value
-	
-end
-
 local function GetCredits( UserId )
 	
 	local Ran, Credits = pcall( DataStore.GetAsync, DataStore, "Credits" .. UserId )
@@ -35,46 +27,6 @@ local function GetCredits( UserId )
 	return Ran and Credits or 0
 	
 end
-
-local function GetPoints( UserId )
-	
-	local Ran, Points = pcall( PointsService.GetGamePointBalance, PointsService, UserId )
-	
-	return Ran and Points or 0
-	
-end
-
-coroutine.wrap( function ( )
-	
-	while wait( 2 ) do
-		
-		for a, b in pairs( Points ) do
-			
-			if b ~= 0 then
-				
-				local Ran, Error = pcall( PointsService.AwardPoints, PointsService, a, b )
-				
-				if Ran then
-					
-					Points[ a ] = Points[ a ] - b
-					
-					if Points[ a ] == 0 then Points[ a ] = nil end
-					
-					break
-					
-				end
-				
-			else
-				
-				Points[ a ] = nil
-				
-			end
-			
-		end
-		
-	end
-	
-end )( )
 
 local function OnDeath( Damageable )
 	
@@ -249,12 +201,6 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 		
 		if DeathInfo.Killer then
 			
-			if DeathInfo.Killer.UserId and _G.S20Config.SaveCredits ~= 1 and _G.S20Config.PlayerPointsPerKO ~= 0 and DeathInfo.Killer.UserId > 0 then
-				
-				AwardPoints( DeathInfo.Killer.UserId, KOs * ( _G.S20Config.PlayerPointsPerKO or 2 ) )
-				
-			end
-			
 			if typeof( DeathInfo.Killer ) == "Instance" then
 				
 				DeathInfo.Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = DeathInfo.Killer.leaderstats.KOs.Value + KOs
@@ -272,12 +218,6 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 		end
 		
 		if DeathInfo.Assister then
-			
-			if DeathInfo.Assister.UserId and _G.S20Config.SaveCredits ~= 1 and _G.S20Config.PlayerPointsPerKO ~= 0 and DeathInfo.Assister.UserId > 0 then
-				
-				AwardPoints( DeathInfo.Assister.UserId, KOs * ( _G.S20Config.PlayerPointsPerAssist or ( _G.S20Config.PlayerPointsPerKO or 2 ) / 2 ) )
-				
-			end
 			
 			if typeof( DeathInfo.Assister ) == "Instance" then
 				
@@ -329,24 +269,6 @@ game:BindToClose( function ( )
 	for a, b in pairs( game:GetService( "Players" ):GetChildren( ) ) do
 		
 		Save( b )
-		
-	end
-	
-	if game:GetService( "RunService" ):IsStudio( ) then return end
-	
-	for a, b in pairs( Points ) do
-		
-		if b ~= 0 then
-			
-			local Ran, Error = pcall( function ( ) PointsService:AwardPoints( a, b ) end )
-			
-			if Ran then Points[ a ] = nil end
-			
-		else
-			
-			Points[ a ] = nil
-			
-		end
 		
 	end
 	
@@ -444,17 +366,7 @@ local function PlayerAdded( Plr )
 	
 	Credits.Name = "Credits"
 	
-	Credits.Value = _G.S20Config.DefaultCredits or 0
-	
-	if _G.S20Config.SaveCredits == 2 then
-		
-		Credits.Value = GetPoints( Plr.UserId )
-		
-	elseif _G.S20Config.SaveCredits == 1 then
-		
-		Credits.Value = GetCredits( Plr.UserId ) or Credits.Value
-		
-	end
+	Credits.Value = _G.S20Config.SaveCredits and GetCredits( Plr.UserId ) or _G.S20Config.DefaultCredits or 0
 	
 	if _G.S20Config.CreditsPerPayday and _G.S20Config.CreditsPerPayday ~= 0 and _G.S20Config.PaydayDelay and _G.S20Config.PaydayDelay > 0 then
 		
