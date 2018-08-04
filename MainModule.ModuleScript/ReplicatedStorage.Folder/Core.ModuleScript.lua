@@ -1329,9 +1329,9 @@ end
 
 function Module.IgnoreFunction( Part )
 	
-    if CollectionService:HasTag( Part, "nopen" ) then return false end
-	
-    return not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Module.GetValidHumanoid( Part ) == nil and Part.CanCollide == false )
+    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Module.GetValidHumanoid( Part ) == nil and Part.CanCollide == false ) ) or false
+
+end
 
 end
 
