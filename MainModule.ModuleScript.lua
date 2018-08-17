@@ -62,6 +62,8 @@ end
 
 require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Config" ) )
 
+coroutine.wrap( LuaRequire )( ( game:GetService( "ServerStorage" ):FindFirstChild( "ThemeUtil" ) or { } ).MainModule or 2230572960 )
+
 coroutine.wrap( LuaRequire )( game:GetService( "ReplicatedStorage" ):WaitForChild( "PoseUtil" ) )
 
 coroutine.wrap( LuaRequire )( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
