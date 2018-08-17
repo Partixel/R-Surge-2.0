@@ -255,7 +255,11 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 	
 	wait( 0.25 )
 	
-	TweenService:Create( NewFeed.Type, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 1, 0 ), ImageTransparency = 0 } ):Play( )
+	if NewFeed:FindFirstChild( "Type" ) then
+		
+		TweenService:Create( NewFeed.Type, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 1, 0 ), ImageTransparency = 0 } ):Play( )
+		
+	end
 	
 	wait( 5 )
 	
