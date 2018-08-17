@@ -344,36 +344,10 @@ Module.BulletTypes = {
 }
 
 Module.Damageables = setmetatable( { }, { __mode = "k" } )
------------ TODO REMOVE BACKWARDS COMPAT
-Module.DamageableAdded.Event:Connect( function ( Damageable )
-	
-	if Damageable:FindFirstChild( "NoFeed" ) then
-		
-		CollectionService:AddTag( Damageable, "s2nofeed" )
-		
-		warn( Damageable:GetFullName( ) .. " has the 'NoFeed' instance inside of it which is deprecated, please instead tag this with 's2nofeed'" )
-		
-	end
-	
-	if Damageable:FindFirstChild( "NoKOs" ) then
-		
-		CollectionService:AddTag( Damageable, "s2nokos" )
-		
-		warn( Damageable:GetFullName( ) .. " has the 'NoKOs' instance inside of it which is deprecated, please instead tag this with 's2nokos'" )
-		
-	end
-	
-	if not Damageable:IsA( "Humanoid" ) and not Damageable:IsA( "DoubleConstrainedValue" ) then
-		
-		warn( Damageable:GetFullName( ) .. " is a value type that is no longer supported, please change it to a DoubleConstrainedValue and set its MaxValue to its MaxHealth" )
-		
-	end
-	
-end )
 
 workspace.DescendantAdded:Connect( function ( Child )
 	
-	if not Module.Damageables[ Child ] and ( Child:IsA( "Humanoid" ) or ( ( Child:IsA( "IntConstrainedValue" ) or Child:IsA( "NumberValue" ) ) and Child.Name == "Health" ) ) then
+	if not Module.Damageables[ Child ] and ( Child:IsA( "Humanoid" ) or ( Child:IsA( "DoubleConstrainedValue" ) and Child.Name == "Health" ) ) then
 		
 		Module.Damageables[ Child ] = true
 		
@@ -387,7 +361,7 @@ local Descendants = workspace:GetDescendants( )
 
 for a = 1, #Descendants do
 	
-	if not Module.Damageables[ Descendants[ a ] ] and ( Descendants[ a ]:IsA( "Humanoid" ) or ( ( Descendants[ a ]:IsA( "IntConstrainedValue" ) or Descendants[ a ]:IsA( "NumberValue" ) ) and Descendants[ a ].Name == "Health" ) ) then
+	if not Module.Damageables[ Descendants[ a ] ] and ( Descendants[ a ]:IsA( "Humanoid" ) or ( Descendants[ a ]:IsA( "DoubleConstrainedValue" ) and Descendants[ a ].Name == "Health" ) ) then
 		
 		Module.Damageables[ Descendants[ a ] ] = true
 		
@@ -674,20 +648,6 @@ if IsServer then
 					PrevHealth = Damageable.Value
 					
 					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
-					
-					Damageable.Value = Damageable.Value - Amount
-					
-					if PrevHealth > 0 and Damageable.Value <= 0 then
-						
-						Killed[ Damageable ] = b[ 3 ]
-						
-					end
-					
-				else
-					
-					PrevHealth = Damageable.Value
-					
-					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable:FindFirstChild( "MaxHealth" ) and ( Damageable.Value - Damage < Damageable.MaxHealth.Value and Damage or Damageable.Value - Damageable.MaxHealth.Value ) or ( warn( Damageable:GetFullName( ) .. " cannot be healed as it has no 'MaxHealth' child to act as upper limit" ) and 0 ) )
 					
 					Damageable.Value = Damageable.Value - Amount
 					
