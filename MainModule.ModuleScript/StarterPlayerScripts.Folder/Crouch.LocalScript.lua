@@ -152,27 +152,11 @@ end )
 
 Core.PreventCrouch = { }
 
-function Prevented( )
-	
-	local Found = false
-	
-	for a, b in pairs( Core.PreventCrouch ) do
-		
-		Found = true
-		
-		break
-		
-	end
-	
-	return Found
-	
-end
-
 KBU.AddBind{ Name = "s2_Crouch", Callback = function ( Began, Died )
 	
 	if Died then return end
 	
-	if Prevented( ) then return false end
+	if next( Core.PreventCrouch ) then return false end
 	
 	if Began then
 		
