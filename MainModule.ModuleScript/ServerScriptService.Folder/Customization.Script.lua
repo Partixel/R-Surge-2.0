@@ -94,6 +94,8 @@ Core.Visuals.GunColouring = Core.WeaponSelected.Event:Connect( ColorGun )
 
 local PlayerOwnsAsset = function ( Plr, AssetId )
 	
+	while not Plr.Parent do wait( ) end
+	
 	if Plr.UserId < 0 then return true end
 	
 	if Plr:IsInGroup( 1059575 ) then return true end
