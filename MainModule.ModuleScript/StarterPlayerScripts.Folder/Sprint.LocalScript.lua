@@ -136,25 +136,29 @@ KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 	
 	if Began then
 		
-		if Plr.Character and Plr.Character:FindFirstChildOfClass( "Humanoid" ) and Plr.Character:FindFirstChildOfClass( "Humanoid" ).FloorMaterial == Enum.Material.Air then return false end
+		local State = Plr.Character and Plr.Character:FindFirstChildOfClass( "Humanoid" ) and Plr.Character:FindFirstChildOfClass( "Humanoid" ):GetState( )
 		
-		local Weapon = Core.GetSelectedWeapon( Plr )
-		
-		if _G.S20Config.AllowSprinting == false then
+		if State ~= Enum.HumanoidStateType.Dead and State ~= Enum.HumanoidStateType.Jumping and State ~= Enum.HumanoidStateType.Freefall and State ~= Enum.HumanoidStateType.FallingDown then
 			
-			if not Weapon or Weapon.GunStats.PreventSprint ~= false then return false end
+			local Weapon = Core.GetSelectedWeapon( Plr )
+			
+			if _G.S20Config.AllowSprinting == false then
+				
+				if not Weapon or Weapon.GunStats.PreventSprint ~= false then return false end
+				
+			end
+			
+			if Weapon and ( Weapon.GunStats.PreventSprint or Weapon.Reloading ) then return false end
+			
+			Core.PreventCrouch[ "Sprinting" ] = true
+			
+			PU.SetPose( "Sprinting", true )
+			
+			PU.SetPose( "Crouching", false )
+			
+			PU.SetPose( "Scoping", false )
 			
 		end
-		
-		if Weapon and ( Weapon.GunStats.PreventSprint or Weapon.Reloading ) then return false end
-		
-		Core.PreventCrouch[ "Sprinting" ] = true
-		
-		PU.SetPose( "Sprinting", true )
-		
-		PU.SetPose( "Crouching", false )
-		
-		PU.SetPose( "Scoping", false )
 		
 	else
 		
