@@ -115,7 +115,7 @@ end
 
 Core.ObjDamaged.Event:Connect( function ( User, Damageable, Amount, PrevHealth )
 	
-	if ( _G.S20Config.CreditsPerKill or _G.S20Config.CreditsPerHeal ) and not CollectionService:HasTag( Damageable, "s2nokos" ) then
+	if typeof( User ) == "Instance" and ( _G.S20Config.CreditsPerKill or _G.S20Config.CreditsPerHeal ) and not CollectionService:HasTag( Damageable, "s2nokos" ) then
 		
 		local Credits = User:FindFirstChild( "Credits", true )
 		
