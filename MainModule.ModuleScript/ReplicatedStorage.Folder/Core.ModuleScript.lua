@@ -659,7 +659,7 @@ if IsServer then
 	
 				end
 				
-				if Damage ~= Amount then
+				if Damage ~= Amount and Damageable.Parent then
 					
 					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
 						
