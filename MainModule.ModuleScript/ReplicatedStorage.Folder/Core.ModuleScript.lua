@@ -902,6 +902,8 @@ end
 Module.Weapons = setmetatable( { }, { __mode = 'k' } )
 
 RunService.Heartbeat:Connect( function ( Step )
+	
+	local Selected
 
 	for a, b in pairs( Module.Weapons ) do
 
@@ -918,13 +920,19 @@ RunService.Heartbeat:Connect( function ( Step )
 			Module.Destroy( b )
 
 		elseif b.Selected then
-
-			if Players.LocalPlayer then
-
-				local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
-
-				Module.LPlrsTarget = { Module.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Module.IgnoreFunction, { Players.LocalPlayer.Character }, false ) }
-
+			
+			if not Selected then
+					
+				Selected = true
+				
+				if Players.LocalPlayer then
+	
+					local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+	
+					Module.LPlrsTarget = { Module.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Module.IgnoreFunction, { Players.LocalPlayer.Character }) }
+	
+				end
+				
 			end
 
 			if b.MouseDown then
