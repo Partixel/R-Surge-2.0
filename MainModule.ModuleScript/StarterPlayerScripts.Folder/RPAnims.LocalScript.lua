@@ -12,21 +12,9 @@ local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Keybi
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 
-local Animations = { { "rbxassetid://580605334", "rbxassetid://955877742", "rbxassetid://1173354695" }, { } }
+local Animations = { [ Enum.HumanoidRigType.R6 ] = { "rbxassetid://580605334", "rbxassetid://955877742", "rbxassetid://1173354695" }, [ Enum.HumanoidRigType.R15 ] = { "rbxassetid://2225371665", "rbxassetid://2225372526", "rbxassetid://2225382014" } }
 
 local Salute, AtEase, Surrender
-
-local R6SaluteAnim = Instance.new( "Animation" )
-
-R6SaluteAnim.AnimationId = Animations[ 1 ][ 1 ]
-
-local R6AtEaseAnim = Instance.new( "Animation" )
-
-R6AtEaseAnim.AnimationId = Animations[ 1 ][ 2 ]
-
-local R6SurrenderAnim = Instance.new( "Animation" )
-
-R6SurrenderAnim.AnimationId = Animations[ 1 ][ 3 ]
 
 function Spawned( Char )
 	
@@ -48,15 +36,23 @@ function Spawned( Char )
 	
 	repeat wait( ) until Hum.Parent
 	
-	if Hum.RigType == Enum.HumanoidRigType.R6 then
-		
-		Salute = Hum:LoadAnimation( R6SaluteAnim )
-		
-		AtEase = Hum:LoadAnimation( R6AtEaseAnim )
-		
-		Surrender = Hum:LoadAnimation( R6SurrenderAnim )
-		
-	end
+	local SaluteAnim = Instance.new( "Animation" )
+	
+	SaluteAnim.AnimationId = Animations[ Hum.RigType ][ 1 ]
+	
+	Salute = Hum:LoadAnimation( SaluteAnim )
+	
+	local AtEaseAnim = Instance.new( "Animation" )
+	
+	AtEaseAnim.AnimationId = Animations[ Hum.RigType ][ 2 ]
+	
+	AtEase = Hum:LoadAnimation( AtEaseAnim )
+	
+	local SurrenderAnim = Instance.new( "Animation" )
+	
+	SurrenderAnim.AnimationId = Animations[ Hum.RigType ][ 3 ]
+	
+	Surrender = Hum:LoadAnimation( SurrenderAnim )
 	
 end
 
