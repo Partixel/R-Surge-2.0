@@ -128,27 +128,11 @@ end )
 
 Core.PreventSprint = { }
 
-function Prevented( )
-	
-	local Found = false
-	
-	for a, b in pairs( Core.PreventSprint ) do
-		
-		Found = true
-		
-		break
-		
-	end
-	
-	return Found
-	
-end
-
 KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 	
 	if Died then return end
 	
-	if Prevented( ) then return false end
+	if next( Core.PreventSprint ) then return false end
 	
 	if Began then
 		
