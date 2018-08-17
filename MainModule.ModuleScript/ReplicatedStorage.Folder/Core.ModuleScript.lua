@@ -1791,21 +1791,21 @@ function Module.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifi
 
 	if Module.IgnoreFunction( Hit ) then return false end
 
-	local hitName = Hit.Name:lower( )
-
 	if not Module.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
 	
 	local Damage = OrigDamage
 
-	if hitName == "head" or hitName == "uppertorso" or hitName:find( "weak" ) then
+	local hitName = Hit.Name:lower( )
+
+	if hitName == "head" or hitName == "uppertorso" or CollectionService:HasTag( Hit, "s2headdamage" ) then
 
 		Damage = Damage * Config.HeadDamageMultiplier
 
-	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or hitName:find( "strong" ) then
+	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or CollectionService:HasTag( Hit, "s2limbdamage" ) then
 
 		Damage = Damage * Config.LimbDamageMultiplier
 
-	elseif hitName:find( "hand" ) or hitName:find( "foot" ) or hitName:find( "strongest" ) then
+	elseif hitName:find( "hand" ) or hitName:find( "foot" ) or CollectionService:HasTag( Hit, "s2appendagedamage" ) then
 
 		Damage = Damage * Config.AppendageDamageMultiplier
 
