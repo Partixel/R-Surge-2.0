@@ -18,13 +18,17 @@ local function AddObjs( PermPar, Name )
 					
 					local TempPar = Name == "Character" and Plrs[ b ].Character or Plrs[ b ]:FindFirstChild( Name )
 					
-					local Check2 = true
-					
-					if Name == "PlayerGui" then Check2 = Plrs[ b ].Character end
-					
-					if TempPar and Check2 and not TempPar:FindFirstChild( Child.Name ) then
+					if TempPar then
 						
-						Child:Clone( ).Parent = TempPar
+						local Check2 = true
+						
+						if Name == "PlayerGui" then Check2 = Plrs[ b ].Character end
+						
+						if Check2 and not TempPar:FindFirstChild( Child.Name ) then
+							
+							Child:Clone( ).Parent = TempPar
+							
+						end
 						
 					end
 					
