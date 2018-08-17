@@ -18,6 +18,8 @@ repeat wait( ) until _G.Interactables
 	
 	ExtraYSize = IntValue = The extra space in pixels for use by devs that want to add custom information ( e.g. gun stats, descriptions, images, etc )
 	
+	StudsOffset = Vector3Value = The StudsOffset of the BilboardGui
+	
 	Font = StringValue = The name of the font that you want the text to use ( The name + key ) ( Should be the end of the enum, e.g. Fantasy for Enum.Font.Fantasy )
 	
 	ProgressColor = Color3Value = The color of the Progress outline
@@ -91,6 +93,12 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 		else
 			
 			ThemeUtil.BindUpdate( Gui.Progress, "ImageColor3", "PositiveColor" )
+			
+		end
+		
+		if InteractObj:FindFirstChild( "StudsOffset" ) then
+			
+			Gui.StudsOffset = InteractObj.StudsOffset.Value
 			
 		end
 		
