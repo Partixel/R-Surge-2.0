@@ -12,8 +12,18 @@ function UpdateCamera( Sprinting )
 	
 	if Core.ActualSprinting ~= Sprinting then
 		
+		Core.PreventReload.Sprinting = Sprinting
 		
 		Core.PreventCharacterRotation.Sprinting = Sprinting
+		
+		local Weapon = Core.GetSelectedWeapon( Plr )
+		
+		if Weapon and Weapon.Reloading then
+			
+			Weapon.Reloading = false
+			
+		end
+		
 		Core.ActualSprinting = Sprinting
 		
 		TweenService:Create( workspace.CurrentCamera, TweenInfo.new( 0.1 ), { FieldOfView = workspace.CurrentCamera.FieldOfView + ( Sprinting and 5 or -5 ) } ):Play( )
@@ -144,9 +154,11 @@ KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 				
 			end
 			
-			if Weapon and ( Weapon.GunStats.PreventSprint or Weapon.Reloading ) then return false end
+			if Weapon and Weapon.GunStats.PreventSprint then return false end
 			
-			Core.PreventCrouch[ "Sprinting" ] = true
+			Core.PreventCrouch.Sprinting = true
+			
+			--Core.PreventFire.Sprinting = true
 			
 			PU.SetPose( "Sprinting", true )
 			
@@ -158,19 +170,15 @@ KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 		
 	else
 		
-		Core.PreventCrouch[ "Sprinting" ] = nil
+		Core.PreventCrouch.Sprinting = nil
+		
+		--Core.PreventFire.Sprinting = nil
 		
 		PU.SetPose( "Sprinting", false )
 		
 	end
 	
 end, Key = Enum.KeyCode.F, PadKey = Enum.KeyCode.ButtonL3, ToggleState = false, CanToggle = true, OffOnDeath = true, NoHandled = true }
-
-Core.Visuals.AntiSprintReload = Core.ReloadStart.Event:Connect( function ( StatObj )
-	
-	KBU.SetToggle( "s2_Sprint", false )
-	
-end )
 
 Core.Visuals.AntiSprintShoot = Core.ClientVisuals.Event:Connect( function ( )
 	
