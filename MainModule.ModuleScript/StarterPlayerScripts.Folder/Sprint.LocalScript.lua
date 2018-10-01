@@ -6,6 +6,8 @@ local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Keybi
 
 local PU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "PoseUtil" ) )
 
+local TweenService = game:GetService( "TweenService" )
+
 function UpdateCamera( Sprinting )
 	
 	if Core.ActualSprinting ~= Sprinting then
@@ -14,7 +16,7 @@ function UpdateCamera( Sprinting )
 		Core.PreventCharacterRotation.Sprinting = Sprinting
 		Core.ActualSprinting = Sprinting
 		
-		workspace.CurrentCamera.FieldOfView = workspace.CurrentCamera.FieldOfView + ( Sprinting and 5 or -5 )
+		TweenService:Create( workspace.CurrentCamera, TweenInfo.new( 0.1 ), { FieldOfView = workspace.CurrentCamera.FieldOfView + ( Sprinting and 5 or -5 ) } ):Play( )
 		
 	end
 	
