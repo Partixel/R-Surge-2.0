@@ -1,6 +1,6 @@
-local function AddObjs( PermPar, Name )
+local function AddObjs( PermPar, Name, Obj )
 	
-	local Objs = script:FindFirstChild( PermPar.Name ):GetChildren( )
+	local Objs = Obj and Obj:GetChildren( ) or script:FindFirstChild( PermPar.Name ):GetChildren( )
 	
 	for a = 1, #Objs do
 		
@@ -18,17 +18,19 @@ local function AddObjs( PermPar, Name )
 					
 					local TempPar = Name == "Character" and Plrs[ b ].Character or Plrs[ b ]:FindFirstChild( Name )
 					
-					if TempPar then
+					if TempPar and not TempPar:FindFirstChild( Child.Name ) and ( Name ~= "PlayerGui" or Plrs[ b ].Character ) then
 						
-						local Check2 = true
+						local Clone = Child:Clone( )
 						
-						if Name == "PlayerGui" then Check2 = Plrs[ b ].Character end
-						
-						if Check2 and not TempPar:FindFirstChild( Child.Name ) then
+						if PermPar.Name == "StarterPlayerScripts" then
 							
-							Child:Clone( ).Parent = TempPar
+							Clone.Disabled = true
+							
+							script.Move:Clone( ).Parent = Clone
 							
 						end
+						
+						Clone.Parent = TempPar
 						
 					end
 					
@@ -40,11 +42,13 @@ local function AddObjs( PermPar, Name )
 		
 	end
 	
-	script:FindFirstChild( PermPar.Name ):Destroy( )
+	if Obj then Obj:Destroy( ) else script:FindFirstChild( PermPar.Name ):Destroy( ) end
 	
 end
 
-AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "Backpack" )
+--AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "Backpack" )
+
+AddObjs( game:GetService( "StarterGui" ), "PlayerGui", script.StarterPlayerScripts )
 
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterCharacterScripts" ), "Character" )
 
