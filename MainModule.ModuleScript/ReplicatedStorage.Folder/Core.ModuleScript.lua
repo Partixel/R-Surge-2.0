@@ -373,7 +373,7 @@ end
 
 Module.Visuals = { }
 
-local IsClient = RunService:IsClient( ) or Players.LocalPlayer or game:FindService("NetworkClient")
+local IsClient = RunService:IsClient( )
 
 local IsServer = RunService:IsServer( )
 
