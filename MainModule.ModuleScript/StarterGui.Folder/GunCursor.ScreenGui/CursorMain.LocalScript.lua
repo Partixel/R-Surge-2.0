@@ -92,8 +92,6 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 		
 	end
 	
-	if FireMode.CanFire == false then Perc = 1 end
-	
 	local AmmoCol = C3new( outCubic( Perc, Color.r, -0.5, 1 ), outCubic( Perc, Color.g, -0.5, 1 ), outCubic( Perc, Color.b, -0.5, 1 ) )
 	
 	GunCursor.Center.Bottom.BackgroundColor3 = AmmoCol
@@ -130,7 +128,7 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 	
 	local BurstTrans = ( FireMode.Automatic or ( FireMode.Shots and FireMode.Shots > 1 ) ) and Trans or 1
 	
-	GunCursor.Center.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and FireMode.CanFire ~= false and Core.ActualSprinting ) and Trans or ( FireMode.CanFire == false or Core.ActualSprinting ) and 1 or 0.2
+	GunCursor.Center.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not FireMode.PreventFire and Core.ActualSprinting ) and Trans or ( FireMode.PreventFire or Core.ActualSprinting ) and 1 or 0.2
 	
 	GunCursor.Center.BottomL1.BackgroundTransparency = BurstTrans
 	
