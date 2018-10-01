@@ -18,6 +18,8 @@ function UpdateCamera( Sprinting )
 	
 	if Core.ActualSprinting ~= Sprinting then
 		
+		
+		Core.PreventCharacterRotation.Sprinting = Sprinting
 		Core.ActualSprinting = Sprinting
 		
 		workspace.CurrentCamera.FieldOfView = workspace.CurrentCamera.FieldOfView + ( Sprinting and 5 or -5 )

@@ -1,16 +1,10 @@
-if script.Parent.Name ~= "PlayerScripts" then
-	
-	wait( )
-	
-	script.Parent = script.Parent.Parent:WaitForChild( "PlayerScripts" )
-	
-end
-
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 
 local Until
+
+Core.PreventCharacterRotation = { }
 
 Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( StatObj )
 	
@@ -33,6 +27,8 @@ Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( St
 				if Until < tick( ) or not Weapon.Selected then Event:Disconnect( ) Until = nil return end
 				
 				if not HumanoidRootPart or ( workspace.CurrentCamera.CoordinateFrame.p - workspace.CurrentCamera.Focus.p ).magnitude <= 0.55 then return end
+				
+				if next( Core.PreventCharacterRotation ) then return end
 				
 				ValidState = Humanoid and ( Humanoid:GetState( ) == Enum.HumanoidStateType.FallingDown or Humanoid:GetState( ) == Enum.HumanoidStateType.Flying or Humanoid:GetState( ) == Enum.HumanoidStateType.Freefall or Humanoid:GetState( ) == Enum.HumanoidStateType.Jumping or Humanoid:GetState( ) == Enum.HumanoidStateType.Landed or Humanoid:GetState( ) == Enum.HumanoidStateType.Running or Humanoid:GetState( ) == Enum.HumanoidStateType.RunningNoPhysics or Humanoid:GetState( ) == Enum.HumanoidStateType.StrafingNoPhysics )
 				
