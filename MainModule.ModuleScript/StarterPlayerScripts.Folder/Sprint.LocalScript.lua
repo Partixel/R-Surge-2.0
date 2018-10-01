@@ -54,9 +54,13 @@ function HandleChar( Char )
 		
 	end )
 	
-	Hum:GetPropertyChangedSignal( "Jump" ):Connect( function ( )
+	Hum.StateChanged:Connect( function ( OldState, State )
 		
-		KBU.SetToggle( "s2_Sprint", false )
+		if State == Enum.HumanoidStateType.Jumping or State == Enum.HumanoidStateType.Freefall or State == Enum.HumanoidStateType.FallingDown then
+			
+			KBU.SetToggle( "s2_Sprint", false )
+			
+		end
 		
 	end )
 	
