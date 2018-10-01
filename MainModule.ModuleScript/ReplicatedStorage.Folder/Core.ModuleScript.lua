@@ -1324,12 +1324,10 @@ end
 function Module.GetAccuracy( Weapon )
 
 	local ShotRecoil = Weapon.ShotRecoil
-
+	
 	if  Weapon.User.Character and Weapon.User.Character:FindFirstChild( "HumanoidRootPart" ) then
 
-		local Vel = Weapon.User.Character.HumanoidRootPart.Velocity
-
-		Vel = Vector3.new( Vel.X, Vel.Y / 3, Vel.Z )
+		local Vel = Weapon.User.Character.HumanoidRootPart.Velocity / Vector3.new( 1, 3, 1 )
 
 		if Vel.magnitude > 0.1 then
 
@@ -1579,14 +1577,12 @@ function Module.Fire( Weapon )
 
 					if Target then
 
-						local Spread = 25 / Module.GetAccuracy( Weapon )
-
 						local Origin = not Weapon.GunStats.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Head" ) and Weapon.User.Character.Head.Position or Barrel.Position
-
-						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 360 ) ) ) * CFrame.Angles( math.rad( math.random( -Spread * 50, Spread * 50 ) / 50 ), 0, 0 )
-
-						Hit, End, Normal, Material = Module.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, Target.lookVector * Weapon.GunStats.Range ), Module.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
-
+						
+						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
+						
+						Hit, End, Normal, Material = Module.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Module.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range ), Module.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
+						
 					else
 
 						Hit = false
