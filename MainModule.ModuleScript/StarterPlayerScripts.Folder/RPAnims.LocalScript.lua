@@ -1,11 +1,3 @@
-if script.Parent.Name ~= "PlayerScripts" then
-	
-	wait( )
-	
-	script.Parent = script.Parent.Parent:WaitForChild( "PlayerScripts" )
-	
-end
-
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
 local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
