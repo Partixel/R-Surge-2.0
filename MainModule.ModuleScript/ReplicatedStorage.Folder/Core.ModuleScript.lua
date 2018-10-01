@@ -1457,7 +1457,11 @@ function Module.SetClip( Weapon, Value )
 
 end
 
+Module.PreventFire = { }
+
 function Module.CanFire( Weapon, Barrel )
+	
+	if next( Module.PreventFire ) then return false end
 
 	if ( typeof( Weapon.User ) == "Instance" and Weapon.User:IsA( "Player" ) and not Weapon.User.Character ) or ( Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Humanoid" ) and Weapon.User.Character.Humanoid:GetState( ) == Enum.HumanoidStateType.Dead ) then return false end
 
