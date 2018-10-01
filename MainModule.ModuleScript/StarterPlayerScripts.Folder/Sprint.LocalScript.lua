@@ -30,7 +30,7 @@ function HandleChar( Char )
 		
 		if Hum.Sit then
 			
-			UpdateCamera( false )
+			UpdateCamera( )
 		
 		elseif PU.GetPose( "Sprinting" ) and Hum.MoveDirection.magnitude ~= 0 then
 			
@@ -38,7 +38,7 @@ function HandleChar( Char )
 			
 		else
 			
-			UpdateCamera( false )
+			UpdateCamera( )
 			
 		end
 		
@@ -54,7 +54,7 @@ function HandleChar( Char )
 		
 		if Hum.MoveDirection.magnitude == 0 then
 			
-			UpdateCamera( false )
+			UpdateCamera( )
 			
 		elseif PU.GetPose( "Sprinting" ) and not Hum.Sit and Hum:GetState( ) ~= Enum.HumanoidStateType.Dead then
 			
@@ -62,7 +62,7 @@ function HandleChar( Char )
 			
 		else
 			
-			UpdateCamera( false )
+			UpdateCamera( )
 			
 		end
 		
@@ -104,7 +104,7 @@ PU.Watch( "Sprinting", "Sprint", function ( NPlr, State, Offset )
 					
 				else
 					
-					UpdateCamera( false )
+					UpdateCamera( )
 					
 				end
 				
@@ -112,7 +112,7 @@ PU.Watch( "Sprinting", "Sprint", function ( NPlr, State, Offset )
 				
 				WSMod = nil
 				
-				UpdateCamera( false )
+				UpdateCamera( )
 				
 			end
 			
