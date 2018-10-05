@@ -152,13 +152,7 @@ KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 			
 			local Weapon = Core.GetSelectedWeapon( Plr )
 			
-			if _G.S20Config.AllowSprinting == false then
-				
-				if not Weapon or Weapon.GunStats.PreventSprint ~= false then return false end
-				
-			end
-			
-			if Weapon and Weapon.GunStats.PreventSprint then return false end
+			if _G.S20Config.AllowSprinting == false and ( not Weapon or Weapon.GunStats.PreventSprint ~= false ) then return false end
 			
 			Core.PreventCrouch.Sprinting = true
 			
