@@ -12,17 +12,25 @@ function UpdateCamera( Sprinting )
 	
 	if Core.ActualSprinting ~= Sprinting then
 		
-		Core.PreventReload.Sprinting = Sprinting
+--		Core.PreventReload.Sprinting = Sprinting
 		
-		Core.PreventCharacterRotation.Sprinting = Sprinting
-		
-		local Weapon = Core.GetSelectedWeapon( Plr )
-		
-		if Weapon and Weapon.Reloading then
+		if Sprinting then
 			
-			Weapon.Reloading = false
+			local Weapon = Core.GetSelectedWeapon( Plr )
+			
+			if Weapon and Weapon.Reloading then
+				
+				KBU.SetToggle( "s2_Sprint", false )
+				
+				return
+				
+				--Weapon.Reloading = false
+				
+			end
 			
 		end
+		
+		Core.PreventCharacterRotation.Sprinting = Sprinting
 		
 		Core.ActualSprinting = Sprinting
 		
@@ -154,9 +162,9 @@ KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 			
 			if _G.S20Config.AllowSprinting == false and ( not Weapon or Weapon.GunStats.PreventSprint ~= false ) then return false end
 			
+			if Weapon and ( Weapon.GunStats.PreventSprint or Weapon.Reloading ) then return false end
+					
 			Core.PreventCrouch.Sprinting = true
-			
-			--Core.PreventFire.Sprinting = true
 			
 			PU.SetPose( "Sprinting", true )
 			
@@ -170,13 +178,17 @@ KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
 		
 		Core.PreventCrouch.Sprinting = nil
 		
-		--Core.PreventFire.Sprinting = nil
-		
 		PU.SetPose( "Sprinting", false )
 		
 	end
 	
 end, Key = Enum.KeyCode.F, PadKey = Enum.KeyCode.ButtonL3, ToggleState = false, CanToggle = true, OffOnDeath = true, NoHandled = true }
+
+Core.Visuals.AntiSprintReload = Core.ReloadStart.Event:Connect( function ( StatObj )
+	
+	if Core.ActualSprinting then KBU.SetToggle( "s2_Sprint", false ) end
+	
+end )
 
 Core.Visuals.AntiSprintShoot = Core.ClientVisuals.Event:Connect( function ( )
 	
