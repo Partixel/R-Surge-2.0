@@ -4,7 +4,7 @@ local function AddObjs( PermPar, Name, Obj )
 	
 	for a = 1, #Objs do
 		
-		if not _G.S20Config[ "Disable" .. Objs[ a ].Name ] and not PermPar:FindFirstChild( Objs[ a ].Name ) then
+		if not _G.S20Config[ "Disable" .. Objs[ a ].Name ] and not PermPar:FindFirstChild( Objs[ a ].Name ) and ( not Objs[ a ]:IsA( "BaseScript" ) or not Objs[ a ].Disabled ) then
 			
 			local Child = Objs[ a ]
 			
