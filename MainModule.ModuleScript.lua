@@ -18,7 +18,7 @@ local function AddObjs( PermPar, Name, Obj )
 					
 					local TempPar = Name == "Character" and Plrs[ b ].Character or Plrs[ b ]:FindFirstChild( Name )
 					
-					if TempPar and not TempPar:FindFirstChild( Child.Name ) and ( Name ~= "PlayerGui" or Plrs[ b ].Character ) then
+					if TempPar and not TempPar:FindFirstChild( Child.Name ) and ( PermPar.Name ~= "StarterGui" or Plrs[ b ].Character ) then
 						
 						local Clone = Child:Clone( )
 						
@@ -46,9 +46,9 @@ local function AddObjs( PermPar, Name, Obj )
 	
 end
 
---AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "Backpack" )
+AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "PlayerGui" )
 
-AddObjs( game:GetService( "StarterGui" ), "PlayerGui", script.StarterPlayerScripts )
+--AddObjs( game:GetService( "StarterGui" ), "PlayerGui", script.StarterPlayerScripts )
 
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterCharacterScripts" ), "Character" )
 
