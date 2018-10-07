@@ -718,7 +718,7 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 		
 		BulletHit.Color3 = Color3.new( 0.1 + ( Hit.BrickColor.Color.r / 5 ), 0.1 + ( Hit.BrickColor.Color.g / 5 ), 0.1 + ( Hit.BrickColor.Color.b / 5 ) )
 		
-		local ActualOffset = Vector3.new( Offset.X * Hit.Size.X, Offset.Y * Hit.Size.Y, Offset.Z * Hit.Size.Z )
+		local ActualOffset = Offset * Hit.Size
 		
 		BulletHit.CFrame = CFrame.new( ActualOffset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( ActualOffset ) + Normal ) )
 		
@@ -904,9 +904,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 	
 	local HitSound = "BulletHitConcrete"
 	
-	local HitPos = Hit.CFrame:pointToWorldSpace( Offset or Vector3.new( ) )
-	
-	HitPos = Vector3.new( HitPos.X * Hit.Size.X, HitPos.Y * Hit.Size.Y, HitPos.Z * Hit.Size.Z )
+	local HitPos = Hit.CFrame:pointToWorldSpace( Offset * Hit.Size )
 	
 	local Humanoid = Core.GetValidHumanoid( Hit )
 	
