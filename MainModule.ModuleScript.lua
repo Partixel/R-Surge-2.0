@@ -1,6 +1,6 @@
-local function AddObjs( PermPar, Name, Obj )
+local function AddObjs( PermPar, Name )
 	
-	local Objs = Obj and Obj:GetChildren( ) or script:FindFirstChild( PermPar.Name ):GetChildren( )
+	local Objs = script:FindFirstChild( PermPar.Name ):GetChildren( )
 	
 	for a = 1, #Objs do
 		
@@ -42,13 +42,11 @@ local function AddObjs( PermPar, Name, Obj )
 		
 	end
 	
-	if Obj then Obj:Destroy( ) else script:FindFirstChild( PermPar.Name ):Destroy( ) end
+	script:FindFirstChild( PermPar.Name ):Destroy( )
 	
 end
 
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "PlayerGui" )
-
---AddObjs( game:GetService( "StarterGui" ), "PlayerGui", script.StarterPlayerScripts )
 
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterCharacterScripts" ), "Character" )
 
@@ -61,8 +59,6 @@ AddObjs( game:GetService( "ReplicatedStorage" ) )
 local LuaRequire = function ( ... ) return require( ... ) end
 
 if _G.S20Config.DebugEnabled ~= false then
-	
-	require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 	
 	coroutine.wrap( LuaRequire )( game:GetService( "ServerStorage" ):FindFirstChild( "DebugUtil" ) and game:GetService( "ServerStorage" ).DebugUtil:FindFirstChild( "MainModule" ) or 953754819 )
 	
