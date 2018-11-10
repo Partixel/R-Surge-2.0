@@ -1,5 +1,3 @@
-repeat wait( ) until _G.S20Config
-
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
 local Players = game:GetService( "Players" )
