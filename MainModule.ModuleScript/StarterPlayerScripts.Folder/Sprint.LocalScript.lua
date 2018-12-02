@@ -8,6 +8,8 @@ local PU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "PoseUt
 
 local TweenService = game:GetService( "TweenService" )
 
+local FOVMod
+
 function UpdateCamera( Sprinting )
 	
 	if Core.ActualSprinting ~= Sprinting then
@@ -34,7 +36,19 @@ function UpdateCamera( Sprinting )
 		
 		Core.ActualSprinting = Sprinting
 		
-		TweenService:Create( workspace.CurrentCamera, TweenInfo.new( 0.1 ), { FieldOfView = workspace.CurrentCamera.FieldOfView + ( Sprinting and 5 or -5 ) } ):Play( )
+		if not FOVMod or not FOVMod.Parent then
+			
+			FOVMod = Instance.new( "NumberValue" )
+			
+			FOVMod.Name = "FieldOfViewModifier"
+			
+			FOVMod.Value = 1
+			
+		end
+		
+		FOVMod.Parent = workspace.CurrentCamera
+		
+		TweenService:Create( FOVMod, TweenInfo.new( 0.1 ), { Value = Sprinting and 80/75 or 1 } ):Play( )
 		
 	end
 	
