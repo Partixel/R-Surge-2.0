@@ -1885,7 +1885,7 @@ else
 
 	Players.PlayerAdded:Connect( function ( Plr )
 
-		repeat wait( ) until Plr.Character
+		if not Plr.Character then Plr.CharacterAdded:Wait( ) end
 
 		Module.Spawned( Plr )
 

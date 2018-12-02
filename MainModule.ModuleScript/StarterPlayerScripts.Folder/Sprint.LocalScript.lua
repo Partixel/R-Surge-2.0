@@ -82,9 +82,7 @@ function HandleChar( Char )
 	
 end
 
-repeat wait ( ) until Plr.Character
-
-HandleChar( Plr.Character )
+HandleChar( Plr.Character or Plr.CharacterAdded:Wait( ) )
 
 Plr.CharacterAdded:Connect( HandleChar )
 

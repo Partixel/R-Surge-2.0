@@ -130,8 +130,6 @@ end
 
 if not game:GetService( "RunService" ):IsClient( ) then return nil end
 
-repeat wait( ) until game:GetService( "Players" ).LocalPlayer
-
 Module = { }
 
 Module.ContextChanged = script.ContextChanged.Event

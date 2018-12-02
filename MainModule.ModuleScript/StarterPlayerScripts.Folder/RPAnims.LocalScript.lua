@@ -48,9 +48,7 @@ function Spawned( Char )
 	
 end
 
-repeat wait( ) until Plr.Character
-
-Spawned( Plr.Character )
+Spawned( Plr.Character or Plr.CharacterAdded:Wait( ) )
 
 Plr.CharacterAdded:Connect( Spawned )
 

@@ -64,7 +64,7 @@ function HealthChanged( )
 	
 	if not Humanoid or not Humanoid.Parent or not Humanoid.Parent.Parent then
 		
-		repeat wait( ) until Plr.Character
+		if not Plr.Character then Plr.CharacterAdded:Wait( ) end
 		
 		Humanoid = Plr.Character:WaitForChild( "Humanoid" )
 		
