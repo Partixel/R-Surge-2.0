@@ -487,7 +487,7 @@ if IsServer then
 
 	ArmUtil = require( script.ArmUtil )
 
-	Module.HandleServer = function ( Plr, Time, StatObj, Hit, End, Normal, Offset, BulNum, User, BarrelNum )
+	Module.HandleServer = function ( Plr, Time, StatObj, HitMat, End, Normal, Offset, BulNum, User, BarrelNum )
 
 		if not StatObj or not StatObj.Parent then return end
 
@@ -503,15 +503,17 @@ if IsServer then
 
 		if not Barrel then return end
 		
-		local Material
+		local Hit, Material
 		
-		if typeof( Hit ) == "Instance" then
+		if typeof( HitMat ) == "Instance" then
+			
+			Hit = HitMat
 			
 			Material = Hit.Material
 			
 		elseif Hit then
 			
-			Material = Hit
+			Material = HitMat
 			
 			Hit = workspace.Terrain
 			
@@ -545,7 +547,7 @@ if IsServer then
 
 				if BulRay:Distance( Plrs[ a ].Character and Plrs[ a ].Character:FindFirstChild( "HumanoidRootPart" ) and Plrs[ a ].Character.HumanoidRootPart.Position or Barrel.Position ) <= 250 then
 
-					Module.ShotRemote:FireClient( Plrs[ a ], StatObj, User, Hit, End, Normal, Material, Offset, BulNum, BarrelNum, Humanoids )
+					Module.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids )
 
 				end
 
@@ -789,7 +791,7 @@ if IsClient then
 
 	end )
 
-	Module.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, Hit, End, Normal, Material, Offset, BulNum, BarrelNum, Humanoids  )
+	Module.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids  )
 
 		if User == nil then
 
@@ -806,6 +808,22 @@ if IsClient then
 				Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
 	
 				if not Barrel then return end
+				
+				local Hit, Material
+				
+				if typeof( HitMat ) == "Instance" then
+					
+					Hit = HitMat
+					
+					Material = Hit.Material
+					
+				elseif Hit then
+					
+					Material = HitMat
+					
+					Hit = workspace.Terrain
+					
+				end
 	
 				Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
 				
