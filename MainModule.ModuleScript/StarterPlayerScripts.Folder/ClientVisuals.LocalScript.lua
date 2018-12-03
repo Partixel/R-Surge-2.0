@@ -740,7 +740,7 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 		
 		local Humanoid = Core.GetValidHumanoid( Hit )
 		
-		if Humanoid and Humanoid:IsA( "Humanoid" ) then
+		if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) then
 			
 			BulletHit.Color = BrickColor.Red( )
 			
@@ -908,7 +908,7 @@ Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletTy
 	
 	local Humanoid = Core.GetValidHumanoid( Hit )
 	
-	if Humanoid and Humanoid:IsA( "Humanoid" ) and Core.CheckTeamkill( Plr, Humanoid ) then
+	if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) and Core.CheckTeamkill( User, Humanoid ) then
 		
 		HitSound = "BulletHitFlesh"
 		
