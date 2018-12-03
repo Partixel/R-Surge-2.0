@@ -1,4 +1,4 @@
-local Core, Plr = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) ), game:GetService( "Players" ).LocalPlayer
+local Core, Plr, CollectionService = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) ), game:GetService( "Players" ).LocalPlayer, game:GetService( "CollectionService" )
 
 local Mouse = Plr:GetMouse( )
 
@@ -62,7 +62,7 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 	
 	local Humanoid = Core.GetValidHumanoid( Core.LPlrsTarget[ 1 ] )
 	
-	local Color = ( not Humanoid or Humanoid:FindFirstChild( "Silent" ) ) and White or Core.CheckTeamkill( Plr, Humanoid, Weapon.GunStats.AllowTeamKill, Weapon.GunStats.InvertTeamKill ) and Red or Green
+	local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) and White or Core.CheckTeamkill( Plr, Humanoid, Weapon.GunStats.AllowTeamKill, Weapon.GunStats.InvertTeamKill ) and Red or Green
 	
 	if Color == White then
 		

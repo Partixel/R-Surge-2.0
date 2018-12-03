@@ -2,7 +2,7 @@ local Config, Core = _G.S20Config, require( game:GetService( "ReplicatedStorage"
 
 repeat wait( ) until Config
 
-local RunService, Debris, Plr = game:GetService( "RunService" ), game:GetService( "Debris" ), game:GetService( "Players" ).LocalPlayer
+local RunService, Debris, Plr, CollectionService = game:GetService( "RunService" ), game:GetService( "Debris" ), game:GetService( "Players" ).LocalPlayer, game:GetService( "CollectionService" )
 
 local TweenService = game:GetService( "TweenService" )
 
@@ -252,7 +252,7 @@ Core.Visuals.HitIndicator = Core.DamagedObj.Event:Connect( function ( Humanoids 
 		
 		if Humanoids[ a ][ 1 ].Parent then
 			
-			if not Humanoids[ a ][ 1 ]:FindFirstChild( "Silent" ) then Noise = true end
+			if not CollectionService:HasTag( Humanoids[ a ][ 1 ], "s2_silent" ) then Noise = true end
 			
 			if Humanoids[ a ][ 1 ]:IsA( "Humanoid" ) then Type = 2 end
 			
