@@ -85,7 +85,7 @@ function HandleProperties( Obj, Properties )
 end
 
 function HandleChar( Char )
-	print(Char)
+	
 	local Hum = Char:FindFirstChildOfClass( "Humanoid" )
 	
 	while not Hum do
