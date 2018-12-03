@@ -1184,7 +1184,9 @@ function Module.Setup( StatObj )
 	if not Weapon.GunStats.AccurateRange then
 
 		Weapon.GunStats.AccurateRange = Weapon.GunStats.Accuracy < 1 and 25 / Weapon.GunStats.Accuracy or 200 / Weapon.GunStats.Accuracy
-
+		
+		warn( StatObj:GetFullName( ) .. " is using Accuracy which has been deprecated for AccurateRange, please update this before the 5/12/18" )
+		
 	end
 
 	Weapon.Ignore = GunStats.Ignores and GunStats.Ignores( StatObj ) or { }
