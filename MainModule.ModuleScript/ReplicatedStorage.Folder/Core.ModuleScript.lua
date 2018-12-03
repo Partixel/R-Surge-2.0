@@ -406,8 +406,12 @@ function Module.GetGunStats( StatObj )
 	if not Stats.Required then
 
 		Stats.Required = true
-
-		spawn( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { StatMod } ) end )
+		
+		if IsClient then
+			
+			spawn( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { StatMod } ) end )
+			
+		end
 
 	end
 
@@ -424,11 +428,11 @@ function Module.ToolAdded( Tool, Plr )
 		if IsServer and _G.S20Config.ArmWelds then
 
 			local GunStats = Module.GetGunStats( StatObj )
-
+			
 			if GunStats.LeftWeld or GunStats.RightWeld then
-
+				
 				ArmUtil( Plr, Tool, GunStats.LeftWeld, GunStats.RightWeld )
-
+				
 			end
 
 		end
