@@ -590,7 +590,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 		end
 		
-		BulletArrived:Fire( GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 	elseif GunStats.BulletType and GunStats.BulletType.Name == "Laser" then
 		
@@ -628,7 +628,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Parent = workspace.CurrentCamera
 		
-		BulletArrived:Fire( GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 		for a = 1, GunStats.BulletType.VisibleFrames or 3 do
 			
@@ -690,7 +690,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet:Destroy( )
 		
-		BulletArrived:Fire( GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 	end
 	
@@ -698,7 +698,7 @@ end )
 
 local CurCC
 
-Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, _, End, Hit, Normal, _, Offset, _ )
+Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
 	
 	if not BulletType or BulletType.Name == "Kinectic" or BulletType.Name == "Laser" then
 		
@@ -716,7 +716,9 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 		
 		BulletHit.Adornee = Hit
 		
-		BulletHit.Color3 = Color3.new( 0.1 + ( Hit.BrickColor.Color.r / 5 ), 0.1 + ( Hit.BrickColor.Color.g / 5 ), 0.1 + ( Hit.BrickColor.Color.b / 5 ) )
+		local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.BrickColor
+		
+		BulletHit.Color3 = Color3.new( 0.1 + ( Col.r / 5 ), 0.1 + ( Col.g / 5 ), 0.1 + ( Col.b / 5 ) )
 		
 		local ActualOffset = Offset * Hit.Size
 		
@@ -896,7 +898,7 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( BulletType, 
 	
 end )
 
-Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( BulletType, Barrel, _, Hit, _, Material, Offset, _ )
+Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
 	
 	if not Hit then return end
 	
