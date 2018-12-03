@@ -6,7 +6,7 @@ while not _G.S20Config do wait( ) end
 
 local Config = _G.S20Config
 
-Module.ShotRemote = script.ShotRemote
+Module.ShotRemote = script:WaitForChild( "ShotRemote" )
 
 Module.ClientSync = script.ClientSync
 
