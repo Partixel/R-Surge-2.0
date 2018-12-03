@@ -620,7 +620,7 @@ if IsServer then
 	ClntDmg.OnServerEvent:Connect( function ( Plr, Time, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
 		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
-		print( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
 		Module.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
 	end )
