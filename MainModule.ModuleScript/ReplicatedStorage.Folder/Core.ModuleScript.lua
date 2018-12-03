@@ -487,7 +487,7 @@ if IsServer then
 
 	ArmUtil = require( script.ArmUtil )
 
-	Module.HandleServer = function ( Plr, Time, StatObj, Hit, End, Normal, Material, Offset, BulNum, User, BarrelNum )
+	Module.HandleServer = function ( Plr, Time, StatObj, Hit, End, Normal, Offset, BulNum, User, BarrelNum )
 
 		if not StatObj or not StatObj.Parent then return end
 
@@ -502,7 +502,21 @@ if IsServer then
 		Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
 
 		if not Barrel then return end
-
+		
+		local Material
+		
+		if typeof( Hit ) == "Instance" then
+			
+			Material = Hit.Material
+			
+		elseif Hit then
+			
+			Material = Hit
+			
+			Hit = workspace.Terrain
+			
+		end
+		
 		local Humanoids = ( Module.GetBulletType( GunStats ).Func or Module.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
 
 		Module.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
@@ -1570,7 +1584,7 @@ function Module.Fire( Weapon )
 			ActualFired = ActualFired + 1
 
 			local Hit, End, Normal, Material = Module.CanFire( Weapon, Barrel )
-
+			
 			if Hit ~= false then
 
 				local IgnoreWater = Weapon.GunStats.BulletType and ( Weapon.GunStats.BulletType.Name == "Fire" or Weapon.GunStats.BulletType.Name == "Lightning" )
@@ -1637,15 +1651,11 @@ function Module.Fire( Weapon )
 
 					if IsServer then
 
-						Module.HandleServer( nil, tick( ), Weapon.StatObj, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
-
-					elseif Players.LocalPlayer == Weapon.User then
-
-						Module.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+						Module.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
 
 					else
 
-						Module.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+						Module.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
 
 					end
 
