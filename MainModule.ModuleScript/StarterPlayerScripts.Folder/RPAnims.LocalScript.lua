@@ -26,7 +26,7 @@ function Spawned( Char )
 	
 	local Hum = Char:WaitForChild( "Humanoid" )
 	
-	repeat wait( ) until Hum.Parent
+	while not Hum.Parent do Hum.AncestryChanged:Wait( ) end
 	
 	local SaluteAnim = Instance.new( "Animation" )
 	
