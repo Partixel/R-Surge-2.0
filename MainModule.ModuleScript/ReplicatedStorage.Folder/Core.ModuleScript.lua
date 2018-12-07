@@ -1633,7 +1633,7 @@ function Module.Fire( Weapon )
 						
 						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
 						
-						Hit, End, Normal, Material = Module.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Module.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range ), Module.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
+						Hit, End, Normal, Material = Module.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Module.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range - Vector3.new( 0, Config.BulletDrop / 1000 * Weapon.GunStats.Range, 0 ) ), Module.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
 						
 					else
 
