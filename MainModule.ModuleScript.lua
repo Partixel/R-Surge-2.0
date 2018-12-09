@@ -46,6 +46,12 @@ local function AddObjs( PermPar, Name )
 	
 end
 
+if game:GetService( "RunService" ):IsStudio( ) and #game:GetService( "Players" ):GetPlayers( ) == 0 then
+	
+	game:GetService( "Players" ).PlayerAdded:Wait( )
+	
+end
+
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterPlayerScripts" ), "PlayerGui" )
 
 AddObjs( game:GetService( "StarterPlayer" ):WaitForChild( "StarterCharacterScripts" ), "Character" )
