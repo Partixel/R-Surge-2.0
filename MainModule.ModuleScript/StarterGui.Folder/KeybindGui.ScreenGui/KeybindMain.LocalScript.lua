@@ -102,9 +102,9 @@ local function Redraw( )
 		
 	end
 	
-	KeybindGui.Main.CanvasSize = UDim2.new( 0, 0, 0, 40 * Found )
+	KeybindGui.Main.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
 	
-	KeybindGui.Context.CanvasSize = UDim2.new( 0, 0, 0, 40 * Found )
+	KeybindGui.Context.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
 	
 end
 
