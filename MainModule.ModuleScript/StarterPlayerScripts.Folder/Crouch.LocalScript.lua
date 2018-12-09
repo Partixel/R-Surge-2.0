@@ -144,7 +144,7 @@ end )
 
 Core.PreventCrouch = { }
 
-KBU.AddBind{ Name = "s2_Crouch", Callback = function ( Began, Died )
+KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then return end
 	
@@ -178,11 +178,11 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
 	local GunStats = Core.GetGunStats( StatObj )
 	
-	if GunStats.PreventCrouch then KBU.SetToggle( "s2_Crouch", false ) end
+	if GunStats.PreventCrouch then KBU.SetToggle( "Crouch", false ) end
 	
 	if _G.S20Config.AllowCrouching == false and GunStats.PreventCrouch ~= false then
 		
-		KBU.SetToggle( "s2_Crouch", false )
+		KBU.SetToggle( "Crouch", false )
 		
 	end
 	
@@ -190,6 +190,6 @@ end )
 
 Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 	
-	if _G.S20Config.AllowCrouching == false then KBU.SetToggle( "s2_Crouch", false ) end
+	if _G.S20Config.AllowCrouching == false then KBU.SetToggle( "Crouch", false ) end
 	
 end )

@@ -44,7 +44,7 @@ PU.Watch( "Inspecting", "Inpsect", function ( NPlr, State, Offset )
 	
 end )
 
-KBU.AddBind( "s2_Inspect", function ( Began, Died )
+KBU.AddBind( "Inspect", function ( Began, Died )
 	
 	if Died then return end
 	
@@ -66,12 +66,12 @@ end, Enum.KeyCode.E, Enum.KeyCode.ButtonL3, nil, true, true, true, nil, true )
 
 Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
-	KBU.SetToggle( "s2_Inspect", false )
+	KBU.SetToggle( "Inspect", false )
 	
 end )
 
 Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 	
-	KBU.SetToggle( "s2_Inspect", false )
+	KBU.SetToggle( "Inspect", false )
 	
 end )

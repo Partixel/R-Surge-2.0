@@ -78,7 +78,7 @@ Mouse.Button1Up:Connect( function ( )
 	
 end )
 
-KBU.AddBind{ Name = "s2_Interact", Callback = function ( Began, Died )
+KBU.AddBind{ Name = "Interact", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then KD = nil return end
 	
@@ -96,15 +96,15 @@ end, Key = Enum.KeyCode.E, PadKey = Enum.KeyCode.ButtonX, OffOnDeath = true, NoH
 
 KBU.ContextChanged:Connect( function ( )
 	
-	script.UpdateKey:Fire( KBU.GetKeyInContext( "s2_Interact" ) )
+	script.UpdateKey:Fire( KBU.GetKeyInContext( "Interact" ) )
 	
 end )
 
 KBU.BindChanged:Connect( function ( Name )
 	
-	if not Name or Name == "s2_Interact" then
+	if not Name or Name == "Interact" then
 		
-		script.UpdateKey:Fire( KBU.GetKeyInContext( "s2_Interact" ) )
+		script.UpdateKey:Fire( KBU.GetKeyInContext( "Interact" ) )
 		
 	end
 	
@@ -198,7 +198,7 @@ function StartInteractables( )
 									
 									if not Interactables.Guis[ a ] or Interactables.Guis[ a ].Name == "Destroying" then
 										
-										script.OpenGui:Fire( a, Interactables.Guis[ a ], KBU.GetKeyInContext( "s2_Interact" ) )
+										script.OpenGui:Fire( a, Interactables.Guis[ a ], KBU.GetKeyInContext( "Interact" ) )
 										
 									elseif a:FindFirstChild( "Disabled" ) then
 										
@@ -232,7 +232,7 @@ function StartInteractables( )
 										
 										Cooldowns[ a ] = nil
 										
-										script.EnableGui:Fire( a, Interactables.Guis[ a ], KBU.GetKeyInContext( "s2_Interact" ) )
+										script.EnableGui:Fire( a, Interactables.Guis[ a ], KBU.GetKeyInContext( "Interact" ) )
 										
 									end
 									

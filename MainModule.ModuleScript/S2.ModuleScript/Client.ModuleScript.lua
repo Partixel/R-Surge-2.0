@@ -52,7 +52,7 @@ return function ( Main, ModFolder, VH_Events )
 		
 		if not Value then
 			
-			KeybindUtil.SetToggle( "s2_AtEase", false )
+			KeybindUtil.SetToggle( "At_ease", false )
 			
 		end
 		
@@ -64,7 +64,7 @@ return function ( Main, ModFolder, VH_Events )
 		
 		if not Value then
 			
-			KeybindUtil.SetToggle( "s2_Surrender", false )
+			KeybindUtil.SetToggle( "Surrender", false )
 			
 		end
 		
@@ -82,7 +82,7 @@ return function ( Main, ModFolder, VH_Events )
 		
 		if not Value then
 			
-			KeybindUtil.SetToggle( "s2_Salute", false )
+			KeybindUtil.SetToggle( "Salute", false )
 			
 		end
 		

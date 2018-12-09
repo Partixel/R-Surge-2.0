@@ -22,7 +22,7 @@ function UpdateCamera( Sprinting )
 --			
 --			if Weapon and Weapon.Reloading then
 --				
---				KBU.SetToggle( "s2_Sprint", false )
+--				KBU.SetToggle( "Sprint", false )
 --				
 --				return
 --				
@@ -148,7 +148,7 @@ end )
 
 Core.PreventSprint = { }
 
-KBU.AddBind{ Name = "s2_Sprint", Callback = function ( Began, Died )
+KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then return end
 	
@@ -188,13 +188,13 @@ end, Key = Enum.KeyCode.F, PadKey = Enum.KeyCode.ButtonL3, ToggleState = false, 
 
 --Core.Visuals.AntiSprintReload = Core.ReloadStart.Event:Connect( function ( StatObj )
 --	
---	if Core.ActualSprinting then KBU.SetToggle( "s2_Sprint", false ) end
+--	if Core.ActualSprinting then KBU.SetToggle( "Sprint", false ) end
 --	
 --end )
 
 Core.Visuals.AntiSprintShoot = Core.ClientVisuals.Event:Connect( function ( )
 	
-	if Core.ActualSprinting then KBU.SetToggle( "s2_Sprint", false ) end
+	if Core.ActualSprinting then KBU.SetToggle( "Sprint", false ) end
 	
 end )
 
@@ -204,14 +204,14 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
 	local GunStats = Core.GetGunStats( StatObj )
 	
-	if GunStats.PreventSprint then KBU.SetToggle( "s2_Sprint", false ) end
+	if GunStats.PreventSprint then KBU.SetToggle( "Sprint", false ) end
 	
-	if _G.S20Config.AllowSprinting == false and GunStats.PreventSprint ~= false then KBU.SetToggle( "s2_Sprint", false ) end
+	if _G.S20Config.AllowSprinting == false and GunStats.PreventSprint ~= false then KBU.SetToggle( "Sprint", false ) end
 	
 end )
 
 Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 	
-	if _G.S20Config.AllowSprinting == false then KBU.SetToggle( "s2_Sprint", false ) end
+	if _G.S20Config.AllowSprinting == false then KBU.SetToggle( "Sprint", false ) end
 	
 end )

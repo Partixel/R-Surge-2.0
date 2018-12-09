@@ -839,7 +839,7 @@ if IsClient then
 
 	local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
 
-	KBU.AddBind{ Name = "s2_Fire", Callback = function ( Began )
+	KBU.AddBind{ Name = "Fire", Category = "Surge 2.0", Callback = function ( Began )
 
 		local Weapon = Module.GetSelectedWeapon( Players.LocalPlayer )
 
@@ -861,7 +861,7 @@ if IsClient then
 
 	end, Key = Enum.UserInputType.MouseButton1, PadKey = Enum.KeyCode.ButtonR2, NoHandled = true }
 
-	KBU.AddBind{ Name = "s2_Reload", Callback = function ( Began )
+	KBU.AddBind{ Name = "Reload", Category = "Surge 2.0", Callback = function ( Began )
 
 		if not Began then return end
 
@@ -873,7 +873,7 @@ if IsClient then
 
 	end, Key = Enum.KeyCode.R, PadKey = Enum.KeyCode.ButtonB, NoHandled = true }
 
-	KBU.AddBind{ Name = "s2_Next_fire_mode", Callback = function ( Began )
+	KBU.AddBind{ Name = "Next_fire_mode", Category = "Surge 2.0", Callback = function ( Began )
 
 		if not Began then return end
 
@@ -885,7 +885,7 @@ if IsClient then
 
 	end, Key = Enum.UserInputType.MouseButton3, PadKey = Enum.KeyCode.ButtonY, NoHandled = true }
 
-	KBU.AddBind{ Name = "s2_Drop_hat", Callback = function ( Began )
+	KBU.AddBind{ Name = "Drop_hat", Category = "Surge 2.0", Callback = function ( Began )
 
 		if Config.HatMode == 1 then return end
 
