@@ -4,23 +4,25 @@ local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( 
 
 local KeybindGui = script.Parent:WaitForChild( "KeybindFrame" )
 
-ThemeUtil.BindUpdate( KeybindGui, "BackgroundColor3", "SecondaryBackground" )
+ThemeUtil.BindUpdate( KeybindGui, "BackgroundColor3", "Background" )
 
-ThemeUtil.BindUpdate( KeybindGui.Main, "ScrollBarImageColor3", "Background" )
+ThemeUtil.BindUpdate( KeybindGui.Main, "ScrollBarImageColor3", "SecondaryBackground" )
 
-ThemeUtil.ApplyBasicTheming( { KeybindGui.Search, KeybindGui.Bar, KeybindGui.Context.Context.Gamepad, KeybindGui.Context.Context.Keyboard, KeybindGui.Context.Context:FindFirstChild( "Name" ), KeybindGui.Context.Context.Toggle } )
+ThemeUtil.BindUpdate( { KeybindGui.Search, KeybindGui.Bar, KeybindGui.Context.Context.Gamepad, KeybindGui.Context.Context.Keyboard, KeybindGui.Context.Context:FindFirstChild( "Name" ), KeybindGui.Context.Context.Toggle }, "BackgroundColor3", "SecondaryBackground" )
+
+ThemeUtil.BindUpdate( { KeybindGui.Search, KeybindGui.Context.Context.Gamepad, KeybindGui.Context.Context.Keyboard, KeybindGui.Context.Context:FindFirstChild( "Name" ), KeybindGui.Context.Context.Toggle }, "TextColor3", "TextColor" )
 
 ThemeUtil.BindUpdate( KeybindGui.Search, "PlaceholderColor3", "SecondaryTextColor" )
 
-ThemeUtil.ApplyBasicTheming( KeybindGui.Search )
+local Hide = { }
 
-local function Redraw( )
+function Redraw( )
 	
 	local Old = KeybindGui.Main:GetChildren( )
 	
 	for a = 1, #Old do
 		
-		if Old[ a ]:IsA( "Frame" ) then Old[ a ]:Destroy( ) end
+		if Old[ a ]:IsA( "Frame" ) or Old[ a ]:IsA( "TextButton" ) then Old[ a ]:Destroy( ) end
 		
 	end
 	
@@ -28,75 +30,135 @@ local function Redraw( )
 	
 	local Txt = KeybindGui.Search.Text
 	
-	local Found = 0
+	local Categories = { }
 	
 	for a, b in ipairs( Binds ) do
 		
 		if b.Name:lower( ):find( Txt ) and not b.NonRebindable then
 			
-			Found = Found + 1
+			local Category = b.Category or "Uncategorised"
 			
-			local Base = KeybindGui.Base:Clone( )
+			Categories[ Category ] = Categories[ Category ] or { }
 			
-			Base.Name = b.Name
-			
-			Base.Visible = true
-			
-			ThemeUtil.ApplyBasicTheming( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle } )
-			
-			Base.Main.Text = b.Name
-			
-			Base.Main.MouseButton1Click:Connect( function ( )
+			if not Hide[ b.Category or "Uncategorised" ] then
 				
-				KBU.Defaults( b.Name )
+				local Base = KeybindGui.Base:Clone( )
 				
-				KBU.WriteToObj( Base.Keyboard, b.Key )
+				Categories[ Category ][ #Categories[ Category ] + 1 ] = Base
 				
-				KBU.WriteToObj( Base.Gamepad, b.PadKey )
+				Base.Name = b.Name
 				
-				KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
+				Base.Visible = true
 				
-			end )
-			
-			KBU.WriteToObj( Base.Keyboard, b.Key )
-			
-			Base.Keyboard.MouseButton1Click:Connect( function ( )
+				ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "BackgroundColor3", "SecondaryBackground" )
 				
-				KBU.Rebind( b.Name, Enum.UserInputType.Keyboard, Base.Keyboard )
+				ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "TextColor3", "TextColor" )
 				
-				KBU.WriteToObj( Base.Keyboard, b.Key )
+				Base.Main.Text = b.Name
 				
-			end )
-			
-			KBU.WriteToObj( Base.Gamepad, b.PadKey )
-			
-			Base.Gamepad.MouseButton1Click:Connect( function ( )
-				
-				KBU.Rebind( b.Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
-				
-				KBU.WriteToObj( Base.Gamepad, b.PadKey )
-				
-			end )
-			
-			if b.CanToggle then
-				
-				KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
-				
-				Base.Toggle.MouseButton1Click:Connect( function ( )
+				Base.Main.MouseButton1Click:Connect( function ( )
 					
-					KBU.Rebind( b.Name, "Toggle", Base.Toggle )
+					KBU.Defaults( b.Name )
+					
+					KBU.WriteToObj( Base.Keyboard, b.Key )
+					
+					KBU.WriteToObj( Base.Gamepad, b.PadKey )
 					
 					KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
 					
 				end )
 				
-			else
+				KBU.WriteToObj( Base.Keyboard, b.Key )
 				
-				Base.Toggle.Visible = false
+				Base.Keyboard.MouseButton1Click:Connect( function ( )
+					
+					KBU.Rebind( b.Name, Enum.UserInputType.Keyboard, Base.Keyboard )
+					
+					KBU.WriteToObj( Base.Keyboard, b.Key )
+					
+				end )
+				
+				KBU.WriteToObj( Base.Gamepad, b.PadKey )
+				
+				Base.Gamepad.MouseButton1Click:Connect( function ( )
+					
+					KBU.Rebind( b.Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
+					
+					KBU.WriteToObj( Base.Gamepad, b.PadKey )
+					
+				end )
+				
+				if b.CanToggle then
+					
+					KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
+					
+					Base.Toggle.MouseButton1Click:Connect( function ( )
+						
+						KBU.Rebind( b.Name, "Toggle", Base.Toggle )
+						
+						KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
+						
+					end )
+					
+				else
+					
+					Base.Toggle.Visible = false
+					
+				end
+				
+				Base.Parent = KeybindGui.Main
 				
 			end
 			
-			Base.Parent = KeybindGui.Main
+		end
+		
+	end
+	
+	local CategoryOrdered = { }
+	
+	for a, b in pairs( Categories ) do
+		
+		CategoryOrdered[ #CategoryOrdered + 1 ] = a
+		
+	end
+	
+	table.sort( CategoryOrdered )
+	
+	for a = 1, #CategoryOrdered do
+		
+		local Cat = KeybindGui.Category:Clone( )
+		
+		ThemeUtil.BindUpdate( { Cat, Cat.Bar, Cat.OpenIndicator, Cat.TitleText }, "BackgroundColor3", "SecondaryBackground" )
+		
+		ThemeUtil.BindUpdate( { Cat, Cat.OpenIndicator, Cat.TitleText }, "TextColor3", "TextColor" )
+		
+		Cat.Visible = true
+		
+		Cat.LayoutOrder = a * 2 - 1
+		
+		Cat.OpenIndicator.Text = not Hide[ CategoryOrdered[ a ] ] and  "Λ" or "V"
+		
+		local Binds = Categories[ CategoryOrdered[ a ] ]
+		
+		Cat.TitleText.Text = CategoryOrdered[ a ]
+		
+		Cat.MouseButton1Click:Connect( function ( )
+			
+			Hide[ CategoryOrdered[ a ] ] = not Hide[ CategoryOrdered[ a ] ]
+			
+			Redraw( )
+			
+		end )
+		
+		Cat.Parent = KeybindGui.Main
+		
+		if not Hide[ CategoryOrdered[ a ] ] then
+			
+			for b = 1, #Binds do
+				
+				Binds[ b ].LayoutOrder = a * 2
+				
+			end
 			
 		end
 		
