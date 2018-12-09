@@ -132,11 +132,11 @@ if not game:GetService( "RunService" ):IsClient( ) then return nil end
 
 Module = { }
 
-Module.ContextChanged = script.ContextChanged.Event
+Module.ContextChanged = script:WaitForChild( "ContextChanged" ).Event
 
-Module.BindAdded = script.BindAdded.Event
+Module.BindAdded = script:WaitForChild( "BindAdded" ).Event
 
-Module.BindChanged = script.BindChanged.Event
+Module.BindChanged = script:WaitForChild( "BindChanged" ).Event
 
 local Binds = { }
 
