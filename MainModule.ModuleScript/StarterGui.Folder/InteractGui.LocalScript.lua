@@ -10,6 +10,8 @@ repeat wait( ) until _G.Interactables
 	
 	Cooldown = NumberValue = How long before you can interact with this again
 	
+	CharacterOnly = Folder = Will only show if your camera is focused on your character ( stops e.g. drones from using the interactable )
+	
 	Disabled = NumberValue = Prevents the GUI from being selected. If value is 0 then GUI will show infinity symbol, else GUI will assume value is the time until it is next enabled, e.g. tick( )+ 5 + _G.ServerOffset will count down from 5. This is used by the Cooldown option.
 	
 	MinXSize = IntValue = The size in pixels of the GUI when it's not selected
