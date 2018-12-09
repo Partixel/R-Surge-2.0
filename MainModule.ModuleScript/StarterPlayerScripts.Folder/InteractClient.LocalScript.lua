@@ -170,7 +170,7 @@ function StartInteractables( )
 						
 						if a ~= Nearest then
 							
-							if not a:FindFirstChild( "CharacterOny" ) or Subject == Humanoid.RootPart then					
+							if not a:FindFirstChild( "CharacterOnly" ) or Subject == Humanoid.RootPart then					
 								
 								local Dist = ( a.Parent.Position - Subject.Position ).magnitude
 								
