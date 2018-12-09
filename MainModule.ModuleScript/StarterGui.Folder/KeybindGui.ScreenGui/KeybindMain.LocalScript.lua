@@ -4,6 +4,16 @@ local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( 
 
 local KeybindGui = script.Parent:WaitForChild( "KeybindFrame" )
 
+ThemeUtil.BindUpdate( KeybindGui, "BackgroundColor3", "SecondaryBackground" )
+
+ThemeUtil.BindUpdate( KeybindGui.Main, "ScrollBarImageColor3", "Background" )
+
+ThemeUtil.ApplyBasicTheming( { KeybindGui.Search, KeybindGui.Bar, KeybindGui.Context.Context.Gamepad, KeybindGui.Context.Context.Keyboard, KeybindGui.Context.Context:FindFirstChild( "Name" ), KeybindGui.Context.Context.Toggle } )
+
+ThemeUtil.BindUpdate( KeybindGui.Search, "PlaceholderColor3", "SecondaryTextColor" )
+
+ThemeUtil.ApplyBasicTheming( KeybindGui.Search )
+
 local function Redraw( )
 	
 	local Old = KeybindGui.Main:GetChildren( )
@@ -31,6 +41,8 @@ local function Redraw( )
 			Base.Name = b.Name
 			
 			Base.Visible = true
+			
+			ThemeUtil.ApplyBasicTheming( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle } )
 			
 			Base.Main.Text = b.Name
 			
