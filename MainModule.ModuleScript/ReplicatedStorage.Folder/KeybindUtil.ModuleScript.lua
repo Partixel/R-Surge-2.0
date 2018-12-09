@@ -300,15 +300,8 @@ local SavedBinds = script.GetSavedBinds:InvokeServer( )
 
 script.BindChanged:Fire( )
 
-function Module.AddBind( Bind, ... )
-	
-	if type( Bind ) ~= "table" then
-		for i = 1, 10 do warn( Bind .. " is using old bind system!" ) end
-		local Args = { ... }
-		
-		Bind = { Name = Bind, Callback = Args[ 1 ], Key = Args[ 2 ], PadKey = Args[ 3 ], PadNum = Args[ 4 ], ToggleState = Args[ 5 ], CanToggle = Args[ 6 ], OffOnDeath = Args[ 7 ], NonRebindable = Args[ 8 ], NoHandled = Args[ 9 ] }
-		
-	end
+-- Name, Category, Callback, Key, PadKey, PadNum, ToggleState, CanToggle, OffOnDeath, NonRebindable, NoHandled
+function Module.AddBind( Bind )
 	
 	Bind.PadNum = Bind.PadNum or Enum.UserInputType.Gamepad1
 	
