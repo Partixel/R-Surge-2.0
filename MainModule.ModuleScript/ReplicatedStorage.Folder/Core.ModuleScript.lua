@@ -379,16 +379,26 @@ local IsServer = RunService:IsServer( )
 
 local ArmUtil
 
-local GunStatFolder = game:GetService( "ReplicatedStorage" ):FindFirstChild( "GunStats" )
+local GunStatFolder
 
-if not GunStatFolder then
-
-	GunStatFolder = Instance.new( "Folder" )
-
-	GunStatFolder.Name = "GunStats"
-
-	GunStatFolder.Parent = game:GetService( "ReplicatedStorage" )
-
+if IsServer then
+	
+	GunStatFolder = game:GetService( "ReplicatedStorage" ):FindFirstChild( "GunStats" )
+	
+	if not GunStatFolder then
+	
+		GunStatFolder = Instance.new( "Folder" )
+	
+		GunStatFolder.Name = "GunStats"
+	
+		GunStatFolder.Parent = game:GetService( "ReplicatedStorage" )
+	
+	end
+	
+else
+	
+	GunStatFolder = game:GetService( "ReplicatedStorage" ):WaitForChild( "GunStats" )
+	
 end
 
 function Module.GetGunName( StatObj )
