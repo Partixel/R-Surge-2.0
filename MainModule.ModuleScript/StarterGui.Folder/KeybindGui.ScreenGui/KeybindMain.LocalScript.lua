@@ -2,6 +2,8 @@ local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Keybi
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
 
+local TweenService = game:GetService( "TweenService" )
+
 local KeybindGui = script.Parent:WaitForChild( "KeybindFrame" )
 
 ThemeUtil.BindUpdate( KeybindGui, "BackgroundColor3", "Background" )
@@ -242,7 +244,7 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 			
 			script.Parent.KeybindFrame.Visible = true
 			
-			script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 0.43, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true )
+			TweenService:Create( KeybindGui, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = UDim2.new( 0.05, 0, 0.43, 0 ), Size = UDim2.new( 0.3, 0, 0.4, 0 ) } ):Play( )
 			
 			UpdateColor( )
 			
@@ -250,11 +252,19 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 			
 			KBU.Rebinding = nil
 			
-			script.Parent.KeybindFrame:TweenPosition( UDim2.new( 0.05, 0, 1, 0 ), nil, Enum.EasingStyle.Sine, 0.5, true, function ( )
+			local Tween = TweenService:Create( KeybindGui, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = script.Parent.Keybinds.Position, Size = script.Parent.Keybinds.Size } )
+			
+			Tween.Completed:Connect( function ( State )
 				
-				script.Parent.KeybindFrame.Visible = false
+				if State == Enum.PlaybackState.Completed then
+					
+					KeybindGui.Visible = false
+					
+				end
 				
 			end )
+			
+			Tween:Play( )
 			
 			UpdateColor( )
 			
