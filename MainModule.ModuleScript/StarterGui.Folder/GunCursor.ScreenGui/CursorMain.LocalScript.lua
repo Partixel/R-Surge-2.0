@@ -2,9 +2,7 @@ local Core, Plr, CollectionService = require( game:GetService( "ReplicatedStorag
 
 local Mouse = Plr:GetMouse( )
 
-local C3new, U2new = Color3.new, UDim2.new
-
-local White, Red, Green = C3new( 1, 1, 1 ), BrickColor.Red( ).Color, BrickColor.Green( ).Color
+local White, Red, Green = Color3.fromRGB( 255, 0, 255 ), Color3.fromRGB( 255, 0, 0 ), Color3.fromRGB( 0, 255, 0 )
 
 local min, max, pow = math.min, math.max, math.pow
 
@@ -18,7 +16,7 @@ local GunCursor = script.Parent
 
 Mouse.Move:Connect( function ( )
 	
-	GunCursor.Center.Position = U2new( 0, Mouse.X - 2, 0, Mouse.Y - 2 )
+	GunCursor.Center.Position = UDim2.new( 0, Mouse.X , 0, Mouse.Y )
 	
 end )
 
@@ -80,6 +78,8 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 		
 	end
 	
+	GunCursor.Center.BackgroundColor3 = Color
+	
 	local FireMode = Core.GetFireMode( Weapon )
 	
 	-- HANDLE COLOR AND ROTATION
@@ -92,7 +92,7 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 		
 	end
 	
-	local AmmoCol = C3new( outCubic( Perc, Color.r, -0.5, 1 ), outCubic( Perc, Color.g, -0.5, 1 ), outCubic( Perc, Color.b, -0.5, 1 ) )
+	local AmmoCol = Color3.new( outCubic( Perc, Color.r, -0.5, 1 ), outCubic( Perc, Color.g, -0.5, 1 ), outCubic( Perc, Color.b, -0.5, 1 ) )
 	
 	GunCursor.Center.Bottom.BackgroundColor3 = AmmoCol
 	
@@ -108,7 +108,7 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 	
 	do local PercW = 0.5 * ( Weapon.GunStats.WindupTime and min( 1 - ( Weapon.Windup or 0 ) / Weapon.GunStats.WindupTime, 1 ) or 0 )
 	
-	local ColW = C3new( Color.r - PercW, Color.g - PercW, Color.b - PercW )
+	local ColW = Color3.new( Color.r - PercW, Color.g - PercW, Color.b - PercW )
 	
 	GunCursor.Center.Left.BackgroundColor3 = ColW
 	
@@ -118,17 +118,17 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 		
 	do local PercH = 0.8 * ( Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and min( 1 - Plr.Character.Humanoid.Health / Plr.Character.Humanoid.MaxHealth, 1 ) or 0 )
 	
-	GunCursor.Center.Top.BackgroundColor3 = C3new( Color.r, Color.g - PercH, Color.b - PercH ) end
+	GunCursor.Center.Top.BackgroundColor3 = Color3.new( Color.r, Color.g - PercH, Color.b - PercH ) end
 	
 	-- HANDLE TRANSPARENCY
 	
-	do local Trans = min( max( 1 - ( ShowMode - tick( ) ), 0.2 ), 1 )
+	do local Trans = min( max( 1 - ( ShowMode - tick( ) ), 0 ), 1 )
 	
 	local AutoTrans = FireMode.Automatic and Trans or 1
 	
 	local BurstTrans = ( FireMode.Automatic or ( FireMode.Shots and FireMode.Shots > 1 ) ) and Trans or 1
 	
-	GunCursor.Center.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not FireMode.PreventFire and Core.ActualSprinting ) and Trans or ( FireMode.PreventFire or Core.ActualSprinting ) and 1 or 0.2
+	GunCursor.Center.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not FireMode.PreventFire and Core.ActualSprinting ) and Trans or ( FireMode.PreventFire or Core.ActualSprinting ) and 1 or 0
 	
 	GunCursor.Center.BottomL1.BackgroundTransparency = BurstTrans
 	
@@ -140,25 +140,25 @@ game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 	
 	-- HANDLE POSITION
 	
-	do GunCursor.Center.Position = U2new( 0, Mouse.X - 2, 0, Mouse.Y - 2 )
+	do GunCursor.Center.Position = UDim2.new( 0, Mouse.X, 0, Mouse.Y )
 	
 	local Offset = ( 25 / Weapon.GunStats.AccurateRange * 10 ) + ( Weapon.GunStats.AccurateRange - Core.GetAccuracy( Weapon ) )
 	
-	GunCursor.Center.Bottom.Position = U2new( 0, 0, 0, Offset + 5 )
+	GunCursor.Center.Bottom.Position = UDim2.new( 0, 0, 0, Offset + 5 )
 	
-	GunCursor.Center.BottomL1.Position = U2new( 0, -5, 0, Offset + 5 )
+	GunCursor.Center.BottomL1.Position = UDim2.new( 0, -5, 0, Offset + 5 )
 	
-	GunCursor.Center.BottomL2.Position = U2new( 0, -10, 0, Offset + 5 )
+	GunCursor.Center.BottomL2.Position = UDim2.new( 0, -10, 0, Offset + 5 )
 	
-	GunCursor.Center.BottomR1.Position = U2new( 0, 5, 0, Offset + 5 )
+	GunCursor.Center.BottomR1.Position = UDim2.new( 0, 5, 0, Offset + 5 )
 	
-	GunCursor.Center.BottomR2.Position = U2new( 0, 10, 0, Offset + 5 )
+	GunCursor.Center.BottomR2.Position = UDim2.new( 0, 10, 0, Offset + 5 )
 	
-	GunCursor.Center.Top.Position = U2new( 0, 0, 0, -Offset - 8 )
+	GunCursor.Center.Top.Position = UDim2.new( 0, 0, 0, -Offset - 8 )
 	
-	GunCursor.Center.Left.Position = U2new( 0, -Offset - 8, 0, 0 )
+	GunCursor.Center.Left.Position = UDim2.new( 0, -Offset - 8, 0, 0 )
 	
-	GunCursor.Center.Right.Position = U2new( 0, Offset + 5, 0, 0 ) end
+	GunCursor.Center.Right.Position = UDim2.new( 0, Offset + 5, 0, 0 ) end
 	
 	-- HANDLE HIT VISIBILITY
 	
@@ -204,7 +204,7 @@ Core.WeaponSelected.Event:Connect( function ( Mod )
 		
 		GunCursor.Center.Visible = true
 		
-		GunCursor.Center.BackgroundTransparency = _G.S20Config.ShowCursorDot ~= true and 1 or 0
+		GunCursor.Center.BackgroundTransparency = _G.S20Config.ShowCursorDot ~= false and 0.3 or 1
 		
 		game:GetService( "UserInputService" ).MouseIconEnabled = false
 		
