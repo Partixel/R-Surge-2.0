@@ -270,7 +270,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			for a, b in pairs( ThemeUtil.BaseThemes ) do
 				
-				if String:find( a:lower( ):sub( 1, String:len( ) ) ) then
+				if String:find( a:lower( ):sub( 1, #String ) ) then
 					
 					return a
 					
