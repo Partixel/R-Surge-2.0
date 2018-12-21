@@ -430,11 +430,11 @@ function Module.GetGunStats( StatObj )
 end
 
 function Module.ToolAdded( Tool, Plr )
-
+	
 	local StatObj = Tool:FindFirstChild( "GunStat" )
 
 	if StatObj and not Module.Weapons[ StatObj ] then
-
+		
 		if IsServer and _G.S20Config.ArmWelds then
 
 			local GunStats = Module.GetGunStats( StatObj )
@@ -1926,20 +1926,28 @@ if IsClient then
 	end )
 
 else
-
-	Players.PlayerAdded:Connect( function ( Plr )
-
-		if not Plr.Character then Plr.CharacterAdded:Wait( ) end
-
-		Module.Spawned( Plr )
+	
+	local function HandlePlr( Plr )
+		
+		if Plr.Character then Module.Spawned( Plr ) end
 
 		Plr.CharacterAdded:Connect( function ( )
 
 			Module.Spawned( Plr )
 
 		end )
+		
+	end
 
-	end )
+	Players.PlayerAdded:Connect( HandlePlr )
+	
+	local Plrs = Players:GetPlayers( )
+	
+	for a = 1, #Plrs do
+		
+		HandlePlr( Plrs[ a ] )
+		
+	end
 
 end
 
