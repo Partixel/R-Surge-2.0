@@ -96,9 +96,7 @@ local function ColorGun( Tool, User )
 	
 end
 
-Core.Visuals.GunColouring = Core.WeaponSelected.Event:Connect( ColorGun )
-
-local PlayerOwnsAsset = function ( Plr, AssetId )
+local function PlayerOwnsAsset( Plr, AssetId )
 	
 	while not Plr.Parent do wait( ) end
 	
@@ -261,3 +259,214 @@ VIPEvent.OnServerEvent:Connect( function ( Plr, Val, Chosen )
 	end
 	
 end )
+
+
+---- CHRISTMAS STUFF ----
+
+local Colours = { BrickColor.new( "Bright red" ), BrickColor.new( "Bright green" ), BrickColor.new( "Bright yellow" ), BrickColor.new( "Bright blue" ), BrickColor.new( "Reddish brown" ), BrickColor.new( "Mulberry" ), BrickColor.new( "White" ) }
+
+function HandlePlr( Plr )
+	
+	if Plr.Character then
+		
+		Plr.Character.ChildAdded:Connect( function ( Obj )
+			
+			if Obj:IsA( "Tool" ) then
+				
+				ColorGun( Obj, Plr )
+				
+			end
+			
+		end )
+		
+	end
+	
+	Plr.CharacterAdded:Connect( function ( Char )
+		
+		Char.ChildAdded:Connect( function ( Obj )
+			
+			if Obj:IsA( "Tool" ) then
+				
+				ColorGun( Obj, Plr )
+				
+			end
+			
+		end )
+		
+	end )
+	
+	Core.Visuals.GunColouring = Core.WeaponSelected.Event:Connect( ColorGun )
+	
+	local Active = Plr:WaitForChild( "Rewards", 60 )
+	
+	if not Active then return end
+	
+	Active = Active:WaitForChild( "Christmas Guns" ):WaitForChild( "Active", math.huge )
+	
+	local Stage = math.random( 1, #Colours )
+	
+	local Last3 = { }
+	
+	local Cur
+	
+	Active:GetPropertyChangedSignal( "Value" ):Connect( function ( )
+		
+		local MyCur = { }
+		
+		Cur = MyCur
+		
+		if Active.Value then
+			
+			local Mat = Plr:FindFirstChild( "S2Material" ) or Instance.new( "StringValue" )
+			
+			Mat.Name = "S2Material"
+			
+			Mat.Value = "Neon"
+			
+			Mat.Parent = Plr
+			
+			local Color = Plr:FindFirstChild( "S2Color" ) or Instance.new( "BrickColorValue" )
+			
+			Color.Name = "S2Color"
+			
+			Color.Value = Colours[ Stage ]
+			
+			Color.Parent = Plr
+			
+			while wait( math.random( 1, 5 ) / 10 ) and MyCur == Cur do
+				
+				Last3[ 4 ] = Last3[ 3 ]
+				
+				Last3[ 3 ] = Last3[ 2 ]
+				
+				Last3[ 2 ] = Last3[ 1 ]
+				
+				Last3[ 1 ] = Stage
+				
+				repeat
+					
+					Stage = math.random( 1, #Colours )
+					
+				until Last3[ 1 ] ~= Stage and Last3[ 2 ] ~= Stage and Last3[ 3 ] ~= Stage and Last3[ 4 ] ~= Stage
+				
+				Color.Value = Colours[ Stage ]
+				
+				local CurWep = GetWep( Plr )
+				
+				if CurWep then
+					
+					ColorGun( CurWep, Plr )
+					
+				end
+				
+			end
+			
+		else
+			
+			local Color = Plr:FindFirstChild( "S2Color" )
+			
+			if Color then
+				
+				if ActualCol then
+					
+					Color.Value = ActualCol
+					
+				else
+					
+					Color:Destroy( )
+					
+				end
+				
+			end
+			
+			local Mat = Plr:FindFirstChild( "S2Material" )
+			
+			if Mat then
+				
+				if ActualMat then
+					
+					Mat.Value = ActualMat
+					
+				else
+					
+					Mat:Destroy( )
+					
+				end
+				
+			end
+			
+			local CurWep = GetWep( Plr )
+			
+			if CurWep then
+				
+				ColorGun( CurWep, Plr )
+				
+			end
+			
+		end
+		
+	end )
+	
+	if Active.Value then
+		
+		local MyCur = { }
+		
+		Cur = MyCur
+		
+		local Mat = Plr:FindFirstChild( "S2Material" ) or Instance.new( "StringValue" )
+		
+		Mat.Name = "S2Material"
+		
+		Mat.Value = "Neon"
+		
+		Mat.Parent = Plr
+		
+		local Color = Plr:FindFirstChild( "S2Color" ) or Instance.new( "BrickColorValue" )
+		
+		Color.Name = "S2Color"
+		
+		Color.Value = Colours[ Stage ]
+		
+		Color.Parent = Plr
+		
+		while wait( math.random( 1, 5 ) / 10 ) and MyCur == Cur do
+			
+			Last3[ 4 ] = Last3[ 3 ]
+			
+			Last3[ 3 ] = Last3[ 2 ]
+			
+			Last3[ 2 ] = Last3[ 1 ]
+			
+			Last3[ 1 ] = Stage
+			
+			repeat
+				
+				Stage = math.random( 1, #Colours )
+				
+			until Last3[ 1 ] ~= Stage and Last3[ 2 ] ~= Stage and Last3[ 3 ] ~= Stage and Last3[ 4 ] ~= Stage
+			
+			Color.Value = Colours[ Stage ]
+			
+			local CurWep = GetWep( Plr )
+			
+			if CurWep then
+				
+				ColorGun( CurWep, Plr )
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+local Plrs = game:GetService( "Players" ):GetPlayers( )
+
+for a = 1, #Plrs do
+	
+	HandlePlr( Plrs[ a ] )
+	
+end
+
+game.Players.PlayerAdded:Connect( HandlePlr )
