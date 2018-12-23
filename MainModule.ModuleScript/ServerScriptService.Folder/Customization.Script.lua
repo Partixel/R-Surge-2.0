@@ -32,35 +32,41 @@ function GetMaterial( Plr )
 	
 end
 
-local function GetWep( Plr )
+local function GetWep( Plr, Char )
 	
-	if not Plr.Character then return end
+	Char = Char or Plr.Character
 	
-	local Childs = Plr.Character:GetChildren( )
+	if not Char then return end
 	
-	for a = 1, #Childs do
-		
-		if Childs[ a ]:IsA( "Tool" ) and Childs[ a ]:FindFirstChild( "GunStat" ) then return Childs[ a ].GunStat end
-		
-	end
+	return Char:FindFirstChildOfClass( "Tool" )
 	
 end
 
 local CollectionService = game:GetService( "CollectionService" )
 
-local function ColorGun( Mod, User )
+local function ColorGun( Tool, User )
 	
-	if not Mod or not Mod.Parent or not User then return end
+	if not User then return end
 	
 	local Col, Mat = GetColor( User ), GetMaterial( User )
 	
-	local Descendants = Mod.Parent:GetDescendants( )
+	local Descendants = Tool:GetDescendants( )
 	
 	for a = 1, #Descendants do
 		
 		if CollectionService:HasTag( Descendants[ a ], "s2color" ) then
 			
-			Descendants[ a ].BrickColor = Col
+			if Descendants[ a ]:IsA( "SpecialMesh" ) then
+				
+				Descendants[ a ].VertexColor = Vector3.new( Col.r, Col.g, Col.b )
+				
+				Descendants[ a ] = Descendants[ a ].Parent
+				
+			else
+				
+				Descendants[ a ].BrickColor = Col
+				
+			end
 			
 			if not Descendants[ a ]:FindFirstChild( "OrigMat" ) then
 				
