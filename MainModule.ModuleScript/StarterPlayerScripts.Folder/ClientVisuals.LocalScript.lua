@@ -642,6 +642,18 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	else
 		
+		local Size = GunStats.BulletSize or Config.BulletSize or 0.35
+		
+		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
+		
+		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 5 ) ), Speed / 60 )
+		
+		local CF = CFrame.new( Barrel.Position, End )
+		
+		local Dist = ( Barrel.Position - End ).magnitude
+		
+		local Cur = math.random( 0, math.floor( Speed / 60 - Length ) )
+		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		
 		Bullet.Name = "GunBullet"
@@ -650,19 +662,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
 		
-		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.4
-		
-		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
-		
-		local Size = GunStats.BulletSize or Config.BulletSize or 0.25
-		
-		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 46.6666666666 ) ), Speed / 60 )
-		
-		local CF = CFrame.new( Barrel.Position, End )
-		
-		local Dist = ( Barrel.Position - End ).magnitude
-		
-		local Cur = math.random( 1, math.floor( Speed / 60 - Length ) )
+		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.3
 		
 		Debris:AddItem( Bullet, 3 )
 		
