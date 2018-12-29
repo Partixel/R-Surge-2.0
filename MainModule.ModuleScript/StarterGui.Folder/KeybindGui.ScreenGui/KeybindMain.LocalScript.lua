@@ -16,6 +16,14 @@ ThemeUtil.BindUpdate( { KeybindGui.Search, KeybindGui.Context.Context.Gamepad, K
 
 ThemeUtil.BindUpdate( KeybindGui.Search, "PlaceholderColor3", "SecondaryTextColor" )
 
+KeybindGui.Main.UIListLayout:GetPropertyChangedSignal( "AbsoluteContentSize" ):Connect( function ( )
+	
+	KeybindGui.Main.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
+	
+	KeybindGui.Context.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
+	
+end )
+
 local Hide = { }
 
 function Redraw( )
@@ -34,81 +42,75 @@ function Redraw( )
 	
 	local Categories = { }
 	
-	for a, b in ipairs( Binds ) do
+	for a = 1, #Binds do
 		
-		if b.Name:lower( ):find( Txt ) and not b.NonRebindable then
+		if Binds[ a ].Name:lower( ):find( Txt ) and not Binds[ a ].NonRebindable then
 			
-			local Category = b.Category or "Uncategorised"
+			local Category = Binds[ a ].Category or "Uncategorised"
 			
 			Categories[ Category ] = Categories[ Category ] or { }
 			
-			if not Hide[ b.Category or "Uncategorised" ] then
+			local Base = KeybindGui.Base:Clone( )
+			
+			Base.Name = Binds[ a ].Name
+			
+			Categories[ Category ][ #Categories[ Category ] + 1 ] = Base
+			
+			Base.Visible = true
+			
+			ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "BackgroundColor3", "SecondaryBackground" )
+			
+			ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "TextColor3", "TextColor" )
+			
+			Base.Main.Text = Binds[ a ].Name
+			
+			Base.Main.MouseButton1Click:Connect( function ( )
 				
-				local Base = KeybindGui.Base:Clone( )
+				KBU.Defaults( Binds[ a ].Name )
 				
-				Categories[ Category ][ #Categories[ Category ] + 1 ] = Base
+				KBU.WriteToObj( Base.Keyboard, Binds[ a ].Key )
 				
-				Base.Name = b.Name
+				KBU.WriteToObj( Base.Gamepad, Binds[ a ].PadKey )
 				
-				Base.Visible = true
+				KBU.WriteToObj( Base.Toggle, Binds[ a ].ToggleState or false )
 				
-				ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "BackgroundColor3", "SecondaryBackground" )
+			end )
+			
+			KBU.WriteToObj( Base.Keyboard, Binds[ a ].Key )
+			
+			Base.Keyboard.MouseButton1Click:Connect( function ( )
 				
-				ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "TextColor3", "TextColor" )
+				KBU.Rebind( Binds[ a ].Name, Enum.UserInputType.Keyboard, Base.Keyboard )
 				
-				Base.Main.Text = b.Name
+				KBU.WriteToObj( Base.Keyboard, Binds[ a ].Key )
 				
-				Base.Main.MouseButton1Click:Connect( function ( )
+			end )
+			
+			KBU.WriteToObj( Base.Gamepad, Binds[ a ].PadKey )
+			
+			Base.Gamepad.MouseButton1Click:Connect( function ( )
+				
+				KBU.Rebind( Binds[ a ].Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
+				
+				KBU.WriteToObj( Base.Gamepad, Binds[ a ].PadKey )
+				
+			end )
+			
+			if Binds[ a ].CanToggle then
+				
+				KBU.WriteToObj( Base.Toggle, Binds[ a ].ToggleState or false )
+				
+				Base.Toggle.MouseButton1Click:Connect( function ( )
 					
-					KBU.Defaults( b.Name )
+					KBU.Rebind( Binds[ a ].Name, "Toggle", Base.Toggle )
 					
-					KBU.WriteToObj( Base.Keyboard, b.Key )
-					
-					KBU.WriteToObj( Base.Gamepad, b.PadKey )
-					
-					KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
+					KBU.WriteToObj( Base.Toggle, Binds[ a ].ToggleState or false )
 					
 				end )
 				
-				KBU.WriteToObj( Base.Keyboard, b.Key )
+			else
 				
-				Base.Keyboard.MouseButton1Click:Connect( function ( )
-					
-					KBU.Rebind( b.Name, Enum.UserInputType.Keyboard, Base.Keyboard )
-					
-					KBU.WriteToObj( Base.Keyboard, b.Key )
-					
-				end )
-				
-				KBU.WriteToObj( Base.Gamepad, b.PadKey )
-				
-				Base.Gamepad.MouseButton1Click:Connect( function ( )
-					
-					KBU.Rebind( b.Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
-					
-					KBU.WriteToObj( Base.Gamepad, b.PadKey )
-					
-				end )
-				
-				if b.CanToggle then
-					
-					KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
-					
-					Base.Toggle.MouseButton1Click:Connect( function ( )
-						
-						KBU.Rebind( b.Name, "Toggle", Base.Toggle )
-						
-						KBU.WriteToObj( Base.Toggle, b.ToggleState or false )
-						
-					end )
-					
-				else
-					
-					Base.Toggle.Visible = false
-					
-				end
-				
-				Base.Parent = KeybindGui.Main
+				Base.Toggle.Visible = false
 				
 			end
 			
@@ -116,59 +118,43 @@ function Redraw( )
 		
 	end
 	
-	local CategoryOrdered = { }
-	
 	for a, b in pairs( Categories ) do
-		
-		CategoryOrdered[ #CategoryOrdered + 1 ] = a
-		
-	end
-	
-	table.sort( CategoryOrdered )
-	
-	for a = 1, #CategoryOrdered do
 		
 		local Cat = KeybindGui.Category:Clone( )
 		
-		ThemeUtil.BindUpdate( { Cat, Cat.Bar, Cat.OpenIndicator, Cat.TitleText }, "BackgroundColor3", "SecondaryBackground" )
+		ThemeUtil.BindUpdate( { Cat.Button.Bar, Cat.Button.OpenIndicator, Cat.Button.TitleText }, "BackgroundColor3", "SecondaryBackground" )
 		
-		ThemeUtil.BindUpdate( { Cat, Cat.OpenIndicator, Cat.TitleText }, "TextColor3", "TextColor" )
+		ThemeUtil.BindUpdate( { Cat.Button.OpenIndicator, Cat.Button.TitleText }, "TextColor3", "TextColor" )
 		
 		Cat.Visible = true
 		
-		Cat.LayoutOrder = a * 2 - 1
+		Cat.Name = a
 		
-		Cat.OpenIndicator.Text = not Hide[ CategoryOrdered[ a ] ] and  "Λ" or "V"
+		Cat.Button.OpenIndicator.Text = not Hide[ a ] and  "Λ" or "V"
 		
-		local Binds = Categories[ CategoryOrdered[ a ] ]
+		Cat.Button.TitleText.Text = a
 		
-		Cat.TitleText.Text = CategoryOrdered[ a ]
-		
-		Cat.MouseButton1Click:Connect( function ( )
+		Cat.Button.MouseButton1Click:Connect( function ( )
 			
-			Hide[ CategoryOrdered[ a ] ] = not Hide[ CategoryOrdered[ a ] ]
+			Hide[ a ] = not Hide[ a ]
 			
-			Redraw( )
+			TweenService:Create( Cat, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Size = UDim2.new( 1, 0, 0, Hide[ a ] and Cat.Button.Size.Y.Offset or Cat.UIListLayout.AbsoluteContentSize.Y ) } ):Play( )
+			
+			Cat.Button.OpenIndicator.Text = not Hide[ a ] and  "Λ" or "V"
 			
 		end )
 		
 		Cat.Parent = KeybindGui.Main
 		
-		if not Hide[ CategoryOrdered[ a ] ] then
+		for c = 1, #b do
 			
-			for b = 1, #Binds do
-				
-				Binds[ b ].LayoutOrder = a * 2
-				
-			end
+			b[ c ].Parent = Cat
 			
 		end
 		
+		Cat.Size = UDim2.new( 1, 0, 0, Hide[ a ] and Cat.Button.Size.Y.Offset or Cat.UIListLayout.AbsoluteContentSize.Y )
+		
 	end
-	
-	KeybindGui.Main.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
-	
-	KeybindGui.Context.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
 	
 end
 
