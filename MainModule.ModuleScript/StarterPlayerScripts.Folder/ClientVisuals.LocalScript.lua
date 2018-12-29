@@ -548,7 +548,7 @@ local function RenderLightning( User, GunStats, Start, End, Thickness, BranchFac
 	
 end
 
-Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, _, Humanoids )
+Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, _, Humanoids, Time )
 	
 	if not Barrel or not StatObj or not StatObj.Parent then return end
 	
@@ -653,6 +653,8 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		local Dist = ( Barrel.Position - End ).magnitude
 		
 		local Cur = math.random( 0, math.floor( Speed / 60 - Length ) )
+		
+		Cur = math.max( math.min( Cur + ( Speed * ( tick( ) + _G.ServerOffset - Time ) ), Dist - Length + Cur ), Cur )
 		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		

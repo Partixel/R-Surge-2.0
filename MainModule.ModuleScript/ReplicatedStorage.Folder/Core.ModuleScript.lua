@@ -534,12 +534,12 @@ if IsServer then
 		end
 		
 		local Humanoids = ( Module.GetBulletType( GunStats ).Func or Module.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
-
-		Module.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
-
+		
+		Module.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
+		
 		if IsClient then
 
-			Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
+			Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
 
 			if Players.LocalPlayer == User and Humanoids then
 
@@ -561,7 +561,7 @@ if IsServer then
 
 				if BulRay:Distance( Plrs[ a ].Character and Plrs[ a ].Character:FindFirstChild( "HumanoidRootPart" ) and Plrs[ a ].Character.HumanoidRootPart.Position or Barrel.Position ) <= 250 then
 
-					Module.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids )
+					Module.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
 
 				end
 
@@ -805,7 +805,7 @@ if IsClient then
 
 	end )
 
-	Module.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids  )
+	Module.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
 
 		if User == nil then
 
@@ -839,7 +839,7 @@ if IsClient then
 					
 				end
 	
-				Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids )
+				Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
 				
 			end
 
@@ -1677,7 +1677,7 @@ function Module.Fire( Weapon )
 
 						if not IsServer then
 
-							Module.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil )
+							Module.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, nil, tick( ) + _G.ServerOffset )
 
 						end
 
