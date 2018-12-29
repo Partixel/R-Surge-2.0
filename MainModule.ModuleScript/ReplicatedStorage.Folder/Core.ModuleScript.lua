@@ -557,7 +557,7 @@ if IsServer then
 
 		for a = 1, #Plrs do
 
-			if Plrs[ a ] ~= User then
+			if Plrs[ a ] ~= Plr then
 
 				if BulRay:Distance( Plrs[ a ].Character and Plrs[ a ].Character:FindFirstChild( "HumanoidRootPart" ) and Plrs[ a ].Character.HumanoidRootPart.Position or Barrel.Position ) <= 250 then
 
