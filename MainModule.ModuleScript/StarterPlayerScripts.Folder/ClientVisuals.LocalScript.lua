@@ -314,7 +314,7 @@ Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect( function ( StatObj, User,
 		
 	end
 	
-	local Ray = Ray.new( Start, CFrame.new( Start, End ).lookVector ).Unit
+	local Ray = Ray.new( Start, ( End - Start ).Unit ).Unit
 	
 	local ClosestPoint = Ray:ClosestPoint( Pos )
 	

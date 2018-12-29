@@ -551,7 +551,7 @@ if IsServer then
 
 		end
 
-		local BulRay = Ray.new( Barrel.Position, CFrame.new( Barrel.Position, End ).lookVector )
+		local BulRay = Ray.new( Barrel.Position, ( End - Barrel.Position ).Unit )
 
 		local Plrs = Players:GetPlayers( )
 

@@ -14,7 +14,7 @@ Core.Visuals.ShotKnockback = Core.ServerVisuals.Event:Connect( function ( StatOb
 	
 	if not Humanoid and not GunStats.KnockAll then return end
 	
-	local Velocity = CFrame.new( Barrel.Position, End ).lookVector * math.abs( GunStats.Damage ) * ( ( GunStats.Range - ( End - Barrel.Position ).magnitude ) / GunStats.Range ) * Config.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 ) * ( GunStats.Knockback or 1 )
+	local Velocity = ( End - Barrel.Position ).Unit * math.abs( GunStats.Damage ) * ( ( GunStats.Range - ( End - Barrel.Position ).magnitude ) / GunStats.Range ) * Config.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 ) * ( GunStats.Knockback or 1 )
 	
 	--Hit.Velocity = Hit.Velocity + Velocity
 	
