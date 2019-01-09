@@ -1007,97 +1007,105 @@ Core.Weapons = setmetatable( { }, { __mode = 'k' } )
 
 Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
-RunService.Heartbeat:Connect( function ( Step )
+local Heartbeat
 
-	for a, b in pairs( Core.Selected ) do
+function RunHeartbeat( )
+	
+	Heartbeat = RunService.Heartbeat:Connect( function ( Step )
 		
-		if IsClient and a == Players.LocalPlayer then
+		if not next( Core.Selected ) then Heartbeat:Disconnect( ) Heartbeat = nil end
+	
+		for a, b in pairs( Core.Selected ) do
 			
-			local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+			if IsClient and a == Players.LocalPlayer then
+				
+				local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+				
+				Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character }) }
+				
+			end
 			
-			Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character }) }
-			
-		end
-		
-		for c, _ in pairs( b ) do
-			
-			if c.MouseDown then
-
-				if c.GunStats.WindupTime == nil then
+			for c, _ in pairs( b ) do
+				
+				if c.MouseDown then
+	
+					if c.GunStats.WindupTime == nil then
+						
+						Core.Fire( c )
+						
+					elseif c.Reloading then
+	
+						if c.Windup or c.WindupSound then
+	
+							Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
+	
+						end
+	
+					elseif c.Windup and c.Windup >= c.GunStats.WindupTime then
+						
+						Core.Fire( c )
+	
+					else
+	
+						Core.SetWindup( c, ( c.Windup or 0 ) + Step )
+	
+					end
+	
+				else
 					
-					Core.Fire( c )
-					
-				elseif c.Reloading then
-
-					if c.Windup or c.WindupSound then
-
+					if c.Windup then
+						
 						Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
-
-					end
-
-				elseif c.Windup and c.Windup >= c.GunStats.WindupTime then
-					
-					Core.Fire( c )
-
-				else
-
-					Core.SetWindup( c, ( c.Windup or 0 ) + Step )
-
-				end
-
-			else
-				
-				if c.Windup then
-					
-					Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
-					
-				end
-				
-				if c.GunStats.ClipReloadPerSecond and not c.Reloading and c.LastClick and c.Clip < c.GunStats.ClipSize and ( not c.StoredAmmo or c.StoredAmmo ~= 0 ) and ( c.LastClick + ( c.GunStats.ClipsReloadDelay or 0 ) ) <= tick( ) then
-					
-					local Amnt = ( c.ClipRemainder or 0 ) + c.GunStats.ClipReloadPerSecond * Step
-					
-					c.ClipRemainder = Amnt % 1
-					
-					Amnt = math.min( math.floor( Amnt ), c.GunStats.ClipSize - c.Clip )
-					
-					if c.StoredAmmo then
-						
-						Amnt = math.min( Amnt, c.StoredAmmo )
-			
-						Core.SetStoredAmmo( c, c.StoredAmmo - Amnt )
-			
-					end
-					
-					if Amnt > 0 then
-				
-						Core.SetClip( c, c.Clip + Amnt )
 						
 					end
 					
+					if c.GunStats.ClipReloadPerSecond and not c.Reloading and c.LastClick and c.Clip < c.GunStats.ClipSize and ( not c.StoredAmmo or c.StoredAmmo ~= 0 ) and ( c.LastClick + ( c.GunStats.ClipsReloadDelay or 0 ) ) <= tick( ) then
+						
+						local Amnt = ( c.ClipRemainder or 0 ) + c.GunStats.ClipReloadPerSecond * Step
+						
+						c.ClipRemainder = Amnt % 1
+						
+						Amnt = math.min( math.floor( Amnt ), c.GunStats.ClipSize - c.Clip )
+						
+						if c.StoredAmmo then
+							
+							Amnt = math.min( Amnt, c.StoredAmmo )
+				
+							Core.SetStoredAmmo( c, c.StoredAmmo - Amnt )
+				
+						end
+						
+						if Amnt > 0 then
+					
+							Core.SetClip( c, c.Clip + Amnt )
+							
+						end
+						
+					end
+	
 				end
-
-			end
-
-			if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
-
-				if c.ShotRecoil > 0 then
-
-					c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
-
-				else
-
-					c.ShotRecoil = 0
-
+	
+				if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
+	
+					if c.ShotRecoil > 0 then
+	
+						c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
+	
+					else
+	
+						c.ShotRecoil = 0
+	
+					end
+	
 				end
-
+	
 			end
-
+	
 		end
-
-	end
-
-end )
+	
+	end )
+	
+end
 
 function Core.GetWeapon( StatObj )
 
@@ -1135,6 +1143,12 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 		ContextActionService:SetImage( "Reload", "rbxassetid://371461853" )
 
+	end
+	
+	if not Heartbeat then
+		
+		RunHeartbeat( )
+		
 	end
 
 end )
