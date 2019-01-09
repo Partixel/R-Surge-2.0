@@ -112,15 +112,13 @@ Core.BulletTypes = {
 
 	Kinetic = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 		
-		local WeaponName = Core.GetGunName( StatObj )
-		
 		local DamageType = GunStats.BulletType and GunStats.BulletType.DamageType or Core.DamageType.Kinetic
 	
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
 	
 		if ResH then
 			
-			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, DamageType )
+			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, StatObj.Value, DamageType )
 	
 		end
 
@@ -133,8 +131,6 @@ Core.BulletTypes = {
 		local Material, Occupancy = workspace.Terrain:ReadVoxels( Region3.new( End - Vector3.new( 2, 2, 2 ), End + Vector3.new( 2, 2, 2 ) ):ExpandToGrid( 4 ), 4 )
 
 		local Humanoids = { }
-
-		local WeaponName = Core.GetGunName( StatObj )
 
 		if( Material[ 1 ][ 1 ][ 1 ] == Enum.Material.Water ) then
 
@@ -150,11 +146,11 @@ Core.BulletTypes = {
 				
 				if Type then
 					
-					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, GunStats.BulletType.DamageType or Core.DamageType.Electricity, WeaponName )
+					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, GunStats.BulletType.DamageType or Core.DamageType.Electricity, StatObj.Value )
 					
 				else
 					
-					ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+					ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
 					
 				end
 
@@ -168,7 +164,7 @@ Core.BulletTypes = {
 
 		end
 
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
 
 		if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
 			
@@ -186,7 +182,7 @@ Core.BulletTypes = {
 				
 			end
 
-			return Core.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
+			return Core.DamageObj( User, Hums, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
 
 		end
 
@@ -194,13 +190,11 @@ Core.BulletTypes = {
 
 	Fire = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 		
-		local WeaponName = Core.GetGunName( StatObj )
-		
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
 		
 		if ResH then
 			
-			local Damaged = Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Fire )
+			local Damaged = Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Fire )
 			
 			if next( Damaged ) then
 				
@@ -246,7 +240,7 @@ Core.BulletTypes = {
 							
 						end
 						
-						Core.DamageObj( User, { { ResH, ResD, HitName } }, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Fire )
+						Core.DamageObj( User, { { ResH, ResD, HitName } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Fire )
 						
 						wait( 0.3 )
 						
@@ -274,7 +268,7 @@ Core.BulletTypes = {
 
 		if ResH then
 
-			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, Core.GetGunName( StatObj ), GunStats.BulletType.DamageType or Core.DamageType.Electricity )
+			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
 
 		end
 
@@ -292,8 +286,6 @@ Core.BulletTypes = {
 
 		local Humanoids = { }
 
-		local WeaponName = Core.GetGunName( StatObj )
-
 		FakeExplosion( { Position = End, BlastRadius = BlastRadius, BlastPressure = GunStats.BulletType.BlastPressure, ExplosionType = GunStats.BulletType.ExplosionType }, function ( Part, Dist )
 
 			if Core.IgnoreFunction( Part ) or not Part.Parent or Part.Parent:IsA( "Tool" ) then return end
@@ -302,11 +294,11 @@ Core.BulletTypes = {
 			
 			if Type then
 				
-				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, GunStats.BulletType.DamageType or Core.DamageType.Explosive, WeaponName )
+				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, GunStats.BulletType.DamageType or Core.DamageType.Explosive, StatObj.Value )
 				
 			else
 				
-				ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+				ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
 				
 			end
 
@@ -335,7 +327,7 @@ Core.BulletTypes = {
 				
 			end
 
-			return Core.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Explosive )
+			return Core.DamageObj( User, Hums, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Explosive )
 
 		end
 
@@ -399,12 +391,6 @@ else
 	
 	GunStatFolder = game:GetService( "ReplicatedStorage" ):WaitForChild( "GunStats" )
 	
-end
-
-function Module.GetGunName( StatObj )
-
-	return GunStatFolder:FindFirstChild( StatObj.Value, true ).Name
-
 end
 
 function Core.GetGunStats( StatObj )
