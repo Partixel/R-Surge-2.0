@@ -1,4 +1,4 @@
-local Module = { }
+local Core = { }
 
 local RunService, Players, ContextActionService, CollectionService = game:GetService( "RunService" ), game:GetService( "Players" ), game:GetService( "ContextActionService" ), game:GetService( "CollectionService" )
 
@@ -6,37 +6,37 @@ while not _G.S20Config do wait( ) end
 
 local Config = _G.S20Config
 
-Module.ShotRemote = script:WaitForChild( "ShotRemote" )
+Core.ShotRemote = script:WaitForChild( "ShotRemote" )
 
-Module.ClientSync = script.ClientSync
+Core.ClientSync = script.ClientSync
 
-Module.DropHat = script.DropHat
+Core.DropHat = script.DropHat
 
-Module.WeaponSelected = script.WeaponSelected
+Core.WeaponSelected = script.WeaponSelected
 
-Module.WeaponDeselected = script.WeaponDeselected
+Core.WeaponDeselected = script.WeaponDeselected
 
-Module.ReloadStart = script.ReloadStart
+Core.ReloadStart = script.ReloadStart
 
-Module.ReloadStepped = script.ReloadStepped
+Core.ReloadStepped = script.ReloadStepped
 
-Module.ReloadEnd = script.ReloadEnd
+Core.ReloadEnd = script.ReloadEnd
 
-Module.StoredAmmoChanged = script.StoredAmmoChanged
+Core.StoredAmmoChanged = script.StoredAmmoChanged
 
-Module.ClipChanged = script.ClipChanged
+Core.ClipChanged = script.ClipChanged
 
-Module.FireModeChanged = script.FireModeChanged
+Core.FireModeChanged = script.FireModeChanged
 
-Module.WindupChanged = script.WindupChanged
+Core.WindupChanged = script.WindupChanged
 
-Module.DamageableAdded = script.DamageableAdded
+Core.DamageableAdded = script.DamageableAdded
 
-Module.FiringEnded = script.FiringEnded
+Core.FiringEnded = script.FiringEnded
 
-Module.Killed = script.Killed
+Core.Killed = script.Killed
 
-Module.FireModes = {
+Core.FireModes = {
 
 	Auto = { Name = "Auto", Automatic = true },
 
@@ -80,7 +80,7 @@ end
 
 local function Stun( StatObj, GunStats, User, Hit, Dist, Type, WeaponName )
 
-	local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, Type, Dist, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+	local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, Type, Dist, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 
 	if ResH and ResH and ResH:IsA( "Humanoid" ) then
 
@@ -108,19 +108,19 @@ local function Stun( StatObj, GunStats, User, Hit, Dist, Type, WeaponName )
 
 end
 
-Module.BulletTypes = {
+Core.BulletTypes = {
 
 	Kinetic = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 		
-		local WeaponName = Module.GetGunName( StatObj )
+		local WeaponName = Core.GetGunName( StatObj )
 		
-		local DamageType = GunStats.BulletType and GunStats.BulletType.DamageType or Module.DamageType.Kinetic
+		local DamageType = GunStats.BulletType and GunStats.BulletType.DamageType or Core.DamageType.Kinetic
 	
-		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 	
 		if ResH then
 			
-			return Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, DamageType )
+			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, DamageType )
 	
 		end
 
@@ -134,7 +134,7 @@ Module.BulletTypes = {
 
 		local Humanoids = { }
 
-		local WeaponName = Module.GetGunName( StatObj )
+		local WeaponName = Core.GetGunName( StatObj )
 
 		if( Material[ 1 ][ 1 ][ 1 ] == Enum.Material.Water ) then
 
@@ -144,17 +144,17 @@ Module.BulletTypes = {
 
 			FakeExplosion( { Position = End, BlastRadius = Radius, BlastPressure = 0, ExplosionType = Enum.ExplosionType.NoCraters }, function ( Part, Dist )
 
-				if Module.IgnoreFunction( Part ) then return end
+				if Core.IgnoreFunction( Part ) then return end
 
 				local ResH, ResD
 				
 				if Type then
 					
-					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, GunStats.BulletType.DamageType or Module.DamageType.Electricity, WeaponName )
+					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, GunStats.BulletType.DamageType or Core.DamageType.Electricity, WeaponName )
 					
 				else
 					
-					ResH, ResD = Module.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+					ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 					
 				end
 
@@ -168,7 +168,7 @@ Module.BulletTypes = {
 
 		end
 
-		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 
 		if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
 			
@@ -186,7 +186,7 @@ Module.BulletTypes = {
 				
 			end
 
-			return Module.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Electricity )
+			return Core.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
 
 		end
 
@@ -194,13 +194,13 @@ Module.BulletTypes = {
 
 	Fire = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 		
-		local WeaponName = Module.GetGunName( StatObj )
+		local WeaponName = Core.GetGunName( StatObj )
 		
-		local ResH, ResD = Module.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 		
 		if ResH then
 			
-			local Damaged = Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Fire )
+			local Damaged = Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Fire )
 			
 			if next( Damaged ) then
 				
@@ -246,7 +246,7 @@ Module.BulletTypes = {
 							
 						end
 						
-						Module.DamageObj( User, { { ResH, ResD, HitName } }, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Fire )
+						Core.DamageObj( User, { { ResH, ResD, HitName } }, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Fire )
 						
 						wait( 0.3 )
 						
@@ -270,11 +270,11 @@ Module.BulletTypes = {
 
 	Stun = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 
-		local ResH, ResD = Stun( StatObj, GunStats, User, Hit, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.BulletType.DamageType or Module.DamageType.Electricity )
+		local ResH, ResD = Stun( StatObj, GunStats, User, Hit, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
 
 		if ResH then
 
-			return Module.DamageObj( User, { { ResH, ResD, Hit.Name } }, Module.GetGunName( StatObj ), GunStats.BulletType.DamageType or Module.DamageType.Electricity )
+			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, Core.GetGunName( StatObj ), GunStats.BulletType.DamageType or Core.DamageType.Electricity )
 
 		end
 
@@ -292,21 +292,21 @@ Module.BulletTypes = {
 
 		local Humanoids = { }
 
-		local WeaponName = Module.GetGunName( StatObj )
+		local WeaponName = Core.GetGunName( StatObj )
 
 		FakeExplosion( { Position = End, BlastRadius = BlastRadius, BlastPressure = GunStats.BulletType.BlastPressure, ExplosionType = GunStats.BulletType.ExplosionType }, function ( Part, Dist )
 
-			if Module.IgnoreFunction( Part ) or not Part.Parent or Part.Parent:IsA( "Tool" ) then return end
+			if Core.IgnoreFunction( Part ) or not Part.Parent or Part.Parent:IsA( "Tool" ) then return end
 
 			local ResH, ResD
 			
 			if Type then
 				
-				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, GunStats.BulletType.DamageType or Module.DamageType.Explosive, WeaponName )
+				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, GunStats.BulletType.DamageType or Core.DamageType.Explosive, WeaponName )
 				
 			else
 				
-				ResH, ResD = Module.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Module.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+				ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
 				
 			end
 
@@ -335,7 +335,7 @@ Module.BulletTypes = {
 				
 			end
 
-			return Module.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Module.DamageType.Explosive )
+			return Core.DamageObj( User, Hums, WeaponName, GunStats.BulletType.DamageType or Core.DamageType.Explosive )
 
 		end
 
@@ -343,15 +343,15 @@ Module.BulletTypes = {
 
 }
 
-Module.Damageables = setmetatable( { }, { __mode = "k" } )
+Core.Damageables = setmetatable( { }, { __mode = "k" } )
 
 workspace.DescendantAdded:Connect( function ( Child )
 	
-	if not Module.Damageables[ Child ] and ( Child:IsA( "Humanoid" ) or ( Child:IsA( "DoubleConstrainedValue" ) and Child.Name == "Health" ) ) then
+	if not Core.Damageables[ Child ] and ( Child:IsA( "Humanoid" ) or ( Child:IsA( "DoubleConstrainedValue" ) and Child.Name == "Health" ) ) then
 		
-		Module.Damageables[ Child ] = true
+		Core.Damageables[ Child ] = true
 		
-		Module.DamageableAdded:Fire( Child )
+		Core.DamageableAdded:Fire( Child )
 		
 	end
 	
@@ -361,17 +361,17 @@ local Descendants = workspace:GetDescendants( )
 
 for a = 1, #Descendants do
 	
-	if not Module.Damageables[ Descendants[ a ] ] and ( Descendants[ a ]:IsA( "Humanoid" ) or ( Descendants[ a ]:IsA( "DoubleConstrainedValue" ) and Descendants[ a ].Name == "Health" ) ) then
+	if not Core.Damageables[ Descendants[ a ] ] and ( Descendants[ a ]:IsA( "Humanoid" ) or ( Descendants[ a ]:IsA( "DoubleConstrainedValue" ) and Descendants[ a ].Name == "Health" ) ) then
 		
-		Module.Damageables[ Descendants[ a ] ] = true
+		Core.Damageables[ Descendants[ a ] ] = true
 		
-		Module.DamageableAdded:Fire( Descendants[ a ] )
+		Core.DamageableAdded:Fire( Descendants[ a ] )
 		
 	end
 	
 end
 
-Module.Visuals = { }
+Core.Visuals = { }
 
 local IsClient = RunService:IsClient( )
 
@@ -407,7 +407,7 @@ function Module.GetGunName( StatObj )
 
 end
 
-function Module.GetGunStats( StatObj )
+function Core.GetGunStats( StatObj )
 
 	local StatMod = GunStatFolder:FindFirstChild( StatObj.Value, true )
 
@@ -429,15 +429,15 @@ function Module.GetGunStats( StatObj )
 
 end
 
-function Module.ToolAdded( Tool, Plr )
+function Core.ToolAdded( Tool, Plr )
 	
 	local StatObj = Tool:FindFirstChild( "GunStat" )
 
-	if StatObj and not Module.Weapons[ StatObj ] then
+	if StatObj and not Core.Weapons[ StatObj ] then
 		
 		if IsServer and _G.S20Config.ArmWelds then
 
-			local GunStats = Module.GetGunStats( StatObj )
+			local GunStats = Core.GetGunStats( StatObj )
 			
 			if GunStats.LeftWeld or GunStats.RightWeld then
 				
@@ -449,23 +449,23 @@ function Module.ToolAdded( Tool, Plr )
 
 		if IsClient then
 
-			local Weapon = Module.Setup( StatObj )
+			local Weapon = Core.Setup( StatObj )
 
-			Module.PlayerToUser( Weapon, Plr )
+			Core.PlayerToUser( Weapon, Plr )
 
 		else
 
-			Module.Weapons[ StatObj ] = true
+			Core.Weapons[ StatObj ] = true
 
-			Tool.Equipped:Connect( function ( Mouse )
+			Tool.Equipped:Connect( function ( )
 				
-				Module.WeaponSelected:Fire( StatObj, Plr )
+				Core.WeaponSelected:Fire( StatObj, Plr )
 
 			end )
 
-			Tool.Unequipped:Connect( function ( Mouse )
+			Tool.Unequipped:Connect( function ( )
 				
-				Module.WeaponDeselected:Fire( StatObj, Plr )
+				Core.WeaponDeselected:Fire( StatObj, Plr )
 
 			end )
 
@@ -475,19 +475,19 @@ function Module.ToolAdded( Tool, Plr )
 
 end
 
-function Module.Spawned( Plr )
+function Core.Spawned( Plr )
 
 	local Children = Plr.Character:GetChildren( )
 
 	for a = 1, #Children do
 
-		Module.ToolAdded( Children[ a ], Plr )
+		Core.ToolAdded( Children[ a ], Plr )
 
 	end
 
 	Plr.Character.ChildAdded:Connect( function ( Tool )
 
-		Module.ToolAdded( Tool, Plr )
+		Core.ToolAdded( Tool, Plr )
 
 	end )
 
@@ -495,13 +495,13 @@ end
 
 if IsServer then
 
-	Module.ServerVisuals = Instance.new( "BindableEvent" )
+	Core.ServerVisuals = Instance.new( "BindableEvent" )
 
-	Module.ObjDamaged = Instance.new( "BindableEvent" )
+	Core.ObjDamaged = Instance.new( "BindableEvent" )
 
 	ArmUtil = require( script.ArmUtil )
 
-	Module.HandleServer = function ( Plr, Time, StatObj, HitMat, End, Normal, Offset, BulNum, User, BarrelNum )
+	Core.HandleServer = function ( Plr, Time, StatObj, HitMat, End, Normal, Offset, BulNum, User, BarrelNum )
 
 		if not StatObj or not StatObj.Parent then return end
 
@@ -509,7 +509,7 @@ if IsServer then
 
 		if tick( ) - Time > 1 then warn( ( User.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
 
-		local GunStats = Module.GetGunStats( StatObj )
+		local GunStats = Core.GetGunStats( StatObj )
 
 		local Barrel = GunStats.Barrels( StatObj )
 
@@ -533,9 +533,9 @@ if IsServer then
 			
 		end
 		
-		local Humanoids = ( Module.GetBulletType( GunStats ).Func or Module.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
+		local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
 		
-		Module.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
+		Core.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
 		
 		if IsClient then
 
@@ -561,7 +561,7 @@ if IsServer then
 
 				if BulRay:Distance( Plrs[ a ].Character and Plrs[ a ].Character:FindFirstChild( "HumanoidRootPart" ) and Plrs[ a ].Character.HumanoidRootPart.Position or Barrel.Position ) <= 250 then
 
-					Module.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
+					Core.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
 
 				end
 
@@ -575,15 +575,15 @@ if IsServer then
 
 	end
 
-	Module.ShotRemote.OnServerEvent:Connect( Module.HandleServer )
+	Core.ShotRemote.OnServerEvent:Connect( Core.HandleServer )
 
-	Module.ClientSync.OnServerInvoke = function ( Plr, ClientTime )
+	Core.ClientSync.OnServerInvoke = function ( Plr, ClientTime )
 
 		return tick( )
 
 	end
 
-	Module.DropHat.OnServerEvent:Connect( function ( Plr )
+	Core.DropHat.OnServerEvent:Connect( function ( Plr )
 
 		if Config.HatMode == 1 or not Plr.Character then return end
 
@@ -635,17 +635,17 @@ if IsServer then
 		
 		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
 		
-		Module.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		Core.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
 	end )
 
 	ClntDmg.Parent = game:GetService( "ReplicatedStorage" )
 	
-	Module.KilledEvents = { }
+	Core.KilledEvents = { }
 	
-	Module.DamageInfos = setmetatable( { }, { __mode = "k" } )
+	Core.DamageInfos = setmetatable( { }, { __mode = "k" } )
 
-	function Module.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
 		local Killed = { }
 		
@@ -715,23 +715,23 @@ if IsServer then
 					
 					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
 					
-					Module.DamageInfos[ Damageable ] = Module.DamageInfos[ Damageable ] or { }
+					Core.DamageInfos[ Damageable ] = Core.DamageInfos[ Damageable ] or { }
 					
-					Module.DamageInfos[ Damageable ][ User ] = ( Module.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
+					Core.DamageInfos[ Damageable ][ User ] = ( Core.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
 					
 					delay( 30, function ( )
 		
-						if Module.DamageInfos[ Damageable ] and Module.DamageInfos[ Damageable ][ User ] then
+						if Core.DamageInfos[ Damageable ] and Core.DamageInfos[ Damageable ][ User ] then
 							
-							Module.DamageInfos[ Damageable ][ User ] = Module.DamageInfos[ Damageable ][ User ] - Amount
+							Core.DamageInfos[ Damageable ][ User ] = Core.DamageInfos[ Damageable ][ User ] - Amount
 							
-							if Module.DamageInfos[ Damageable ][ User ] <= 0 then
+							if Core.DamageInfos[ Damageable ][ User ] <= 0 then
 								
-								Module.DamageInfos[ Damageable ][ User ] = nil
+								Core.DamageInfos[ Damageable ][ User ] = nil
 								
-								if not next( Module.DamageInfos[ Damageable ] ) then
+								if not next( Core.DamageInfos[ Damageable ] ) then
 									
-									Module.DamageInfos[ Damageable ] = nil
+									Core.DamageInfos[ Damageable ] = nil
 									
 								end
 								
@@ -753,7 +753,7 @@ if IsServer then
 		
 					end
 		
-					Module.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
+					Core.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
 					
 				end
 				
@@ -765,7 +765,7 @@ if IsServer then
 		
 		if next( Killed ) then
 			
-			for a, b in pairs( Module.KilledEvents ) do
+			for a, b in pairs( Core.KilledEvents ) do
 				
 				spawn( function ( )
 					
@@ -785,11 +785,9 @@ end
 
 if IsClient then
 
-	Module.ClientVisuals = Instance.new( "BindableEvent" )
+	Core.ClientVisuals = Instance.new( "BindableEvent" )
 
-	Module.SharedVisuals = Instance.new( "BindableEvent" )
-
-	Module.DamagedObj = Instance.new( "BindableEvent" )
+	Core.SharedVisuals = Instance.new( "BindableEvent" )
 
 	game:GetService( "ReplicatedStorage" ):WaitForChild( "ClientDamage" ).OnClientEvent:Connect( function ( Other, Amount, Killed )
 
@@ -805,7 +803,7 @@ if IsClient then
 
 	end )
 
-	Module.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
+	Core.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
 
 		if User == nil then
 
@@ -917,7 +915,7 @@ if IsClient then
 
 			if Found then
 
-				Module.DropHat:FireServer( )
+				Core.DropHat:FireServer( )
 
 			end
 
@@ -925,11 +923,11 @@ if IsClient then
 
 	end, Key = Enum.KeyCode.Equals, NoHandled = true }
 	
-	Module.LPlrsTarget = { }
+	Core.LPlrsTarget = { }
 
-	function Module.GetLPlrsTarget( )
+	function Core.GetLPlrsTarget( )
 
-		return nil, Module.LPlrsTarget[ 2 ]
+		return nil, Core.LPlrsTarget[ 2 ]
 
 	end
 
@@ -939,7 +937,7 @@ if IsClient then
 
 			local StartTime = tick( )
 
-			local ServerTime = Module.ClientSync:InvokeServer( StartTime )
+			local ServerTime = Core.ClientSync:InvokeServer( StartTime )
 
 			local ClientTime = tick( )
 
@@ -988,6 +986,9 @@ RunService.Heartbeat:Connect( function ( Step )
 				end
 				
 			end
+Core.Weapons = setmetatable( { }, { __mode = 'k' } )
+
+Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
 			if b.MouseDown then
 
