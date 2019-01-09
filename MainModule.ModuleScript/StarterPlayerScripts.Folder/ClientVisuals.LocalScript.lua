@@ -228,13 +228,13 @@ Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj
 	
 	if not StatObj or not StatObj.Parent then return end
 	
-	local Weapon = Core.GetWeapon( StatObj )
+	local GunStats = Core.GetGunStats( StatObj )
 	
-	if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and Weapon.GunStats.AllowCameraShake ~= false then
+	if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and GunStats.AllowCameraShake ~= false then
 		
 		local Hum = Plr.Character.Humanoid
 		
-		Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Config.ScreenRecoilPercentage * ( Weapon.GunStats.Damage / 25 )
+		Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Config.ScreenRecoilPercentage * ( GunStats.Damage / 25 )
 		
 		TweenService:Create( Hum, TweenInfo.new( 0.2 ), { CameraOffset = VZero } ):Play( )
 		
