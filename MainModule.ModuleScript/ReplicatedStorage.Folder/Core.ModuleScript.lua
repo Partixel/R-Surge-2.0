@@ -525,13 +525,7 @@ if IsServer then
 		
 		if IsClient then
 
-			Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
-
-			if Players.LocalPlayer == User and Humanoids then
-
-				Module.DamagedObj:Fire( Humanoids )
-
-			end
+			Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
 
 			return
 
@@ -550,10 +544,6 @@ if IsServer then
 					Core.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
 
 				end
-
-			elseif Humanoids then
-
-				Module.ShotRemote:FireClient( Plrs[ a ], Humanoids )
 
 			end
 
@@ -791,42 +781,34 @@ if IsClient then
 
 	Core.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
 
-		if User == nil then
+		local GunStats = Core.GetGunStats( StatObj )
+		
+		if GunStats then
 
-			Module.DamagedObj:Fire( StatObj )
+			local Barrel = GunStats.Barrels( StatObj )
 
-		elseif StatObj then
+			Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
 
-			local GunStats = Module.GetGunStats( StatObj )
+			if not Barrel then return end
 			
-			if GunStats then
-	
-				local Barrel = GunStats.Barrels( StatObj )
-	
-				Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
-	
-				if not Barrel then return end
+			local Hit, Material
+			
+			if typeof( HitMat ) == "Instance" then
 				
-				local Hit, Material
+				Hit = HitMat
 				
-				if typeof( HitMat ) == "Instance" then
-					
-					Hit = HitMat
-					
-					Material = Hit.Material
-					
-				elseif Hit then
-					
-					Material = HitMat
-					
-					Hit = workspace.Terrain
-					
-				end
-	
-				Module.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
+				Material = Hit.Material
+				
+			elseif Hit then
+				
+				Material = HitMat
+				
+				Hit = workspace.Terrain
 				
 			end
 
+			Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
+			
 		end
 
 	end )
@@ -834,23 +816,33 @@ if IsClient then
 	local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
 
 	KBU.AddBind{ Name = "Fire", Category = "Surge 2.0", Callback = function ( Began )
-
-		local Weapon = Module.GetSelectedWeapon( Players.LocalPlayer )
-
-		if not Weapon or not Weapon.Selected or Weapon.GunStats.ManualFire then return end
-
-		if Began then
+		
+		local Weapons = Core.Selected[ Players.LocalPlayer ]
+		
+		if Weapons then
 			
-			Weapon.MouseDown = tick( )
-
-		else
+			for a, _ in pairs( Weapons ) do
+				
+				if not a.GunStats.ManualFire then
+					
+					if Began then
+						
+						a.MouseDown = tick( )
+						
+					else
+						
+						a.MouseDown = nil
+						
+						Core.FiringEnded:Fire( a.StatObj )
+						
+						a.ModeShots = 0
+						
+					end
+					
+				end
+				
+			end
 			
-			Weapon.MouseDown = nil
-			
-			Module.FiringEnded:Fire( Weapon.StatObj )
-
-			Weapon.ModeShots = 0
-
 		end
 
 	end, Key = Enum.UserInputType.MouseButton1, PadKey = Enum.KeyCode.ButtonR2, NoHandled = true }
@@ -858,24 +850,40 @@ if IsClient then
 	KBU.AddBind{ Name = "Reload", Category = "Surge 2.0", Callback = function ( Began )
 
 		if not Began then return end
-
-		local Weapon = Module.GetSelectedWeapon( Players.LocalPlayer )
-
-		if not Weapon or not Weapon.Selected or Weapon.AllowManualReload == false then return end
-
-		Module.Reload( Weapon )
+		
+		local Weapons = Core.Selected[ Players.LocalPlayer ]
+		
+		if Weapons then
+			
+			for a, _ in pairs( Weapons ) do
+				
+				if not a.GunStats.AllowManualReload then
+					
+					Core.Reload( a )
+					
+				end
+				
+			end
+			
+		end
 
 	end, Key = Enum.KeyCode.R, PadKey = Enum.KeyCode.ButtonB, NoHandled = true }
 
 	KBU.AddBind{ Name = "Next_fire_mode", Category = "Surge 2.0", Callback = function ( Began )
 
 		if not Began then return end
-
-		local Weapon = Module.GetSelectedWeapon( Players.LocalPlayer )
-
-		if not Weapon or not Weapon.Selected then return end
-
-		Module.NextFireMode( Weapon )
+		
+		local Weapons = Core.Selected[ Players.LocalPlayer ]
+		
+		if Weapons then
+			
+			for a, _ in pairs( Weapons ) do
+				
+				Core.NextFireMode( a )
+				
+			end
+			
+		end
 
 	end, Key = Enum.UserInputType.MouseButton3, PadKey = Enum.KeyCode.ButtonY, NoHandled = true }
 
@@ -935,98 +943,135 @@ if IsClient then
 
 	end )
 
-end
-
-Module.Weapons = setmetatable( { }, { __mode = 'k' } )
-
-RunService.Heartbeat:Connect( function ( Step )
-	
-	local Selected
-
-	for a, b in pairs( Module.Weapons ) do
-
-		if b == true then
-
-			if not a:IsDescendantOf( game ) then
-
-				Module.Weapons[ a ] = nil
-
-			end
-
-		elseif not a:IsDescendantOf( game ) then
-
-			Module.Destroy( b )
-
-		elseif b.Selected then
+	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
+		local Damaged = { }
+		
+		local a, b = next( DamageInfos )
+		
+		while a do
 			
-			if not Selected then
-					
-				Selected = true
+			local Damageable, Damage = b[ 1 ], b[ 2 ]
+			
+			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
 				
-				if Players.LocalPlayer then
-	
-					local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
-	
-					Module.LPlrsTarget = { Module.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Module.IgnoreFunction, { Players.LocalPlayer.Character }) }
+				local Amount, PrevHealth
+				
+				if Damageable:IsA( "Humanoid" ) then
+					
+					PrevHealth = Damageable.Health
+					
+					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
+					
+				elseif Damageable:IsA( "DoubleConstrainedValue" ) then
+					
+					PrevHealth = Damageable.Value
+					
+					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
 	
 				end
 				
+				if Damage ~= Amount and Damageable.Parent then
+					
+					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
+						
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, b[ 3 ] }
+						
+					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
+						
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, b[ 3 ] }
+						
+					end
+					
+				end
+				
+				if Amount ~= 0 then
+					
+					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
+					
+				end
+				
 			end
+			
+			a, b = next( DamageInfos, a )
+	
+		end
+		
+		return Damaged
+		
+	end
+
+end
+
 Core.Weapons = setmetatable( { }, { __mode = 'k' } )
 
 Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
-			if b.MouseDown then
+RunService.Heartbeat:Connect( function ( Step )
 
-				if b.GunStats.WindupTime == nil then
+	for a, b in pairs( Core.Selected ) do
+		
+		if IsClient and a == Players.LocalPlayer then
+			
+			local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+			
+			Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character }) }
+			
+		end
+		
+		for c, _ in pairs( b ) do
+			
+			if c.MouseDown then
+
+				if c.GunStats.WindupTime == nil then
 					
-					Module.Fire( b )
+					Core.Fire( c )
 					
-				elseif b.Reloading then
+				elseif c.Reloading then
 
-					if b.Windup or b.WindupSound then
+					if c.Windup or c.WindupSound then
 
-						Module.SetWindup( b, math.max( b.Windup - ( Step * 2 ), 0 ) )
+						Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
 
 					end
 
-				elseif b.Windup and b.Windup >= b.GunStats.WindupTime then
+				elseif c.Windup and c.Windup >= c.GunStats.WindupTime then
 					
-					Module.Fire( b )
+					Core.Fire( c )
 
 				else
 
-					Module.SetWindup( b, ( b.Windup or 0 ) + Step )
+					Core.SetWindup( c, ( c.Windup or 0 ) + Step )
 
 				end
 
 			else
 				
-				if b.Windup then
+				if c.Windup then
 					
-					Module.SetWindup( b, math.max( b.Windup - ( Step * 2 ), 0 ) )
+					Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
 					
 				end
 				
-				if b.GunStats.ClipReloadPerSecond and not b.Reloading and b.LastClick and b.Clip < b.GunStats.ClipSize and ( not b.StoredAmmo or b.StoredAmmo ~= 0 ) and ( b.LastClick + ( b.GunStats.ClipsReloadDelay or 0 ) ) <= tick( ) then
+				if c.GunStats.ClipReloadPerSecond and not c.Reloading and c.LastClick and c.Clip < c.GunStats.ClipSize and ( not c.StoredAmmo or c.StoredAmmo ~= 0 ) and ( c.LastClick + ( c.GunStats.ClipsReloadDelay or 0 ) ) <= tick( ) then
 					
-					local Amnt = ( b.ClipRemainder or 0 ) + b.GunStats.ClipReloadPerSecond * Step
+					local Amnt = ( c.ClipRemainder or 0 ) + c.GunStats.ClipReloadPerSecond * Step
 					
-					b.ClipRemainder = Amnt % 1
+					c.ClipRemainder = Amnt % 1
 					
-					Amnt = math.min( math.floor( Amnt ), b.GunStats.ClipSize - b.Clip )
+					Amnt = math.min( math.floor( Amnt ), c.GunStats.ClipSize - c.Clip )
 					
-					if b.StoredAmmo then
+					if c.StoredAmmo then
 						
-						Amnt = math.min( Amnt, b.StoredAmmo )
+						Amnt = math.min( Amnt, c.StoredAmmo )
 			
-						Module.SetStoredAmmo( b, b.StoredAmmo - Amnt )
+						Core.SetStoredAmmo( c, c.StoredAmmo - Amnt )
 			
 					end
 					
 					if Amnt > 0 then
 				
-						Module.SetClip( b, b.Clip + Amnt )
+						Core.SetClip( c, c.Clip + Amnt )
 						
 					end
 					
@@ -1034,15 +1079,15 @@ Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
 			end
 
-			if b.LastClick and ( b.LastClick + 0.15 <= tick( ) or b.Reloading ) then
+			if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
 
-				if b.ShotRecoil > 0 then
+				if c.ShotRecoil > 0 then
 
-					b.ShotRecoil = math.max( b.ShotRecoil - 1, 0 )
+					c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
 
 				else
 
-					b.ShotRecoil = 0
+					c.ShotRecoil = 0
 
 				end
 
@@ -1054,39 +1099,15 @@ Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
 end )
 
-local Selected = setmetatable( { }, { __mode = 'k' } )
+function Core.GetWeapon( StatObj )
 
-function Module.GetSelectedWeapon( Plr )
-
-	local Sel = Selected[ Plr or "" ]
-
-	if Sel and Sel.Selected then return Sel end
-
-	for a, b in pairs( Module.Weapons ) do
-
-		if b.Selected and ( Plr == nil or b.User == Plr ) then
-
-			Selected[ Plr or "" ] = b
-
-			return b
-
-		end
-
-	end
-
-	Selected[ Plr or "" ] = nil
+	return Core.Weapons[ StatObj ] ~= true and Core.Weapons[ StatObj ] or nil
 
 end
 
-function Module.GetWeapon( StatObj )
+Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 
-	return Module.Weapons[ StatObj ] ~= true and Module.Weapons[ StatObj ] or nil
-
-end
-
-Module.WeaponSelected.Event:Connect( function ( StatObj, User )
-
-	local Weapon = Module.GetWeapon( StatObj )
+	local Weapon = Core.GetWeapon( StatObj )
 
 	if not Weapon then return end
 
@@ -1095,8 +1116,10 @@ Module.WeaponSelected.Event:Connect( function ( StatObj, User )
 		Weapon.LastClick = tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 )
 
 	end
-
-	Weapon.Selected = tick( )
+	
+	Core.Selected[ User ] = Core.Selected[ User ] or { }
+	
+	Core.Selected[ User ][ Weapon ] = tick( )
 
 	Weapon.Reloading = nil
 
@@ -1104,9 +1127,9 @@ Module.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 		ContextActionService:BindAction( "Reload", function ( Name, State, Input )
 
-			if State ~= Enum.UserInputState.Begin or not Weapon.Selected then return end
+			if State ~= Enum.UserInputState.Begin or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
 
-			Module.Reload( Weapon )
+			Core.Reload( Weapon )
 
 		end, true )
 
@@ -1116,9 +1139,9 @@ Module.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 end )
 
-Module.WeaponDeselected.Event:Connect( function ( StatObj, User )
+Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 
-	local Weapon = Module.GetWeapon( StatObj )
+	local Weapon = Core.GetWeapon( StatObj )
 
 	if not Weapon then return end
 
@@ -1128,11 +1151,21 @@ Module.WeaponDeselected.Event:Connect( function ( StatObj, User )
 
 	if Weapon.Windup then
 
-		Module.SetWindup( Weapon, 0 )
+		Core.SetWindup( Weapon, 0 )
 
 	end
-
-	Weapon.Selected = nil
+	
+	if Core.Selected[ User ] then
+		
+		Core.Selected[ User ][ Weapon ] = nil
+		
+		if not next( Core.Selected[ User ] ) then
+			
+			Core.Selected[ User ] = nil
+			
+		end
+		
+	end
 	
 	Weapon.MouseDown = nil
 
@@ -1144,11 +1177,57 @@ Module.WeaponDeselected.Event:Connect( function ( StatObj, User )
 
 	end
 
-	Module.ReloadEnd:Fire( StatObj )
+	Core.ReloadEnd:Fire( StatObj )
 
 end )
 
-function Module.PlayerToUser( Weapon, Plr )
+function Core.Destroy( Weapon )
+
+	if not Weapon.StatObj then return end
+
+	if Core.Selected[ Weapon.User ] and Core.Selected[ Weapon.User ][ Weapon ] then
+		
+		Core.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
+		
+		Core.Selected[ Weapon.User ][ Weapon ] = nil
+		
+		if not next( Core.Selected[ Weapon.User ] ) then
+			
+			Core.Selected[ Weapon.User ] = nil
+			
+		end
+		
+	end
+
+	Core.Weapons[ Weapon.StatObj ] = nil
+
+	ContextActionService:UnbindAction( "Reload" )
+
+	for a, b in pairs( Weapon.Events ) do
+
+		Weapon.Events[ a ]:Disconnect( )
+
+		Weapon.Events[ a ] = nil
+
+	end
+
+	if Weapon.StatObj.Parent then
+
+		Weapon.StatObj.Parent:Destroy( )
+
+	end
+
+	for a, b in pairs( Weapon ) do
+
+		Weapon[ a ] = nil
+
+	end
+
+	Weapon = nil
+
+end
+
+function Core.PlayerToUser( Weapon, Plr )
 
 	Weapon.User = Weapon.User or Plr
 
@@ -1162,19 +1241,19 @@ function Module.PlayerToUser( Weapon, Plr )
 
 	end )
 
-	Weapon.Target = Weapon.Target or Module.GetLPlrsTarget
+	Weapon.Target = Weapon.Target or Core.GetLPlrsTarget
 
 	return Weapon
 
 end
 
-function Module.Setup( StatObj )
+function Core.Setup( StatObj )
 
-	local GunStats = Module.GetGunStats( StatObj )
+	local GunStats = Core.GetGunStats( StatObj )
 
 	local Weapon = { }
 
-	Module.Weapons[ StatObj ] = Weapon
+	Core.Weapons[ StatObj ] = Weapon
 
 	Weapon.GunStats = GunStats
 
@@ -1218,13 +1297,13 @@ function Module.Setup( StatObj )
 
 		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Equipped:Connect( function ( )
 			
-			Module.WeaponSelected:Fire( StatObj, Weapon.User )
+			Core.WeaponSelected:Fire( StatObj, Weapon.User )
 
 		end )
 
 		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Unequipped:Connect( function ( )
 			
-			Module.WeaponDeselected:Fire( StatObj, Weapon.User )
+			Core.WeaponDeselected:Fire( StatObj, Weapon.User )
 
 		end )
 
@@ -1234,47 +1313,7 @@ function Module.Setup( StatObj )
 
 end
 
-function Module.Destroy( Weapon )
-
-	if not Weapon.StatObj then return end
-	
-	if Weapon.Selected then
-		
-		Module.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
-		
-	end
-
-	for a, b in pairs( Selected ) do if b == Weapon then Selected [ a ] = nil end end
-
-	Module.Weapons[ Weapon.StatObj ] = nil
-
-	ContextActionService:UnbindAction( "Reload" )
-
-	for a, b in pairs( Weapon.Events ) do
-
-		Weapon.Events[ a ]:Disconnect( )
-
-		Weapon.Events[ a ] = nil
-
-	end
-
-	if Weapon.StatObj.Parent then
-
-		Weapon.StatObj.Parent:Destroy( )
-
-	end
-
-	for a, b in pairs( Weapon ) do
-
-		Weapon[ a ] = nil
-
-	end
-
-	Weapon = nil
-
-end
-
-function Module.SetWindup( Weapon, Value )
+function Core.SetWindup( Weapon, Value )
 
 	local Started
 
@@ -1292,61 +1331,93 @@ function Module.SetWindup( Weapon, Value )
 
 	Weapon.Windup = Value
 	
-	Module.WindupChanged:Fire( Weapon.StatObj, Value, Started )
+	Core.WindupChanged:Fire( Weapon.StatObj, Value, Started )
 
 end
 
-function Module.GetFireMode( Weapon )
+function Core.GetFireMode( Weapon )
 
 	local Mode = Weapon.GunStats.FireModes[ Weapon.CurFireMode ]
 
-	if Module.FireModes[ Mode ] then return Module.FireModes[ Mode ] end
+	if Core.FireModes[ Mode ] then return Core.FireModes[ Mode ] end
 
 	return Mode
 
 end
 
-function Module.SetFireMode( Weapon, Value )
+function Core.SetFireMode( Weapon, Value )
 
 	Weapon.CurFireMode = Value
 
-	Module.FireModeChanged:Fire( Weapon.StatObj, Value )
+	Core.FireModeChanged:Fire( Weapon.StatObj, Value )
 
 end
 
-function Module.NextFireMode( Weapon )
+function Core.NextFireMode( Weapon )
 
 	if Weapon.CurFireMode + 1 > #Weapon.GunStats.FireModes then
 
-		Module.SetFireMode( Weapon, 1 )
+		Core.SetFireMode( Weapon, 1 )
 
 	else
 
-		Module.SetFireMode( Weapon, Weapon.CurFireMode + 1 )
+		Core.SetFireMode( Weapon, Weapon.CurFireMode + 1 )
 
 	end
 
 end
 
-function Module.GetBulletType( GunStats )
+function Core.GetBulletType( GunStats )
 
-	if not GunStats.BulletType then return Module.BulletTypes.Kinetic end
+	if not GunStats.BulletType then return Core.BulletTypes.Kinetic end
 
-	if Module.BulletTypes[ GunStats.BulletType.Name ] then return Module.BulletTypes[ GunStats.BulletType.Name ] end
+	if Core.BulletTypes[ GunStats.BulletType.Name ] then return Core.BulletTypes[ GunStats.BulletType.Name ] end
 
 	return GunStats.BulletType
 
 end
 
-function Module.IgnoreFunction( Part )
+function Core.IgnoreFunction( Part )
 	
-    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Module.GetValidHumanoid( Part ) == nil and Part.CanCollide == false ) ) or false
+    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Core.GetValidHumanoid( Part ) == nil and Part.CanCollide == false ) ) or false
 
 end
 
+if IsServer then
+	
+	-------------- TODO REMOVE THIS SMH
+	
+	for a, b in pairs( workspace:GetDescendants( ) ) do
+		
+		pcall( function ( )
+			
+			if b:IsA( "BasePart" ) and b.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( b.Parent ) and not Core.IgnoreFunction( b ) then
+				
+				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. b:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. b.Parent:GetFullName( ) )
+				
+			end
+			
+		end )
+		
+	end
+	
+	workspace.DescendantAdded:Connect( function ( Obj )
+		
+		pcall( function ( )
+			
+			if Obj:IsA( "BasePart" ) and Obj.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( Obj.Parent ) and not Core.IgnoreFunction( Obj ) then
+				
+				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. Obj:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. Obj.Parent:GetFullName( ) )
+				
+			end
+			
+		end )
+		
+	end )
+	
 end
 
-function Module.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
+function Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
 
 	local Hit, Pos, Normal, Material = workspace( "FindPartOnRayWithIgnoreList", R, Ignore, false, IgnoreWater == nil and true or IgnoreWater )
 
@@ -1360,11 +1431,11 @@ function Module.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, Igno
 
 	R = Ray.new( Pos - R.Unit.Direction, R.Unit.Direction * ( R.Direction.magnitude - ( Pos - R.Origin ).magnitude ) )
 
-	return Module.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
+	return Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
 
 end
 
-function Module.GetAccuracy( Weapon )
+function Core.GetAccuracy( Weapon )
 
 	local ShotRecoil = Weapon.ShotRecoil
 	
@@ -1384,11 +1455,11 @@ function Module.GetAccuracy( Weapon )
 
 end
 
-Module.PreventReload = { }
+Core.PreventReload = { }
 
-function Module.Reload( Weapon )
+function Core.Reload( Weapon )
 	
-	if not Weapon.StatObj or not Weapon.GunStats.ClipSize or Weapon.GunStats.ReloadDelay < 0 or Weapon.GunStats.FireRate == 0 or Weapon.Reloading or next( Module.PreventReload ) or ( Weapon.StoredAmmo and Weapon.StoredAmmo == 0 ) then return end
+	if not Weapon.StatObj or not Weapon.GunStats.ClipSize or Weapon.GunStats.ReloadDelay < 0 or Weapon.GunStats.FireRate == 0 or Weapon.Reloading or next( Core.PreventReload ) or ( Weapon.StoredAmmo and Weapon.StoredAmmo == 0 ) then return end
 
 	if Weapon.GunStats.ClipSize > 0 and Weapon.Clip ~= Weapon.GunStats.ClipSize then
 
@@ -1402,13 +1473,13 @@ function Module.Reload( Weapon )
 
 		if Weapon.StoredAmmo then
 
-			Module.SetStoredAmmo( Weapon, Weapon.StoredAmmo + Weapon.Clip - NewClip )
+			Core.SetStoredAmmo( Weapon, Weapon.StoredAmmo + Weapon.Clip - NewClip )
 
 		end
 
-		Module.SetClip( Weapon, NewClip )
+		Core.SetClip( Weapon, NewClip )
 
-		Module.ReloadStart:Fire( Weapon.StatObj )
+		Core.ReloadStart:Fire( Weapon.StatObj )
 
 		local Delay = Weapon.GunStats.ReloadDelay / math.ceil( Weapon.GunStats.ClipSize / ( Weapon.GunStats.ReloadAmount or 1 ) )
 
@@ -1424,7 +1495,7 @@ function Module.Reload( Weapon )
 
 			for i = Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 ), math.ceil( Weapon.GunStats.ClipSize / ( Weapon.GunStats.ReloadAmount or 1 ) ) - 1 do
 
-				Module.ReloadStepped:Fire( Weapon.StatObj )
+				Core.ReloadStepped:Fire( Weapon.StatObj )
 
 				TotalExtra = TotalExtra + w - Delay
 
@@ -1446,11 +1517,11 @@ function Module.Reload( Weapon )
 
 				local Add = Weapon.StoredAmmo and math.min( ( Weapon.GunStats.ReloadAmount or 1 ), Weapon.StoredAmmo ) or ( Weapon.GunStats.ReloadAmount or 1 )
 
-				Module.SetClip( Weapon, Weapon.Clip + Add )
+				Core.SetClip( Weapon, Weapon.Clip + Add )
 
 				if Weapon.StoredAmmo then
 
-					Module.SetStoredAmmo( Weapon, Weapon.StoredAmmo - Add )
+					Core.SetStoredAmmo( Weapon, Weapon.StoredAmmo - Add )
 
 					if Weapon.StoredAmmo == 0 then
 
@@ -1466,7 +1537,7 @@ function Module.Reload( Weapon )
 
 		if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
 
-			Module.ReloadEnd:Fire( Weapon.StatObj )
+			Core.ReloadEnd:Fire( Weapon.StatObj )
 
 			if Weapon.GunStats.FinalReloadDelay then hbwait( Weapon.GunStats.FinalReloadDelay ) end
 
@@ -1480,37 +1551,37 @@ function Module.Reload( Weapon )
 
 end
 
-function Module.SetStoredAmmo( Weapon, Value )
+function Core.SetStoredAmmo( Weapon, Value )
 
 	if not Weapon.StoredAmmo or Weapon.StoredAmmo == Value then return end
 
 	Weapon.StoredAmmo = Value
 
-	Module.StoredAmmoChanged:Fire( Weapon.StatObj, Value )
+	Core.StoredAmmoChanged:Fire( Weapon.StatObj, Value )
 
 end
 
-function Module.SetClip( Weapon, Value )
+function Core.SetClip( Weapon, Value )
 
 	if not Weapon.Clip or Weapon.Clip == Value then return end
 
 	Weapon.Clip = Value
 
-	Module.ClipChanged:Fire( Weapon.StatObj, Value )
+	Core.ClipChanged:Fire( Weapon.StatObj, Value )
 
 end
 
-Module.PreventFire = { }
+Core.PreventFire = { }
 
-function Module.CanFire( Weapon, Barrel )
+function Core.CanFire( Weapon, Barrel )
 	
-	if next( Module.PreventFire ) then return false end
+	if next( Core.PreventFire ) then return false end
 
 	if ( typeof( Weapon.User ) == "Instance" and Weapon.User:IsA( "Player" ) and not Weapon.User.Character ) or ( Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Humanoid" ) and Weapon.User.Character.Humanoid:GetState( ) == Enum.HumanoidStateType.Dead ) then return false end
 
 	if not Weapon.StatObj or Weapon.GunStats.UseBarrelAsOrigin or Weapon.GunStats.NoAntiWall or not Weapon.User.Character then return end
 
-	local Hit, End, Normal, Material = Module.FindPartOnRayWithIgnoreFunction( Ray.new( Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position ), Module.IgnoreFunction, Weapon.Ignore )
+	local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position ), Core.IgnoreFunction, Weapon.Ignore )
 
 	if Hit then
 
@@ -1534,11 +1605,11 @@ function TableCopy( Table )
 
 end
 
-function Module.Fire( Weapon )
+function Core.Fire( Weapon )
 
 	if Weapon == nil then return end
 
-	local FireMode = Module.GetFireMode( Weapon )
+	local FireMode = Core.GetFireMode( Weapon )
 	
 	if Weapon.Clip ~= 0 and Weapon.Reloading and Weapon.Reloading ~= Weapon.MouseDown then
 
@@ -1550,7 +1621,7 @@ function Module.Fire( Weapon )
 
 	if Weapon.Clip == 0 then
 
-		Module.Reload( Weapon )
+		Core.Reload( Weapon )
 
 		return
 
@@ -1562,7 +1633,7 @@ function Module.Fire( Weapon )
 
 	if Weapon.GunStats.ClipSize and Weapon.Clip - ( OneAmmoPerClick and 1 or ShotsPerClick ) < 0 then
 
-		Module.Reload( Weapon )
+		Core.Reload( Weapon )
 
 		return
 
@@ -1582,7 +1653,7 @@ function Module.Fire( Weapon )
 
 	for BulNum = 1, ShotsPerClick do
 
-		if not Weapon.Selected or Weapon.CurFireMode ~= CurFireMode then break end
+		if ( not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] ) or Weapon.CurFireMode ~= CurFireMode then break end
 
 		local Barrel = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ Weapon.CurBarrel ] or Weapon.BarrelPart
 
@@ -1604,7 +1675,7 @@ function Module.Fire( Weapon )
 
 			ActualFired = ActualFired + 1
 
-			local Hit, End, Normal, Material = Module.CanFire( Weapon, Barrel )
+			local Hit, End, Normal, Material = Core.CanFire( Weapon, Barrel )
 			
 			if Hit ~= false then
 
@@ -1630,7 +1701,7 @@ function Module.Fire( Weapon )
 						
 						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
 						
-                        Hit, End, Normal, Material = Module.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Module.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range - Vector3.new( 0, Config.BulletDrop / 1000 * Weapon.GunStats.Range, 0 ) ), Module.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
+                        Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Core.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range - Vector3.new( 0, Config.BulletDrop / 1000 * Weapon.GunStats.Range, 0 ) ), Core.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
 						
 					else
 
@@ -1644,7 +1715,7 @@ function Module.Fire( Weapon )
 
 					if Weapon.Clip  and ( not OneAmmoPerClick or ( ShotsPerClick and ShotsPerClick > 1 and BulNum == 1 ) ) then
 
-						Module.SetClip( Weapon, Weapon.Clip - 1 )
+						Core.SetClip( Weapon, Weapon.Clip - 1 )
 
 					end
 
@@ -1653,18 +1724,20 @@ function Module.Fire( Weapon )
 					local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
 					
 					if Offset then Offset = Vector3.new( Offset.X / Hit.Size.X, Offset.Y / Hit.Size.Y, Offset.Z / Hit.Size.Z ) end
+					
+					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ).Func or Core.BulletTypes.Kinetic.Func )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
 
 					if IsClient then
 
 						if Players.LocalPlayer == Weapon.User then
 
-							Module.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil )
+							Core.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil )
 
 						end
 
 						if not IsServer then
 
-							Module.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, nil, tick( ) + _G.ServerOffset )
+							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, Humanoids, tick( ) + _G.ServerOffset )
 
 						end
 
@@ -1672,11 +1745,11 @@ function Module.Fire( Weapon )
 
 					if IsServer then
 
-						Module.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+						Core.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
 
 					else
 
-						Module.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+						Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
 
 					end
 
@@ -1706,7 +1779,7 @@ function Module.Fire( Weapon )
 		
 		Weapon.MouseDown = nil
 		
-		Module.FiringEnded:Fire( Weapon.StatObj )
+		Core.FiringEnded:Fire( Weapon.StatObj )
 
 		Weapon.ModeShots = 0
 
@@ -1714,7 +1787,7 @@ function Module.Fire( Weapon )
 
 end
 
-Module.DamageType = {
+Core.DamageType = {
 
 	Kinetic = "Kinetic",
 
@@ -1730,7 +1803,7 @@ Module.DamageType = {
 
 }
 
-function Module.GetTeamInfo( Obj )
+function Core.GetTeamInfo( Obj )
 
 	if type( Obj ) == "table" then
 
@@ -1786,11 +1859,11 @@ local function ActualTeamKill( TC1, N1, TC2, N2 )
 	
 end
 
-function Module.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
+function Core.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
 	
-	local TC1, N1, PlrObj1 = Module.GetTeamInfo( P1 )
+	local TC1, N1, PlrObj1 = Core.GetTeamInfo( P1 )
 
-	local TC2, N2, PlrObj2 = Module.GetTeamInfo( P2 )
+	local TC2, N2, PlrObj2 = Core.GetTeamInfo( P2 )
 
 	if PlrObj1 and PlrObj2 and PlrObj1 == PlrObj2 then return Config.SelfDamage or false end
 	
@@ -1802,7 +1875,7 @@ function Module.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
 
 end
 
-function Module.GetValidHumanoid( Obj )
+function Core.GetValidHumanoid( Obj )
 
 	if not Obj or not Obj:IsDescendantOf( game ) then return end
 
@@ -1824,15 +1897,15 @@ function Module.GetValidHumanoid( Obj )
 
 end
 
-function Module.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill )
+function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill )
 
-	local Humanoid = Module.GetValidHumanoid( Hit )
+	local Humanoid = Core.GetValidHumanoid( Hit )
 
 	if not Humanoid then return end
 
-	if Module.IgnoreFunction( Hit ) then return false end
+	if Core.IgnoreFunction( Hit ) then return false end
 
-	if not Module.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
+	if not Core.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
 	
 	local Damage = OrigDamage
 
@@ -1902,13 +1975,13 @@ if IsClient then
 
 	if Players.LocalPlayer.Character then
 
-		Module.Spawned( Players.LocalPlayer )
+		Core.Spawned( Players.LocalPlayer )
 
 	end
 
 	Players.LocalPlayer.CharacterAdded:Connect( function ( )
 
-		Module.Spawned( Players.LocalPlayer )
+		Core.Spawned( Players.LocalPlayer )
 
 	end )
 
@@ -1916,11 +1989,11 @@ else
 	
 	local function HandlePlr( Plr )
 		
-		if Plr.Character then Module.Spawned( Plr ) end
+		if Plr.Character then Core.Spawned( Plr ) end
 
 		Plr.CharacterAdded:Connect( function ( )
 
-			Module.Spawned( Plr )
+			Core.Spawned( Plr )
 
 		end )
 		
@@ -1938,4 +2011,4 @@ else
 
 end
 
-return Module
+return Core

@@ -18,7 +18,7 @@ function UpdateCamera( Sprinting )
 --		
 --		if Sprinting then
 --			
---			local Weapon = Core.GetSelectedWeapon( Plr )
+--			local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 --			
 --			if Weapon and Weapon.Reloading then
 --				
@@ -158,7 +158,7 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 		
 		if Plr.Character and Plr.Character:FindFirstChildOfClass( "Humanoid" ) and Plr.Character:FindFirstChildOfClass( "Humanoid" ):GetState( ) ~= Enum.HumanoidStateType.Dead then
 			
-			local Weapon = Core.GetSelectedWeapon( Plr )
+			local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 			
 			if _G.S20Config.AllowSprinting == false and ( not Weapon or Weapon.GunStats.PreventSprint ~= false ) then return false end
 			

@@ -28,7 +28,7 @@ local ShowCursor = Core.ShowCursor
 
 game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
 	
-	local Weapon = Core.GetSelectedWeapon( Plr )
+	local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 	
 	if ShowCursor ~= Core.ShowCursor then
 		
@@ -184,7 +184,9 @@ Core.FireModeChanged.Event:Connect( function ( Weapon, Value )
 	
 end )
 
-if Core.GetSelectedWeapon( Plr ) and Core.GetSelectedWeapon( Plr ).ShowCursor ~= false and Core.ShowCursor then
+local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
+
+if Weapon and Weapon.ShowCursor ~= false and Core.ShowCursor then
 	
 	GunCursor.Center.Visible = true
 	

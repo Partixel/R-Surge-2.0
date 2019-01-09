@@ -160,9 +160,11 @@ function WeaponSelected( StatObj )
 	
 end
 
-if Core.GetSelectedWeapon( Plr ) then
+local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
+
+if Weapon then
 	
-	WeaponSelected( Core.GetSelectedWeapon( Plr ).StatObj )
+	WeaponSelected( Weapon.StatObj )
 	
 else
 	

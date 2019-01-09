@@ -242,55 +242,59 @@ Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj
 	
 end )
 
-Core.Visuals.HitIndicator = Core.DamagedObj.Event:Connect( function ( Humanoids )
+Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, _, _, _, _, _, _, _, _, Humanoids )
 	
-	local Type = 1
-	
-	local Noise
-	
-	for a = 1, #Humanoids do
+	if Humanoids then
 		
-		if Humanoids[ a ][ 1 ].Parent then
+		local Type = 1
+		
+		local Noise
+		
+		for a = 1, #Humanoids do
 			
-			if not CollectionService:HasTag( Humanoids[ a ][ 1 ], "s2_silent" ) then Noise = true end
-			
-			if Humanoids[ a ][ 1 ]:IsA( "Humanoid" ) then Type = 2 end
+			if Humanoids[ a ][ 1 ].Parent then
+				
+				if not CollectionService:HasTag( Humanoids[ a ][ 1 ], "s2_silent" ) then Noise = true end
+				
+				if Humanoids[ a ][ 1 ]:IsA( "Humanoid" ) then Type = 2 end
+				
+			end
 			
 		end
 		
-	end
-	
-	if not Noise then return end
-	
-	if Plr:FindFirstChild( "PlayerGui" ) then
+		if not Noise then return end
 		
-		local GunCursor = Plr.PlayerGui:FindFirstChild( "GunCursor" )
+		if Plr:FindFirstChild( "PlayerGui" ) then
+			
+			local GunCursor = Plr.PlayerGui:FindFirstChild( "GunCursor" )
+			
+			if GunCursor then
 		
-		if GunCursor then
-	
-			Core.ResetHitMarker = tick( ) + 0.2
-			
-			GunCursor.Center.TopDiag.Visible = true
-			
-			GunCursor.Center.LeftDiag.Visible = true
-			
-			GunCursor.Center.BottomDiag.Visible = true
-			
-			GunCursor.Center.RightDiag.Visible = true
+				Core.ResetHitMarker = tick( ) + 0.2
+				
+				GunCursor.Center.TopDiag.Visible = true
+				
+				GunCursor.Center.LeftDiag.Visible = true
+				
+				GunCursor.Center.BottomDiag.Visible = true
+				
+				GunCursor.Center.RightDiag.Visible = true
+				
+			end
 			
 		end
 		
+		local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
+		
+		HitSound.Pitch = HitSound.Pitch * Type
+		
+		HitSound.Ended:Connect( function ( ) wait( ) HitSound:Destroy( ) end )
+		
+		HitSound.Parent = workspace.CurrentCamera
+		
+		HitSound:Play( )
+		
 	end
-	
-	local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
-	
-	HitSound.Pitch = HitSound.Pitch * Type
-	
-	HitSound.Ended:Connect( function ( ) wait( ) HitSound:Destroy( ) end )
-	
-	HitSound.Parent = workspace.CurrentCamera
-	
-	HitSound:Play( )
 	
 end )
 

@@ -24,7 +24,7 @@ Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( St
 			
 			local Event Event = game:GetService( "RunService" ).Heartbeat:Connect( function ( )
 				
-				if Until < tick( ) or not Weapon.Selected then Event:Disconnect( ) Until = nil return end
+				if Until < tick( ) or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then Event:Disconnect( ) Until = nil return end
 				
 				if not HumanoidRootPart or ( workspace.CurrentCamera.CoordinateFrame.p - workspace.CurrentCamera.Focus.p ).magnitude <= 0.55 then return end
 				

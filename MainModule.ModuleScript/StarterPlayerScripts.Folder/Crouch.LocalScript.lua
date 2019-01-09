@@ -152,7 +152,7 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Began then
 		
-		local Weapon = Core.GetSelectedWeapon( Plr )
+		local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 		
 		if _G.S20Config.AllowCrouching == false then
 			
