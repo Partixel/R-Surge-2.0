@@ -4,8 +4,6 @@ local Mouse = Plr:GetMouse( )
 
 local White, Red, Green = Color3.fromRGB( 255, 0, 255 ), Color3.fromRGB( 255, 0, 0 ), Color3.fromRGB( 0, 255, 0 )
 
-local min, max, pow = math.min, math.max, math.pow
-
 local Last, LastC = 0, nil
 
 Core.ShowCursor = true
@@ -21,7 +19,7 @@ Mouse.Move:Connect( function ( )
 end )
 
 local function outCubic(t, b, c, d)
-  return c*(pow(t/d-1,3)+1)+b
+  return c*(math.pow(t/d-1,3)+1)+b
 end
 
 local ShowCursor = Core.ShowCursor
@@ -114,7 +112,7 @@ function RunHeartbeat( )
 		
 		-- HANDLE WINDUP COLOUR
 		
-		do local PercW = 0.5 * ( Weapon.GunStats.WindupTime and min( 1 - ( Weapon.Windup or 0 ) / Weapon.GunStats.WindupTime, 1 ) or 0 )
+		do local PercW = 0.5 * ( Weapon.GunStats.WindupTime == 0 and 0 or ( Weapon.GunStats.WindupTime and math.min( 1 - ( Weapon.Windup or 0 ) / Weapon.GunStats.WindupTime, 1 ) or 0 ) )
 		
 		local ColW = Color3.new( Color.r - PercW, Color.g - PercW, Color.b - PercW )
 		
@@ -124,13 +122,13 @@ function RunHeartbeat( )
 		
 		-- HANDLE HEALTH COLOUR
 			
-		do local PercH = 0.8 * ( Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and min( 1 - Plr.Character.Humanoid.Health / Plr.Character.Humanoid.MaxHealth, 1 ) or 0 )
+		do local PercH = 0.8 * ( Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and math.min( 1 - Plr.Character.Humanoid.Health / Plr.Character.Humanoid.MaxHealth, 1 ) or 0 )
 		
 		GunCursor.Center.Top.BackgroundColor3 = Color3.new( Color.r, Color.g - PercH, Color.b - PercH ) end
 		
 		-- HANDLE TRANSPARENCY
 		
-		do local Trans = min( max( 1 - ( ShowMode - tick( ) ), 0 ), 1 )
+		do local Trans = math.min( math.max( 1 - ( ShowMode - tick( ) ), 0 ), 1 )
 		
 		local AutoTrans = FireMode.Automatic and Trans or 1
 		
