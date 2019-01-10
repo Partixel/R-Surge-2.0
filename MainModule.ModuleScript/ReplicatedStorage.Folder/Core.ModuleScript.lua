@@ -479,6 +479,149 @@ function Core.Spawned( Plr )
 
 end
 
+
+Core.Weapons = setmetatable( { }, { __mode = 'k' } )
+
+function Core.GetWeapon( StatObj )
+
+	return Core.Weapons[ StatObj ] ~= true and Core.Weapons[ StatObj ] or nil
+
+end
+
+Core.Selected = setmetatable( { }, { __mode = 'k' } )
+
+Core.WeaponTick = setmetatable( { }, { __mode = 'k' } )
+
+local Heartbeat
+
+function RunHeartbeat( )
+	
+	Heartbeat = RunService.Heartbeat:Connect( function ( Step )
+		
+		if not next( Core.WeaponTick ) then Heartbeat:Disconnect( ) Heartbeat = nil end
+		
+		local Selected
+		
+		for c, _ in pairs( Core.WeaponTick ) do
+			
+			if not Selected and IsClient and c.User == Players.LocalPlayer then
+				
+				Selected = true
+				
+				local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+				
+				Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character }) }
+				
+			end
+			
+			if c.MouseDown then
+
+				if c.GunStats.WindupTime == nil or c.GunStats.WindupTime == 0 then
+					
+					Core.Fire( c )
+					
+				elseif c.Reloading then
+
+					if c.Windup or c.WindupSound then
+
+						Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
+
+					end
+
+				elseif c.Windup and c.Windup >= c.GunStats.WindupTime then
+					
+					Core.Fire( c )
+
+				else
+
+					Core.SetWindup( c, ( c.Windup or 0 ) + Step )
+
+				end
+
+			else
+				
+				local Needed
+				
+				if c.Windup then
+					
+					Needed = true
+					
+					Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
+					
+				end
+				
+				if c.GunStats.ClipReloadPerSecond and c.Clip < c.GunStats.ClipSize and ( not c.StoredAmmo or c.StoredAmmo ~= 0 ) then
+					
+					Needed = true
+					
+					if not c.Reloading and c.LastClick and ( c.LastClick + ( c.GunStats.ClipsReloadDelay or 0 ) ) <= tick( ) then
+						
+						local Amnt = ( c.ClipRemainder or 0 ) + c.GunStats.ClipReloadPerSecond * Step
+						
+						c.ClipRemainder = Amnt % 1
+						
+						Amnt = math.min( math.floor( Amnt ), c.GunStats.ClipSize - c.Clip )
+						
+						if c.StoredAmmo then
+							
+							Amnt = math.min( Amnt, c.StoredAmmo )
+							
+							Core.SetStoredAmmo( c, c.StoredAmmo - Amnt )
+							
+						end
+						
+						if Amnt > 0 then
+							
+							Core.SetClip( c, c.Clip + Amnt )
+							
+						end
+						
+					end
+					
+				end
+				
+				if not Needed then
+					
+					Core.WeaponTick[ c ] = nil
+					
+				end
+
+			end
+
+			if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
+
+				if c.ShotRecoil > 0 then
+
+					c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
+
+				else
+
+					c.ShotRecoil = 0
+
+				end
+				
+			end
+			
+		end
+		
+	end )
+	
+end
+
+function Core.SetMouseDown( Weapon )
+	
+	Weapon.MouseDown = tick( )
+	
+	Core.WeaponTick[ Weapon ] = true
+	
+	if not Heartbeat then
+		
+		RunHeartbeat( )
+		
+	end
+	
+end
+
 if IsServer then
 
 	Core.ServerVisuals = Instance.new( "BindableEvent" )
@@ -827,7 +970,7 @@ if IsClient then
 					
 					if Began then
 						
-						a.MouseDown = tick( )
+						Core.SetMouseDown( a )
 						
 					else
 						
@@ -1003,116 +1146,6 @@ if IsClient then
 
 end
 
-Core.Weapons = setmetatable( { }, { __mode = 'k' } )
-
-Core.Selected = setmetatable( { }, { __mode = 'k' } )
-
-local Heartbeat
-
-function RunHeartbeat( )
-	
-	Heartbeat = RunService.Heartbeat:Connect( function ( Step )
-		
-		if not next( Core.Selected ) then Heartbeat:Disconnect( ) Heartbeat = nil end
-	
-		for a, b in pairs( Core.Selected ) do
-			
-			if IsClient and a == Players.LocalPlayer then
-				
-				local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
-				
-				Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character }) }
-				
-			end
-			
-			for c, _ in pairs( b ) do
-				
-				if c.MouseDown then
-	
-					if c.GunStats.WindupTime == nil then
-						
-						Core.Fire( c )
-						
-					elseif c.Reloading then
-	
-						if c.Windup or c.WindupSound then
-	
-							Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
-	
-						end
-	
-					elseif c.Windup and c.Windup >= c.GunStats.WindupTime then
-						
-						Core.Fire( c )
-	
-					else
-	
-						Core.SetWindup( c, ( c.Windup or 0 ) + Step )
-	
-					end
-	
-				else
-					
-					if c.Windup then
-						
-						Core.SetWindup( c, math.max( c.Windup - ( Step * 2 ), 0 ) )
-						
-					end
-					
-					if c.GunStats.ClipReloadPerSecond and not c.Reloading and c.LastClick and c.Clip < c.GunStats.ClipSize and ( not c.StoredAmmo or c.StoredAmmo ~= 0 ) and ( c.LastClick + ( c.GunStats.ClipsReloadDelay or 0 ) ) <= tick( ) then
-						
-						local Amnt = ( c.ClipRemainder or 0 ) + c.GunStats.ClipReloadPerSecond * Step
-						
-						c.ClipRemainder = Amnt % 1
-						
-						Amnt = math.min( math.floor( Amnt ), c.GunStats.ClipSize - c.Clip )
-						
-						if c.StoredAmmo then
-							
-							Amnt = math.min( Amnt, c.StoredAmmo )
-				
-							Core.SetStoredAmmo( c, c.StoredAmmo - Amnt )
-				
-						end
-						
-						if Amnt > 0 then
-					
-							Core.SetClip( c, c.Clip + Amnt )
-							
-						end
-						
-					end
-	
-				end
-	
-				if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
-	
-					if c.ShotRecoil > 0 then
-	
-						c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
-	
-					else
-	
-						c.ShotRecoil = 0
-	
-					end
-	
-				end
-	
-			end
-	
-		end
-	
-	end )
-	
-end
-
-function Core.GetWeapon( StatObj )
-
-	return Core.Weapons[ StatObj ] ~= true and Core.Weapons[ StatObj ] or nil
-
-end
-
 Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 	local Weapon = Core.GetWeapon( StatObj )
@@ -1123,6 +1156,14 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 		Weapon.LastClick = tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 )
 
+	end
+	
+	if Weapon.GunStats.ClipReloadPerSecond and Weapon.Clip < Weapon.GunStats.ClipSize and ( not Weapon.StoredAmmo or Weapon.StoredAmmo ~= 0 ) then
+		
+		Core.WeaponTick[ Weapon ] = true
+		
+		RunHeartbeat( )
+		
 	end
 	
 	Core.Selected[ User ] = Core.Selected[ User ] or { }
@@ -1143,12 +1184,6 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 		ContextActionService:SetImage( "Reload", "rbxassetid://371461853" )
 
-	end
-	
-	if not Heartbeat then
-		
-		RunHeartbeat( )
-		
 	end
 
 end )
@@ -1180,6 +1215,8 @@ Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 		end
 		
 	end
+	
+	Core.WeaponTick[ Weapon ] = nil
 	
 	Weapon.MouseDown = nil
 
@@ -1566,13 +1603,25 @@ function Core.Reload( Weapon )
 end
 
 function Core.SetStoredAmmo( Weapon, Value )
-
+	
 	if not Weapon.StoredAmmo or Weapon.StoredAmmo == Value then return end
-
+	
 	Weapon.StoredAmmo = Value
-
+	
 	Core.StoredAmmoChanged:Fire( Weapon.StatObj, Value )
-
+	
+	if Weapon.GunStats.ClipReloadPerSecond and Weapon.Clip < Weapon.GunStats.ClipSize and Value ~= 0 then
+		
+		Core.WeaponTick[ Weapon ] = true
+		
+		if not Heartbeat then
+			
+			RunHeartbeat( )
+			
+		end
+		
+	end
+	
 end
 
 function Core.SetClip( Weapon, Value )
