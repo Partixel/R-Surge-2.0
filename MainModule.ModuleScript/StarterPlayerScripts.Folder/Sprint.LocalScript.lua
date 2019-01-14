@@ -152,9 +152,9 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Died then return end
 	
-	if next( Core.PreventSprint ) then return false end
-	
 	if Began then
+		
+		if next( Core.PreventSprint ) then return false end
 		
 		if Plr.Character and Plr.Character:FindFirstChildOfClass( "Humanoid" ) and Plr.Character:FindFirstChildOfClass( "Humanoid" ):GetState( ) ~= Enum.HumanoidStateType.Dead then
 			

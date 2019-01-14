@@ -148,9 +148,9 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Died then return end
 	
-	if next( Core.PreventCrouch ) then return false end
-	
 	if Began then
+		
+		if next( Core.PreventCrouch ) then return false end
 		
 		local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 		
