@@ -242,9 +242,9 @@ Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj
 	
 end )
 
-Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, _, _, _, _, _, _, _, _, Humanoids )
+Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User, _, _, _, _, _, _, _, Humanoids )
 	
-	if Humanoids then
+	if Humanoids and User == Plr then
 		
 		local Type = 1
 		
