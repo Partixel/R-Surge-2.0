@@ -190,7 +190,7 @@ end )
 
 KBU.BindChanged:Connect( function ( Name )
 	
-	if not KBU.GetBind( Name ) or not KeybindGui.Main:FindFirstChild( Name ) then
+	if not KBU.GetBind( Name ) or not KeybindGui.Main:FindFirstChild( Name, true ) then
 		
 		if script.Parent.KeybindFrame.Visible then
 			
