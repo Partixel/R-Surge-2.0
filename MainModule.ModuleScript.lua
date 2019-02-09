@@ -4,7 +4,7 @@ local function AddObjs( PermPar, Name )
 	
 	for a = 1, #Objs do
 		
-		if not _G.S20Config[ "Disable" .. Objs[ a ].Name ] and not PermPar:FindFirstChild( Objs[ a ].Name ) and ( not Objs[ a ]:IsA( "BaseScript" ) or not Objs[ a ].Disabled ) then
+		if not _G.S20Config[ "Disable" .. Objs[ a ].Name ] and ( Objs[ a ].Name == "VIPGui" or not PermPar:FindFirstChild( Objs[ a ].Name ) ) and ( not Objs[ a ]:IsA( "BaseScript" ) or not Objs[ a ].Disabled ) then
 			
 			local Child = Objs[ a ]
 			
@@ -18,7 +18,7 @@ local function AddObjs( PermPar, Name )
 					
 					local TempPar = Name == "Character" and Plrs[ b ].Character or Plrs[ b ]:FindFirstChild( Name )
 					
-					if TempPar and not TempPar:FindFirstChild( Child.Name ) and ( PermPar.Name ~= "StarterGui" or Plrs[ b ].Character ) then
+					if TempPar and ( Child.Name == "VIPGui" or not TempPar:FindFirstChild( Child.Name ) ) and ( PermPar.Name ~= "StarterGui" or Plrs[ b ].Character ) then
 						
 						local Clone = Child:Clone( )
 						
