@@ -492,27 +492,31 @@ Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
 Core.WeaponTick = setmetatable( { }, { __mode = 'k' } )
 
-local Heartbeat
+local SelectedHB
 
-function RunHeartbeat( )
+function RunSelected( )
 	
-	Heartbeat = RunService.Heartbeat:Connect( function ( Step )
+	SelectedHB = RunService.Heartbeat:Connect( function ( )
 		
-		if not next( Core.WeaponTick ) then Heartbeat:Disconnect( ) Heartbeat = nil end
+		if not Core.Selected[ Players.LocalPlayer ] then SelectedHB:Disconnect( ) SelectedHB = nil end
 		
-		local Selected
+		local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+		
+		Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character } ) }
+		
+	end )
+	
+end
+
+local WeaponTickHB
+
+function RunWeaponTick( )
+	
+	WeaponTickHB = RunService.Heartbeat:Connect( function ( Step )
+		
+		if not next( Core.WeaponTick ) then WeaponTickHB:Disconnect( ) WeaponTickHB = nil end
 		
 		for c, _ in pairs( Core.WeaponTick ) do
-			
-			if not Selected and IsClient and c.User == Players.LocalPlayer then
-				
-				Selected = true
-				
-				local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
-				
-				Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character }) }
-				
-			end
 			
 			if c.MouseDown then
 
@@ -614,9 +618,9 @@ function Core.SetMouseDown( Weapon )
 	
 	Core.WeaponTick[ Weapon ] = true
 	
-	if not Heartbeat then
+	if not WeaponTickHB then
 		
-		RunHeartbeat( )
+		RunWeaponTick( )
 		
 	end
 	
@@ -1162,13 +1166,19 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 		
 		Core.WeaponTick[ Weapon ] = true
 		
-		RunHeartbeat( )
+		RunWeaponTick( )
 		
 	end
 	
 	Core.Selected[ User ] = Core.Selected[ User ] or { }
 	
 	Core.Selected[ User ][ Weapon ] = tick( )
+	
+	if not SelectedHB then
+		
+		RunSelected( )
+		
+	end
 
 	Weapon.Reloading = nil
 
@@ -1614,9 +1624,9 @@ function Core.SetStoredAmmo( Weapon, Value )
 		
 		Core.WeaponTick[ Weapon ] = true
 		
-		if not Heartbeat then
+		if not WeaponTickHB then
 			
-			RunHeartbeat( )
+			RunWeaponTick( )
 			
 		end
 		
