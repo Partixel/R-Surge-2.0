@@ -312,7 +312,7 @@ Event.OnClientEvent:Connect( function ( S, L )
 	
 	Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
 	
-	while wait( 1 ) and Start == S do
+	while wait( 1 ) and Start == S and Limit == L do
 		
 		Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
 		
