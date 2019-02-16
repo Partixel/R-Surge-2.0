@@ -514,7 +514,7 @@ function RunWeaponTick( )
 	
 	WeaponTickHB = RunService.Heartbeat:Connect( function ( Step )
 		
-		if not next( Core.WeaponTick ) then WeaponTickHB:Disconnect( ) WeaponTickHB = nil end
+		if not next( Core.WeaponTick ) then WeaponTickHB:Disconnect( ) WeaponTickHB = nil return end
 		
 		for c, _ in pairs( Core.WeaponTick ) do
 			
