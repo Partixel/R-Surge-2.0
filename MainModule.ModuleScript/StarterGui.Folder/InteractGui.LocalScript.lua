@@ -84,7 +84,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	if NotMyGui( InteractObj ) then return end
 	
-	if not Gui then
+	if not Gui or not Gui.Parent then
 		
 		Gui = script.InteractGui:Clone( )
 		
@@ -149,8 +149,6 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 		end
 		
 		Interactables.Guis[ InteractObj ] = Gui
-		
-		
 		
 	end
 	
