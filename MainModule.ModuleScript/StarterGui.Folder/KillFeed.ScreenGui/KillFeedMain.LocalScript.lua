@@ -52,6 +52,39 @@ local function Scale( Feed )
 		
 	end
 	
+	if _G.S20Config.KillFeedHorizontalAlign then
+		
+		Feed.AnchorPoint = Vector2.new( _G.S20Config.KillFeedHorizontalAlign == "Left" and 0 or _G.S20Config.KillFeedHorizontalAlign == "Right" and 1 or 0.5, 0.5 )
+		
+		local HorizontalScale, HorizontalOffset = 0.5, 0
+		
+		if _G.S20Config.KillFeedHorizontalAlign == "Left" then
+			
+			HorizontalScale = 0
+			
+			HorizontalOffset = Feed.Killer.AbsoluteSize.X + 2
+			
+		elseif _G.S20Config.KillFeedHorizontalAlign == "Right" then
+			
+			HorizontalScale = 1
+			
+			HorizontalOffset = -Feed.Victim1.AbsoluteSize.X - 2
+			
+		end
+			
+		
+		if _G.S20Config.KillFeedVerticalAlign == "Bottom" then
+			
+			TweenService:Create( Feed, TweenInfo.new( 0 ), { Position = UDim2.new( HorizontalScale, HorizontalOffset, 0.175 - Feed.ActualPos.Value, 0  ) } ):Play( )
+			
+		else
+			
+			TweenService:Create( Feed, TweenInfo.new( 0 ), { Position = UDim2.new( HorizontalScale, HorizontalOffset, Feed.ActualPos.Value, 0  ) } ):Play( )
+			
+		end
+		
+	end
+	
 end
 
 workspace.CurrentCamera:GetPropertyChangedSignal( "ViewportSize" ):Connect( function ( )
@@ -127,11 +160,17 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 				
 			end
 			
-			Victim.Position = UDim2.new( 1, 0, 1 * ( NumVictims - 1 ), 0 )
+			Victim.Position = UDim2.new( 1, 0, ( _G.S20Config.KillFeedVerticalAlign == "Bottom" and -1 or 1 ) * ( NumVictims - 1 ), 0 )
 			
 			if NumVictims > 1 then
 				
 				local VictimFrame = script.VictimFrame:Clone( )
+				
+				if _G.S20Config.KillFeedVerticalAlign == "Bottom" then
+					
+					VictimFrame.Position = UDim2.new( 0, 0, 1, 0 )
+					
+				end
 				
 				ThemeUtil.BindUpdate( VictimFrame, "BackgroundColor3", "Background" )
 				
@@ -177,6 +216,14 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		
 		Assister.AssisterPct.Text = PctStr( DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
 		
+		if _G.S20Config.KillFeedVerticalAlign == "Bottom" then
+			
+			Assister.Frame.Position = UDim2.new( 1, 0, 0.25, 0 )
+			
+			Assister.Position = UDim2.new( 1, 0, 0, 0 )
+			
+		end
+		
 		Assister.Parent = NewFeed.Killer
 		
 		local KillPct = script.KillerPct:Clone( )
@@ -195,7 +242,15 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			Feeds[ a ].ActualPos.Value = Feeds[ a ].ActualPos.Value + 0.035 + math.max( 0.035 * ( NumVictims - 1 ), DeathInfo.Assister and 0.015 or 0 )
 			
-			TweenService:Create( Feeds[ a ], TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( 0.5, 0, Feeds[ a ].ActualPos.Value, 0  ) } ):Play( )
+			if _G.S20Config.KillFeedVerticalAlign == "Bottom" then
+				
+				TweenService:Create( Feeds[ a ], TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feeds[ a ].Position.X.Scale, Feeds[ a ].Position.X.Offset, 0.175 - Feeds[ a ].ActualPos.Value, 0  ) } ):Play( )
+				
+			else
+				
+				TweenService:Create( Feeds[ a ], TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feeds[ a ].Position.X.Scale, Feeds[ a ].Position.X.Offset, Feeds[ a ].ActualPos.Value, 0  ) } ):Play( )
+				
+			end
 			
 			if Feeds[ a ].ActualPos.Value > 0.175 and Feeds[ a ].Name ~= "Destroying" then
 				
