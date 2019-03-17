@@ -78,7 +78,7 @@ end
 
 local function Stun( StatObj, GunStats, User, Hit, Dist, Type, WeaponName )
 
-	local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, Type, Dist, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill )
+	local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, Type, Dist, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
 
 	if ResH and ResH and ResH:IsA( "Humanoid" ) then
 
@@ -112,7 +112,7 @@ Core.BulletTypes = {
 		
 		local DamageType = GunStats.BulletType and GunStats.BulletType.DamageType or Core.DamageType.Kinetic
 	
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
 	
 		if ResH then
 			
@@ -148,7 +148,7 @@ Core.BulletTypes = {
 					
 				else
 					
-					ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
+					ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
 					
 				end
 
@@ -162,7 +162,7 @@ Core.BulletTypes = {
 
 		end
 
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
 
 		if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
 			
@@ -188,7 +188,7 @@ Core.BulletTypes = {
 
 	Fire = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
 		
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
+		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
 		
 		if ResH then
 			
@@ -296,7 +296,7 @@ Core.BulletTypes = {
 				
 			else
 				
-				ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill )
+				ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
 				
 			end
 
@@ -632,9 +632,17 @@ if IsServer then
 
 	ArmUtil = require( script.ArmUtil )
 
-	Core.HandleServer = function ( Plr, Time, StatObj, HitMat, End, Normal, Offset, BulNum, User, BarrelNum )
-
+	Core.HandleServer = function ( Plr, Time, StatObj, ToNetwork, User, _Offset, _User, _BarrelNum )
+		
 		if not StatObj or not StatObj.Parent then return end
+		
+		if type( ToNetwork ) ~= "table" then
+			
+			ToNetwork = { { ToNetwork, User, _Offset, _BarrelNum } }
+			
+			User = _User
+			
+		end
 
 		User = User or Plr
 
@@ -642,56 +650,108 @@ if IsServer then
 
 		local GunStats = Core.GetGunStats( StatObj )
 
-		local Barrel = GunStats.Barrels( StatObj )
-
-		Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
-
-		if not Barrel then return end
+		local Barrels = GunStats.Barrels( StatObj )
 		
-		local Hit, Material
-		
-		if typeof( HitMat ) == "Instance" then
-			
-			Hit = HitMat
-			
-			Material = Hit.Material
-			
-		elseif Hit then
-			
-			Material = HitMat
-			
-			Hit = workspace.Terrain
-			
-		end
-		
-		local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
-		
-		Core.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
-		
-		if IsClient then
-
-			Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
-
-			return
-
-		end
-
-		local BulRay = Ray.new( Barrel.Position, ( End - Barrel.Position ).Unit )
+		local CloseTo = { }
 
 		local Plrs = Players:GetPlayers( )
-
-		for a = 1, #Plrs do
-
-			if Plrs[ a ] ~= Plr then
-
-				if BulRay:Distance( Plrs[ a ].Character and Plrs[ a ].Character:FindFirstChild( "HumanoidRootPart" ) and Plrs[ a ].Character.HumanoidRootPart.Position or Barrel.Position ) <= 250 then
-
-					Core.ShotRemote:FireClient( Plrs[ a ], StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
-
+		
+		for a = 1, #ToNetwork do
+			
+			local Barrel = type( Barrels ) == "table" and Barrels[ ToNetwork[ a ][ 5 ] or 1 ] or Barrels
+			
+			if Barrel then
+				
+				local Hit, Normal, Offset, BarrelNum = unpack( ToNetwork[ a ] )
+				
+				local Material
+				
+				if typeof( Hit ) == "Instance" then
+					
+					Material = Hit.Material
+					
+				elseif Hit then
+					
+					Material = Hit
+					
+					Hit = workspace.Terrain
+					
 				end
-
+				
+				local End
+				
+				if Hit then
+					
+					End = Hit.CFrame:PointToWorldSpace( Offset * Hit.Size )
+					
+				else
+					
+					End = Offset
+					
+					Offset = nil
+								
+				end
+				
+				local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
+				
+				local FirstShot
+				
+				if #ToNetwork > 1 then FirstShot = a == 1 end
+				
+				Core.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, #ToNetwork > 1 and a == 1 or nil, Humanoids, Time )
+				
+				if IsClient then
+		
+					Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, #ToNetwork > 1 and a == 1 or nil, Humanoids, Time )
+		
+					return
+		
+				end
+		
+				local BulRay = Ray.new( Barrel.Position, ( End - Barrel.Position ).Unit )
+				
+				for b = 1, #Plrs do
+					
+					if Plrs[ b ] ~= Plr then
+						
+						if BulRay:Distance( Plrs[ b ].Character and Plrs[ b ].Character:FindFirstChild( "HumanoidRootPart" ) and Plrs[ b ].Character.HumanoidRootPart.Position or Barrel.Position ) <= 250 then
+							
+							if #ToNetwork == 1 then
+								
+								Core.ShotRemote:FireClient( Plrs[ b ], Time, StatObj, User, ToNetwork[ 1 ][ 1 ], ToNetwork[ 1 ][ 2 ], _Offset, _BarrelNum )
+								
+							else
+								
+								CloseTo[ Plrs[ b ] ] = CloseTo[ Plrs[ b ] ] or { }
+								
+								CloseTo[ Plrs[ b ] ][ #CloseTo[ Plrs[ b ] ] + 1 ] = ToNetwork[ a ]
+								
+							end
+							
+						end
+						
+					end
+					
+				end
+				
 			end
-
+			
+		end
+		
+		if #ToNetwork == 1 then return end
+		
+		for a, b in pairs( CloseTo ) do
+			
+			if #b == 1 then
+				
+				Core.ShotRemote:FireClient( a, Time, StatObj, User, b[ 1 ][ 1 ], b[ 1 ][ 2 ], b[ 1 ][ 3 ], b[ 1 ][ 4 ], b[ 1 ][ 5 ] )
+				
+			else
+				
+				Core.ShotRemote:FireClient( a, Time, StatObj, User, b )
+				
+			end
+			
 		end
 
 	end
@@ -909,6 +969,42 @@ if IsClient then
 	Core.ClientVisuals = Instance.new( "BindableEvent" )
 
 	Core.SharedVisuals = Instance.new( "BindableEvent" )
+	
+	local Mouse = Players.LocalPlayer:GetMouse( )
+	
+	local PrevIcon
+	 
+	Core.WeaponSelected.Event:Connect( function ( Mod )
+		
+		local Weapon = Core.GetWeapon( Mod )
+		
+		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
+		
+		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
+			
+			PrevIcon = Mouse.Icon
+			
+			Mouse.Icon = Weapon.CursorImage or _G.S20Config.CursorImage
+			
+		end
+		
+	end )
+	 
+	Core.WeaponDeselected.Event:Connect( function ( Mod )
+		
+		local Weapon = Core.GetWeapon( Mod )
+		
+		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
+		
+		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
+			
+			Mouse.Icon = PrevIcon
+			
+			PrevIcon = nil
+			
+		end
+		
+	end )
 
 	game:GetService( "ReplicatedStorage" ):WaitForChild( "ClientDamage" ).OnClientEvent:Connect( function ( Other, Amount, Killed )
 
@@ -923,36 +1019,66 @@ if IsClient then
 		end
 
 	end )
-
-	Core.ShotRemote.OnClientEvent:Connect( function ( StatObj, User, HitMat, End, Normal, Offset, BulNum, BarrelNum, Humanoids, Time )
-
-		local GunStats = Core.GetGunStats( StatObj )
+	
+	Core.ShotRemote.OnClientEvent:Connect( function ( Time, StatObj, User, ToNetwork, _Normal, _Offset, _BarrelNum )
 		
-		if GunStats then
-
-			local Barrel = GunStats.Barrels( StatObj )
-
-			Barrel = type( Barrel ) == "table" and Barrel[ BarrelNum or 1 ] or Barrel
-
-			if not Barrel then return end
+		if not StatObj or not StatObj.Parent then return end
+		
+		if type( ToNetwork ) ~= "table" then
 			
-			local Hit, Material
+			ToNetwork = { { ToNetwork, _Normal, _Offset, _BarrelNum } }
 			
-			if typeof( HitMat ) == "Instance" then
+		end
+		
+		local GunStats = Core.GetGunStats( StatObj )
+
+		local Barrels = GunStats.Barrels( StatObj )
+		
+		for a = 1, #ToNetwork do
+			
+			local Barrel = type( Barrels ) == "table" and Barrels[ ToNetwork[ a ][ 5 ] or 1 ] or Barrels
+	
+			if Barrel then
 				
-				Hit = HitMat
+				local Hit, Normal, Offset, BarrelNum = unpack( ToNetwork[ a ] )
 				
-				Material = Hit.Material
+				local Material
 				
-			elseif Hit then
+				if typeof( Hit ) == "Instance" then
+					
+					Material = Hit.Material
+					
+				elseif Hit then
+					
+					Material = Hit
+					
+					Hit = workspace.Terrain
+					
+				end
 				
-				Material = HitMat
+				local End
 				
-				Hit = workspace.Terrain
+				if Hit then
+					
+					End = Hit.CFrame:PointToWorldSpace( Offset * Hit.Size )
+					
+				else
+					
+					End = Offset
+					
+					Offset = nil
+								
+				end
+				
+				local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
+				
+				local FirstShot
+				
+				if #ToNetwork > 1 then FirstShot = a == 1 end
+				
+				Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, Time )
 				
 			end
-
-			Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, BulNum, Humanoids, Time )
 			
 		end
 
@@ -1177,8 +1303,12 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 		RunSelected( )
 		
 	end
-
-	Weapon.Reloading = nil
+	
+	if not Weapon.GunStats.ReloadWhileUnequipped then
+		
+		Weapon.Reloading = nil
+		
+	end
 
 	if Weapon.ReloadDelay then
 
@@ -1227,8 +1357,12 @@ Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 	Core.WeaponTick[ Weapon ] = nil
 	
 	Weapon.MouseDown = nil
-
-	Weapon.Reloading = nil
+	
+	if not Weapon.GunStats.ReloadWhileUnequipped then
+		
+		Weapon.Reloading = nil
+		
+	end
 
 	if Weapon.ReloadDelay then
 
@@ -1315,14 +1449,6 @@ function Core.Setup( StatObj )
 	Core.Weapons[ StatObj ] = Weapon
 
 	Weapon.GunStats = GunStats
-
-	if not Weapon.GunStats.AccurateRange then
-
-		Weapon.GunStats.AccurateRange = Weapon.GunStats.Accuracy < 1 and 25 / Weapon.GunStats.Accuracy or 200 / Weapon.GunStats.Accuracy
-		
-		warn( StatObj:GetFullName( ) .. " is using Accuracy which has been deprecated for AccurateRange, please update this before the 5/12/18" )
-		
-	end
 
 	Weapon.Ignore = GunStats.Ignores and GunStats.Ignores( StatObj ) or { }
 
@@ -1569,7 +1695,7 @@ function Core.Reload( Weapon )
 				end
 
 				if Weapon.Reloading ~= ReloadTick then
-
+					
 					break
 
 				end
@@ -1721,6 +1847,8 @@ function Core.Fire( Weapon )
 	local ActualFired = 0
 
 	local CurFireMode = Weapon.CurFireMode
+	
+	local ToNetwork = ShotsPerClick > 1 and DelayBetweenShots == 0 and { } or nil
 
 	for BulNum = 1, ShotsPerClick do
 
@@ -1792,38 +1920,48 @@ function Core.Fire( Weapon )
 
 					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.GunStats.Damage ) / 50, math.abs( Weapon.GunStats.Damage ) / 5 * ShotsPerClick )
 
-					local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
-					
-					if Offset then Offset = Vector3.new( Offset.X / Hit.Size.X, Offset.Y / Hit.Size.Y, Offset.Z / Hit.Size.Z ) end
+					local Offset = Hit and ( Hit.CFrame:pointToObjectSpace( End ) / Hit.Size ) or nil
 					
 					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ).Func or Core.BulletTypes.Kinetic.Func )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
 
 					if IsClient then
+						
+						local FirstShot
+						
+						if ShotsPerClick > 1 then FirstShot = BulNum == 1 end
 
 						if Players.LocalPlayer == Weapon.User then
 
-							Core.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil )
+							Core.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, FirstShot )
 
 						end
 
 						if not IsServer then
 
-							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, BulNum ~= 1 and BulNum or nil, Humanoids, tick( ) + _G.ServerOffset )
+							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
 
 						end
 
 					end
-
-					if IsServer then
-
-						Core.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
-
+					
+					if ToNetwork then
+						
+						ToNetwork[ BulNum ] = { Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil }
+						
 					else
-
-						Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, End, Normal, Offset, BulNum ~= 1 and BulNum or nil, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
-
+						
+						if IsServer then
+							
+							Core.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+							
+							else
+							
+							Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+							
+						end
+						
 					end
-
+					
 				end
 
 			end
@@ -1836,6 +1974,20 @@ function Core.Fire( Weapon )
 
 		end
 
+	end
+	
+	if ToNetwork then
+		
+		if IsServer then
+			
+			Core.HandleServer( nil, tick( ), Weapon.StatObj, ToNetwork, Weapon.User )
+			
+		else
+			
+			Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, ToNetwork, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil )
+			
+		end
+		
 	end
 
 	if ShotsPerClick > 1 and ShotsPerClick ~= ActualFired then
@@ -1968,7 +2120,7 @@ function Core.GetValidHumanoid( Obj )
 
 end
 
-function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill )
+function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill, InvertDistanceModifier )
 
 	local Humanoid = Core.GetValidHumanoid( Hit )
 
@@ -1999,10 +2151,20 @@ function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier
 	if Distance then
 
 		if Distance > 1 then return false end
-
-		Distance = Distance * ( DistanceModifier or Config.DistanceDamageMultiplier )
-
-		Damage = Damage * ( 1 - Distance )
+		
+		if InvertDistanceModifier or ( InvertDistanceModifier ~= false and Config.InvertDistanceModifier ) then
+			
+			Distance = ( 1 - Distance ) * ( DistanceModifier or Config.DistanceDamageMultiplier )
+			
+			Damage = Damage * Distance
+			
+		else
+			
+			Distance = Distance * ( DistanceModifier or Config.DistanceDamageMultiplier )
+			
+			Damage = Damage * ( 1 - Distance )
+			
+		end
 
 	end
 

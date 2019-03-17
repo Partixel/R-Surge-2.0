@@ -114,6 +114,7 @@ end
 
 local VictimTypes = { Head = "rbxassetid://1693819171" }
 -- Need suicide dmgtype
+--local DmgTypes = { Kinetic = "rbxassetid://2625025813", Explosive = "rbxassetid://2625029682", Slash = "rbxassetid://2625006640" }
 local DmgTypes = { Kinetic = "rbxassetid://1693831893", Explosive = "rbxassetid://1693825708" }
 
 local Zero = UDim2.new( 0, 0, 0, 0 )

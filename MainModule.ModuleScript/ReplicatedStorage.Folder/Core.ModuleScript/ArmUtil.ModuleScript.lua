@@ -1,5 +1,3 @@
-local new = Instance.new
-
 function GetArmWelds( Char )
 	
 	if Char:FindFirstChild( "Torso" ) then
@@ -46,7 +44,7 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 	
 	if LS then
 		
-		local Weld = new( "Weld" )
+		local Weld = Instance.new( "Weld" )
 		
 		Weld.Name = "ArmWeld"
 		
@@ -68,7 +66,7 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 	
 	if RS then
 		
-		local Weld = new( "Weld" )
+		local Weld = Instance.new( "Weld" )
 		
 		Weld.Name = "ArmWeld"
 		
@@ -90,7 +88,7 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 	
 	if LE then
 		
-		local Weld = new( "Weld" )
+		local Weld = Instance.new( "Weld" )
 		
 		Weld.Name = "ArmWeld"
 		
@@ -112,7 +110,7 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 	
 	if RE then
 		
-		local Weld = new( "Weld" )
+		local Weld = Instance.new( "Weld" )
 		
 		Weld.Name = "ArmWeld"
 		
@@ -134,7 +132,53 @@ local function WeldArms( Plr, Tool, CF1, CF2  )
 	
 end
 
+local function NewWeld( Plr, Tool, CF1 )
+	
+	local Char = Plr.Character
+	
+	if Char == nil then return end
+	
+	local LS, RS, LE, RE = GetArmWelds( Char )
+	
+	local Weld = Instance.new( "Weld" )
+	
+	Weld.Name = "ArmWeld"
+	
+	Weld.Part0 = LS.Part0
+	
+	Weld.Part1 = LS.Part1
+	
+	LS.Part1 = nil
+	
+	Weld.C0 = LS.C0
+	
+	Weld.C1 = LS.C1
+	
+	Weld.Parent = LS.Parent
+	
+	local Orig = Weld.C0
+	
+	game["Run Service"].Stepped:Connect( function ( )
+		
+		if Tool:FindFirstChild( "Handle" ) and Tool.Handle:FindFirstChild( "LeftTarget" ) then
+			
+			Weld.C0 = CFrame.new( Orig.p, Orig.p + LS.Part0.CFrame:pointToObjectSpace( Tool.Handle.LeftTarget.WorldPosition ) ) CFrame.Angles( Orig:ToEulerAnglesXYZ( ) )
+			
+		end
+		
+	end )
+	
+end
+
 return function ( Plr, Tool, CF1, CF2 )
+	
+	if Tool:WaitForChild( "Handle" ):FindFirstChild( "LeftTarget" ) then
+		
+		Tool.Equipped:Connect( function ( ) NewWeld( Plr, Tool, CF2 ) end )
+
+		return
+
+	end
 	
 	Tool.Equipped:Connect( function ( ) WeldArms( Plr, Tool, CF1, CF2 ) end )
 	

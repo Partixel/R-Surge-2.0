@@ -180,7 +180,7 @@ Core.ClipChanged.Event:Connect( function ( StatObj, Ammo )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= Plr then return end
+	if not Weapon or Weapon.User ~= Plr or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
 	
 	local GunStats = Core.GetGunStats( StatObj )
 	
@@ -194,7 +194,7 @@ Core.StoredAmmoChanged.Event:Connect( function ( StatObj, StoredAmmo )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= Plr then return end
+	if not Weapon or Weapon.User ~= Plr or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
 	
 	local GunStats = Core.GetGunStats( StatObj )
 	

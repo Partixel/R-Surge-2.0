@@ -340,7 +340,7 @@ Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect( function ( StatObj, User,
 	
 end )
 
-Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, BulNum )
+Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
 	
 	if not Barrel or not StatObj or not StatObj.Parent then return end
 	
@@ -350,7 +350,7 @@ Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatOb
 	
 	local Part = GetVisualBarrel( Barrel )
 	
-	if ( ( BulNum == nil or BulNum == 1 ) or GunStats.DelayBetweenShots ~= 0 ) and GunStats.FireSound and ( not GunStats.LongFiringSound or not Part:FindFirstChild( "FireSound" ) ) then
+	if FirstShot ~= false and GunStats.FireSound and ( not GunStats.LongFiringSound or not Part:FindFirstChild( "FireSound" ) ) then
 		
 		local FireSound = GunStats.FireSound:Clone( )
 		
@@ -646,7 +646,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	else
 		
-		local Size = GunStats.BulletSize or Config.BulletSize or 0.35
+		--[[local Size = GunStats.BulletSize or Config.BulletSize or 0.35
 		
 		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
 		
@@ -692,11 +692,67 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 			Cur = Cur + ( Speed * Delta )
 			
+		end]]
+		
+		local Size = GunStats.BulletSize or Config.BulletSize or 0.35
+		
+		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
+		
+		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 5 ) ), Speed / 60 )
+		
+		local CF = CFrame.new( Barrel.Position, End )
+		
+		local Dist = ( Barrel.Position - End ).magnitude
+		
+		local RandStart = math.random( 0, math.floor( Speed / 60 - Length ) )
+		
+		RandStart = math.max( math.min( RandStart + ( Speed * ( tick( ) + _G.ServerOffset - Time ) ), Dist - Length + RandStart ), RandStart )
+		
+		local Bullet = Instance.new( "BoxHandleAdornment" )
+		
+		Bullet.Name = "GunBullet"
+		
+		Bullet.Adornee = workspace.Terrain
+		
+		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
+		
+		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.3
+		
+		Bullet.Size = Vector3.new( Size, Size, math.min( Length, Dist ) )
+		
+		Bullet.CFrame = CF + CF.lookVector * Bullet.Size.Z / 2 + CF.lookVector * RandStart
+		
+		Dist = Dist - RandStart
+		
+		Debris:AddItem( Bullet, 3 )
+		
+		Bullet.Parent = workspace.CurrentCamera
+		
+		RunService.Heartbeat:Wait( )
+			
+		local AlmostEndDist = math.max( Dist - Length, 0 )
+		
+		if AlmostEndDist > 0 then
+			
+			local AlmostEndCF = CF + CF.lookVector * Bullet.Size.Z / 2 + CF.lookVector * AlmostEndDist
+			
+			local Tween = TweenService:Create( Bullet, TweenInfo.new( ( AlmostEndDist / Dist ) * ( Dist / Speed ), Enum.EasingStyle.Linear ), { CFrame = AlmostEndCF } )
+			
+			Tween:Play( )
+			
+			Tween.Completed:Wait( )
+			
 		end
 		
-		Bullet:Destroy( )
-		
 		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		
+		local Tween = TweenService:Create( Bullet, TweenInfo.new( ( ( Dist - AlmostEndDist ) / Dist ) * ( Dist / Speed ), Enum.EasingStyle.Linear ), { CFrame = CF + CF.lookVector * Dist, Size = Vector3.new( Size, Size, 0 ) } )
+		
+		Tween:Play( )
+		
+		Tween.Completed:Wait( )
+		
+		Bullet:Destroy( )
 		
 	end
 	

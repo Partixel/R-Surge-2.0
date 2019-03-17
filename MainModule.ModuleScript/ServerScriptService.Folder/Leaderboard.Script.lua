@@ -28,7 +28,7 @@ end
 
 local function OnDeath( Damageable )
 	
-	local Victim = game:GetService( "Players" ):FindFirstChild( Damageable.Parent.Name )
+	local Victim = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent )
 	
 	if Victim then
 		
@@ -40,12 +40,7 @@ local function OnDeath( Damageable )
 	
 	if not Core.DamageInfos[ Damageable ] and not CollectionService:HasTag( Damageable, "s2nofeed" ) then
 		
-		local DeathInfo = { VictimInfos = { { User = Victim  } } }
-		
-		if not DeathInfo.VictimInfos[ 1 ] then
-			
-			DeathInfo.VictimInfos[ 1 ] = { User = { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ) }
-		end
+		local DeathInfo = { VictimInfos = { { Damageable = Damageable, User = Victim or  { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ) } } }
 		
 		script.Killed:Fire( DeathInfo )
 		
@@ -141,21 +136,7 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 			
 			if not CollectionService:HasTag( Damageable, "s2nokos" ) then KOs = KOs + 1 end
 			
-			local Victim = game:GetService( "Players" ):FindFirstChild( Damageable.Parent.Name )
-			
-			local Num = #DeathInfo.VictimInfos + 1
-			
-			if Victim and Victim:IsA( "Player" ) then
-				
-				DeathInfo.VictimInfos[ Num ] = { User = Victim, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit }
-				
-			end
-			
-			if not DeathInfo.VictimInfos[ Num ] then
-				
-				DeathInfo.VictimInfos[ Num ] = { User = { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit }
-				
-			end
+			DeathInfo.VictimInfos[ #DeathInfo.VictimInfos + 1 ] = { Damageable = Damageable, User = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent ) or { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit }
 			
 			if Core.DamageInfos[ Damageable ] then
 				

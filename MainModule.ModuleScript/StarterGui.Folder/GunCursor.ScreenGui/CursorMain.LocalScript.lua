@@ -54,7 +54,7 @@ function RunHeartbeat( )
 			
 		end
 		
-		if not Weapon or not Core.ShowCursor then
+		if not Weapon or not Core.ShowCursor or _G.S20Config.CursorImage or Weapon.CursorImage then
 			
 			Heartbeat:Disconnect( )
 			
@@ -192,29 +192,11 @@ Core.FireModeChanged.Event:Connect( function ( Weapon, Value )
 	
 end )
 
-local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
-
-if Weapon and Weapon.ShowCursor ~= false and Core.ShowCursor then
-	
-	GunCursor.Center.Visible = true
-	
-	game:GetService( "UserInputService" ).MouseIconEnabled = false
-	
-	ShowMode = tick( ) + 1
-	
-	if not Heartbeat then
-		
-		RunHeartbeat( )
-		
-	end
-	
-end
- 
-Core.WeaponSelected.Event:Connect( function ( Mod )
+function WeaponSelected( Mod )
 	
 	local Weapon = Core.GetWeapon( Mod )
 	
-	if not Weapon or Weapon.User ~= Plr then return end
+	if not Weapon or Weapon.User ~= Plr or _G.S20Config.CursorImage or Weapon.CursorImage then return end
 	
 	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor then
 		
@@ -234,13 +216,23 @@ Core.WeaponSelected.Event:Connect( function ( Mod )
 		
 	end
 	
-end )
+end
+
+local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
+
+if Weapon then
+	
+	WeaponSelected( Weapon.StatObj )
+	
+end
+ 
+Core.WeaponSelected.Event:Connect( WeaponSelected )
  
 Core.WeaponDeselected.Event:Connect( function ( Mod )
 	
 	local Weapon = Core.GetWeapon( Mod )
 	
-	if not Weapon or Weapon.User ~= Plr then return end
+	if not Weapon or Weapon.User ~= Plr or _G.S20Config.CursorImage or Weapon.CursorImage then return end
 	
 	GunCursor.Center.Visible = false
 	
