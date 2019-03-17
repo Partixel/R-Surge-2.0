@@ -34,8 +34,6 @@ Core.DamageableAdded = script.DamageableAdded
 
 Core.FiringEnded = script.FiringEnded
 
-Core.Killed = script.Killed
-
 Core.FireModes = {
 
 	Auto = { Name = "Auto", Automatic = true },
