@@ -6,15 +6,15 @@ return {
 	
 	Damage = 10, -- Damage of the gun
 	
-	FireRate = 80, -- How many clicks will be handled in a second
+	FireRate = 30, -- How many clicks will be handled in a second
 	
-	MaxAmmo = 20, -- The max ammo the gun has, -1 is infinite
+	ClipSize = 200, -- The max ammo the gun has, -1 is infinite
 	
 	ReloadDelay = 5, -- The time it takes to reload
 	
 	Range = 1000, -- The distance the bullet travels
 	
-	AccurateRange = 25, -- The accuracy of the bullet ( Higher = less accurate )
+	AccurateRange = 5, -- The accuracy of the bullet ( Higher = less accurate )
 
 	WindupTime = 2,
 	

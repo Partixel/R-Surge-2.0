@@ -2,17 +2,23 @@ return {
 	
 	FireModes = { "Auto", "Burst", "Semi", "Safety" },
 	
-	BulletType = { Name = "Laser" },
-	
 	Damage = 13,
 	
 	FireRate = 7,
 	
-	MaxAmmo = 22,
+	ClipSize = 22,
 	
-	ReloadDelay = 1,
+	MaxStoredAmmo = 100,
 	
-	ReloadAmount = 22,
+	ReloadDelay = 4,
+	
+	InitialReloadDelay = 1,
+	
+	FinalReloadDelay = 1,
+	
+	InvertTeamKill = true,
+	
+	--ReloadAmount = 22,
 	
 	Range = 450,
 	
@@ -24,7 +30,7 @@ return {
 	
 	Scope = { Min = 10, Max = 30 },
 	
-	Barrels = function ( StatObj ) return StatObj.Parent:WaitForChild( "BarrelColor" ) end,
+	Barrels = function ( StatObj ) return StatObj.Parent:WaitForChild( "Barrel" ) end,
 	
 	LeftWeld = CFrame.new( 0.8, 0.5, 0.4 ) * CFrame.Angles( math.rad( 280 ), math.rad( 43 ), 0 ),
 	

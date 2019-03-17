@@ -10,7 +10,7 @@ return {
 	
 	OneAmmoPerClick = true,
 	
-	MaxAmmo = 12,
+	ClipSize = 12,
 	
 	ReloadDelay = 2,
 	
@@ -22,7 +22,7 @@ return {
 	
 	DistanceDamageMultiplier = 0.8,
 	
-	Barrels = function ( StatObj ) return StatObj.Parent:WaitForChild( "BarrelColor" ) end,
+	Barrels = function ( StatObj ) return StatObj.Parent:WaitForChild( "Barrel" ) end,
 	
 	LeftWeld = CFrame.new( 0.8, 0.5, 0.4 ) * CFrame.Angles( math.rad( 280 ), math.rad( 43 ), 0 ),
 	

@@ -10,7 +10,7 @@ return {
 	
 	FireRate = 1, -- How many clicks will be handled in a second
 	
-	MaxAmmo = 1, -- The max ammo the gun has, -1 is infinite
+	ClipSize = 1, -- The max ammo the gun has, -1 is infinite
 	
 	ReloadDelay = 7, -- The time it takes to reload
 	

@@ -1,5 +1,7 @@
 return {
 	
+	ReloadWhileUnequipped = true,
+	
 	PreventSprint = true,
 	
 	FireModes = { "Auto", "Safety" },
@@ -8,7 +10,7 @@ return {
 	
 	FireRate = 80, -- How many clicks will be handled in a second
 	
-	MaxAmmo = 200, -- The max ammo the gun has, -1 is infinite
+	ClipSize = 200, -- The max ammo the gun has, -1 is infinite
 	
 	ReloadDelay = 4, -- The time it takes to reload
 	

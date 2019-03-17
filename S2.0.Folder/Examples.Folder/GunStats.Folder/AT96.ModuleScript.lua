@@ -4,13 +4,13 @@ return {
 	
 	FireModes = { "Semi", "Safety" },
 	
-	BulletType = { Name = "Explosive", Type = "Stun", BlastRadius = 6, BlastPressure = 10000, ExplosionType = Enum.ExplosionType.CratersAndDebris },
+	BulletType = { Name = "Explosive", BlastRadius = 6, BlastPressure = 10000, ExplosionType = Enum.ExplosionType.CratersAndDebris, Type = "Stun" },
 	
-	Damage = 10,
+	Damage = 120,
 	
 	FireRate = 0.5,
 	
-	MaxAmmo = 1,
+	ClipSize = 1,
 	
 	ReloadDelay = 5,
 	
