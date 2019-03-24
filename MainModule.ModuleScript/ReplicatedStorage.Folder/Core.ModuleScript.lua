@@ -582,26 +582,24 @@ function RunWeaponTick( )
 					
 				end
 				
+				if c.ShotRecoil > 0 then
+					
+					Needed = true
+					
+					if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
+						
+						c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
+						
+					end
+					
+				end
+				
 				if not Needed then
 					
 					Core.WeaponTick[ c ] = nil
 					
 				end
 
-			end
-
-			if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
-
-				if c.ShotRecoil > 0 then
-
-					c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
-
-				else
-
-					c.ShotRecoil = 0
-
-				end
-				
 			end
 			
 		end
