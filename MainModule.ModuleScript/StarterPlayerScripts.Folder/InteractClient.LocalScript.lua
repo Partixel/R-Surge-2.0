@@ -2,7 +2,7 @@ local InteractObjs = { }
 
 local Plr, UserInputService = game:GetService( "Players" ).LocalPlayer, game:GetService("UserInputService" )
 
-local KBU, Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) ), require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local KBU, Core = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) ), require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
 local InteractRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "InteractRemote" )
 

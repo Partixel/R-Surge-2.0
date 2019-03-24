@@ -1,14 +1,14 @@
+local ReplicatedStorage = game:GetService( "ReplicatedStorage" )
+
+while not _G.S20Config do wait( ) end
+
+local PoseUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "PoseUtil" ) )
+
+local KeybindUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
+
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" )  )
+	
 return function ( Main, ModFolder, VH_Events )
-	
-	local ReplicatedStorage = game:GetService( "ReplicatedStorage" )
-	
-	while not _G.S20Config do wait( ) end
-	
-	local PoseUtil = require( ReplicatedStorage:WaitForChild( "PoseUtil" ) )
-	
-	local KeybindUtil = require( ReplicatedStorage:WaitForChild( "KeybindUtil" ) )
-	
-	local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
 	
 	_G.S20Config.AllowSprinting = ReplicatedStorage:WaitForChild( "Sprint" ).Value
 	

@@ -78,10 +78,6 @@ require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Config" ) )
 
 coroutine.wrap( LuaRequire )( game:GetService( "ReplicatedStorage" ):FindFirstChild( "ThemeUtil" ) or game:GetService( "ServerStorage" ):FindFirstChild( "ThemeUtil" ) and game:GetService( "ServerStorage" ):FindFirstChild( "ThemeUtil" ):FindFirstChild( "MainModule" ) or 2230572960 )
 
-coroutine.wrap( LuaRequire )( game:GetService( "ReplicatedStorage" ):WaitForChild( "PoseUtil" ) )
-
-coroutine.wrap( LuaRequire )( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
-
 if not game:GetService( "ServerStorage" ):FindFirstChild( "VH_Command_Modules" ) then
 	
 	local Folder = Instance.new( "Folder" )

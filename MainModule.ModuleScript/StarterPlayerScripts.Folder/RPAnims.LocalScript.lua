@@ -1,8 +1,8 @@
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
-local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
-
 local Plr = game:GetService( "Players" ).LocalPlayer
+
+local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
 
 local Animations = { [ Enum.HumanoidRigType.R6 ] = { "rbxassetid://580605334", "rbxassetid://955877742", "rbxassetid://1173354695" }, [ Enum.HumanoidRigType.R15 ] = { "rbxassetid://2225371665", "rbxassetid://2225372526", "rbxassetid://2225382014" } }
 

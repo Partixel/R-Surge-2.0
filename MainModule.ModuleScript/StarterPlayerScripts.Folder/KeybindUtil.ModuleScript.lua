@@ -1,142 +1,18 @@
-if game:GetService( "RunService" ):IsServer( ) then
-	
-	local Ran, DataStore = pcall( game:GetService( "DataStoreService" ).GetDataStore, game:GetService( "DataStoreService" ), "KeybindUtilV2" )
-	
-	if not Ran or type( DataStore ) ~= "userdata" or not pcall( function ( ) DataStore:GetAsync( "Test" ) end ) then
-		
-		DataStore = { GetAsync = function ( ) end, SetAsync = function ( ) end, UpdateAsync = function ( ) end, OnUpdate = function ( ) end }
-		
-	end
-	
-	local function SerialiseEnum( Val )
-		
-		if typeof( Val ) ~= "EnumItem" then return Val end
-		
-		return { tostring( Val.EnumType ), Val.Name }
-		
-	end
-	
-	local function DeserialiseEnum( Val )
-		
-		if type( Val ) ~= "table" then
-			
-			return Val
-			
-		end
-		
-		return Enum[ Val[ 1 ] ][ Val[ 2 ] ]
-		
-	end
-	
-	local SavedBinds = { }
-	
-	local Players = game:GetService( "Players" )
-	
-	Players.PlayerRemoving:Connect( function ( Plr )
-		
-		if SavedBinds[ Plr ] ~= nil then
-			
-			if SavedBinds[ Plr ] then
-				
-				DataStore:SetAsync( tostring( Plr.UserId ), SavedBinds[ Plr ] )
-				
-			else
-				
-				DataStore:RemoveAsync( tostring( Plr.UserId ) )
-				
-			end
-			
-			SavedBinds[ Plr ] = nil
-			
-		end
-		
-		SavedBinds[ Plr ] = nil
-		
-	end )
-	
-	game:BindToClose( function ( )
-		
-		local Plrs = Players:GetPlayers( )
-		
-		for a = 1, #Plrs do
-			
-			if SavedBinds[ Plrs[ a ] ] ~= nil then
-				
-				if SavedBinds[ Plrs[ a ] ] then
-					
-					DataStore:SetAsync( tostring( Plrs[ a ].UserId ), SavedBinds[ Plrs[ a ] ] )
-					
-				else
-					
-					DataStore:RemoveAsync( tostring( Plrs[ a ].UserId ) )
-				
-				end
-				
-				SavedBinds[ Plrs[ a ] ] = nil
-				
-			end
-			
-		end
-		
-	end )
-	
-	script.SaveBind.OnServerEvent:Connect( function ( Plr, Name, Type, Val )
-		
-		SavedBinds[ Plr ] = DataStore:GetAsync( tostring( Plr.UserId ) ) or { }
-		
-		if Type == nil then
-			
-			SavedBinds[ Plr ][ Name ] = nil
-			
-			local Found = false
-			
-			for a, b in pairs( SavedBinds[ Plr ] ) do Found = true break end
-			
-			if not Found then SavedBinds[ Plr ] = false end
-			
-			return
-			
-		end
-		
-		SavedBinds[ Plr ][ Name ] = SavedBinds[ Plr ][ Name ] or { }
-		
-		SavedBinds[ Plr ][ Name ][ Type ] = SerialiseEnum( Val )
-		
-	end )
-	
-	script.GetSavedBinds.OnServerInvoke = function ( Plr )
-		
-		local Tmp = DataStore:GetAsync( tostring( Plr.UserId ) ) or { }
-		
-		local Binds = { }
-		
-		for a, b in pairs( Tmp ) do
-			
-			Binds[ a ] = { }
-			
-			for c, d in pairs( b ) do
-				
-				Binds[ a ][ c ] = DeserialiseEnum( d )
-				
-			end
-			
-		end
-		
-		return Binds
-		
-	end
-	
-end
-
-if not game:GetService( "RunService" ):IsClient( ) then return nil end
-
 Module = { }
 
-Module.ContextChanged = script:WaitForChild( "ContextChanged" ).Event
+local SaveBind = game:GetService( "ReplicatedStorage" ):WaitForChild( "SaveBind" )
 
-Module.BindAdded = script:WaitForChild( "BindAdded" ).Event
+local ContextChanged = Instance.new( "BindableEvent" )
 
-Module.BindChanged = script:WaitForChild( "BindChanged" ).Event
+Module.ContextChanged = ContextChanged.Event
+
+local BindAdded = Instance.new( "BindableEvent" )
+
+Module.BindAdded = BindAdded.Event
+
+local BindChanged = Instance.new( "BindableEvent" )
+
+Module.BindChanged = BindChanged.Event
 
 local Binds = { }
 
@@ -232,7 +108,7 @@ local function UpdateContext( Type )
 	
 	if Type.Name:lower( ):find( "gamepad" ) then new = 1 end
 	
-	if Context ~= new then Context = new script.ContextChanged:Fire( ) end
+	if Context ~= new then Context = new ContextChanged:Fire( ) end
 	
 end
 
@@ -296,9 +172,9 @@ function Module.GetBinds( )
 	
 end
 
-local SavedBinds = script.GetSavedBinds:InvokeServer( )
+local SavedBinds = game:GetService( "ReplicatedStorage" ):WaitForChild( "GetSavedBinds" ):InvokeServer( )
 
-script.BindChanged:Fire( )
+BindChanged:Fire( )
 
 -- Name, Category, Callback, Key, PadKey, PadNum, ToggleState, CanToggle, OffOnDeath, NonRebindable, NoHandled
 function Module.AddBind( Bind )
@@ -325,7 +201,7 @@ function Module.AddBind( Bind )
 	
 	Binds[ Bind.Name ] = Bind
 	
-	script.BindAdded:Fire( Bind.Name, Bind )
+	BindAdded:Fire( Bind.Name, Bind )
 	
 end
 
@@ -343,7 +219,7 @@ function Module.RemoveBind( Name )
 	
 	Binds[ Name ] = nil
 	
-	script.BindChanged:Fire( Name )
+	BindChanged:Fire( Name )
 	
 end
 
@@ -361,7 +237,7 @@ function Module.SetToggleState( Name, Val )
 	
 	Binds[ Name ].ToggleState = Val
 	
-	script.BindChanged:Fire( Name )
+	BindChanged:Fire( Name )
 	
 end
 
@@ -483,9 +359,9 @@ function Module.Defaults( Name )
 	
 	Bind.ToggleState = Bind.Defaults.ToggleState
 	
-	script.SaveBind:FireServer( Name )
+	SaveBind:FireServer( Name )
 	
-	script.BindChanged:Fire( Name )
+	BindChanged:Fire( Name )
 	
 end
 
@@ -513,11 +389,11 @@ function Module.Rebind( Name, Type, TextObj )
 		
 		Module.SetToggleState( Name, not Binds[ Name ].ToggleState )
 		
-		script.SaveBind:FireServer( Name, "ToggleState", Binds[ Name ].ToggleState )
+		SaveBind:FireServer( Name, "ToggleState", Binds[ Name ].ToggleState )
 		
 		Module.WriteToObj( TextObj, Binds[ Name ].ToggleState )
 		
-		script.BindChanged:Fire( Name )
+		BindChanged:Fire( Name )
 		
 		return
 		
@@ -543,9 +419,9 @@ function Module.Rebind( Name, Type, TextObj )
 	
 	Binds[ Name ][ Type == Enum.UserInputType.Keyboard and "Key" or "PadKey" ] = Key
 	
-	script.SaveBind:FireServer( Name, Type == Enum.UserInputType.Keyboard and "Key" or "PadKey", Key )
+	SaveBind:FireServer( Name, Type == Enum.UserInputType.Keyboard and "Key" or "PadKey", Key )
 	
-	script.BindChanged:Fire( Name )
+	BindChanged:Fire( Name )
 	
 	Module.Rebinding = nil
 	

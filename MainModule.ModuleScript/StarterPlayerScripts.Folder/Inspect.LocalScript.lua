@@ -4,9 +4,9 @@ local TweenService = game:GetService( "TweenService" )
 
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
-local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
+local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
 
-local PU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "PoseUtil" ) )
+local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "PoseUtil" ) )
 
 local Animation = { CFrame.new( 0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0 ) * CFrame.Angles( 0, math.rad( 5 ), math.rad( 15 ) ), CFrame.new( 0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0 ) }
 

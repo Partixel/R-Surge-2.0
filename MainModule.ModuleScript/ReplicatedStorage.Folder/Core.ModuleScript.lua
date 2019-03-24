@@ -1082,7 +1082,7 @@ if IsClient then
 
 	end )
 
-	local KBU = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "KeybindUtil" ) )
+	local KBU = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
 
 	KBU.AddBind{ Name = "Fire", Category = "Surge 2.0", Callback = function ( Began )
 		

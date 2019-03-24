@@ -1,8 +1,8 @@
-local Module = { }
-
-local RunService = game:GetService( "RunService" )
-
 local Players = game:GetService( "Players" )
+
+local SendPose = game:GetService( "ReplicatedStorage" ):WaitForChild( "SendPose" )
+
+local Module = { }
 
 local PlrPoses = { }
 
@@ -82,7 +82,7 @@ if game["Run Service"]:IsClient( ) then
 		
 	end
 	
-	script.SendPose.OnClientEvent:Connect( function ( Plr, Pose, State )
+	SendPose.OnClientEvent:Connect( function ( Plr, Pose, State )
 		
 		if type( Plr ) == "table" then
 			
@@ -138,11 +138,7 @@ if game["Run Service"]:IsClient( ) then
 			
 			Module.CallWatched( Pose, Plr, State, 0 )
 			
-			if not RunService:IsServer( ) then
-				
-				script.SendPose:FireServer( Pose, { State = State, Time = tick( ) + _G.ServerOffset } )
-				
-			end
+			SendPose:FireServer( Pose, { State = State, Time = tick( ) + _G.ServerOffset } )
 			
 		end
 		
@@ -157,42 +153,6 @@ if game["Run Service"]:IsClient( ) then
 		return PlrPoses[ UserId ] and PlrPoses[ UserId ][ Pose ]
 		
 	end
-	
-end
-
-if game["Run Service"]:IsServer( ) then
-	
-	script.SendPose.OnServerEvent:Connect( function ( Plr, Pose, State )
-		
-		local UserId = tostring( Plr.UserId )
-		
-		PlrPoses[ UserId ] = PlrPoses[ UserId ] or { }
-		
-		PlrPoses[ UserId ][ Pose ] = State
-		
-		local Plrs = Players:GetPlayers( )
-		
-		for a = 1, #Plrs do
-			
-			if Plrs[ a ] ~= Plr then
-				
-				script.SendPose:FireClient( Plrs[ a ], Plr, Pose, State )
-				
-			end
-			
-		end
-		
-	end )
-	
-	Players.PlayerAdded:Connect( function ( Plr )
-		
-		if next( PlrPoses ) then
-			
-			script.SendPose:FireClient( Plr, PlrPoses )
-			
-		end
-		
-	end )
 	
 end
 
