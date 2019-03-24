@@ -26,7 +26,7 @@ Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( St
 				
 				if Until < tick( ) or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then Event:Disconnect( ) Until = nil return end
 				
-				if not HumanoidRootPart or ( workspace.CurrentCamera.CoordinateFrame.p - workspace.CurrentCamera.Focus.p ).magnitude <= 0.55 then return end
+				if not HumanoidRootPart or HumanoidRootPart.Anchored or ( workspace.CurrentCamera.CoordinateFrame.p - workspace.CurrentCamera.Focus.p ).magnitude <= 0.55 then return end
 				
 				if next( Core.PreventCharacterRotation ) then return end
 				
