@@ -24,7 +24,11 @@ local function AddObjs( PermPar, Name )
 						
 						if PermPar.Name == "StarterPlayerScripts" then
 							
-							Clone.Disabled = true
+							if Clone:IsA( "Script" ) or Clone:IsA( "LocalScript" ) then
+								
+								Clone.Disabled = true
+								
+							end
 							
 							script.Move:Clone( ).Parent = Clone
 							

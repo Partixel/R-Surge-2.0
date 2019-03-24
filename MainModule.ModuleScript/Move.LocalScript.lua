@@ -10,6 +10,10 @@ end
 
 script.Parent.Parent = game:GetService( "Players" ).LocalPlayer.PlayerScripts
 
-script.Parent.Disabled = false
+if script.Parent:IsA( "Script" ) or script.Parent:IsA( "LocalScript" ) then
+	
+	script.Parent.Disabled = false
+	
+end
 
 script:Destroy( )
