@@ -1,3 +1,5 @@
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+
 function GetArmWelds( Char )
 	
 	if Char:FindFirstChild( "Torso" ) then
@@ -170,18 +172,32 @@ local function NewWeld( Plr, Tool, CF1 )
 	
 end
 
-return function ( Plr, Tool, CF1, CF2 )
+Core.WeaponSelected.Event:Connect( function ( Mod, Plr )
 	
-	if Tool:WaitForChild( "Handle" ):FindFirstChild( "LeftTarget" ) then
+	local GunStats = Core.GetGunStats( Mod )
+	
+	if not GunStats then return end
+	
+	local LeftWeld, RightWeld = GunStats.LeftWeld, GunStats.RightWeld
+	
+	if LeftWeld or RightWeld then
 		
-		Tool.Equipped:Connect( function ( ) NewWeld( Plr, Tool, CF2 ) end )
-
-		return
-
+		WeldArms( Plr, Mod.Parent, LeftWeld, RightWeld )
+		
 	end
 	
-	Tool.Equipped:Connect( function ( ) WeldArms( Plr, Tool, CF1, CF2 ) end )
+end )
+
+Core.WeaponDeselected.Event:Connect( function ( Mod, Plr )
 	
-	Tool.Unequipped:Connect( function ( ) UnWeld( Plr, Tool, CF1, CF2) end )
+	local GunStats = Core.GetGunStats( Mod )
 	
-end
+	if not GunStats then return end
+	
+	if GunStats.LeftWeld or GunStats.RightWeld then
+		
+		UnWeld( Plr, Mod.Parent )
+		
+	end
+	
+end )

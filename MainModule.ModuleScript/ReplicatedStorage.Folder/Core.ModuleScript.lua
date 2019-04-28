@@ -367,8 +367,6 @@ local IsClient = RunService:IsClient( )
 
 local IsServer = RunService:IsServer( )
 
-local ArmUtil
-
 local GunStatFolder
 
 if IsServer then
@@ -418,18 +416,6 @@ function Core.ToolAdded( Tool, Plr )
 	local StatObj = Tool:FindFirstChild( "GunStat" )
 
 	if StatObj and not Core.Weapons[ StatObj ] then
-		
-		if IsServer and _G.S20Config.ArmWelds then
-
-			local GunStats = Core.GetGunStats( StatObj )
-			
-			if GunStats.LeftWeld or GunStats.RightWeld then
-				
-				ArmUtil( Plr, Tool, GunStats.LeftWeld, GunStats.RightWeld )
-				
-			end
-
-		end
 
 		if IsClient then
 
@@ -627,8 +613,6 @@ if IsServer then
 	Core.ServerVisuals = Instance.new( "BindableEvent" )
 
 	Core.ObjDamaged = Instance.new( "BindableEvent" )
-
-	ArmUtil = require( script.ArmUtil )
 
 	Core.HandleServer = function ( Plr, Time, StatObj, ToNetwork, User, _Offset, _User, _BarrelNum )
 		
