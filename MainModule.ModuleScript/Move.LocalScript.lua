@@ -1,6 +1,6 @@
-wait( )
-
 if game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):FindFirstChild( script.Parent.Name ) then
+	
+	wait( )
 	
 	script.Parent:Destroy( )
 	
@@ -8,12 +8,18 @@ if game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):Find
 	
 end
 
-script.Parent.Parent = game:GetService( "Players" ).LocalPlayer.PlayerScripts
+local Clone = script.Parent:Clone( )
 
-if script.Parent:IsA( "Script" ) or script.Parent:IsA( "LocalScript" ) then
+Clone.Move:Destroy( )
+
+Clone.Parent = game:GetService( "Players" ).LocalPlayer.PlayerScripts
+
+if Clone:IsA( "Script" ) or Clone:IsA( "LocalScript" ) then
 	
-	script.Parent.Disabled = false
+	Clone.Disabled = false
 	
 end
 
-script:Destroy( )
+wait( )
+
+script.Parent:Destroy( )
