@@ -1,8 +1,8 @@
+local ReplicatedStorage	= game:GetService( 'ReplicatedStorage' )
+
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+
 return function ( Main, ModFolder, VH_Events )
-	
-	local ReplicatedStorage	= game:GetService( 'ReplicatedStorage' )
-	
-	local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
 	
 	while not _G.S20Config do wait( ) end
 	
@@ -53,14 +53,6 @@ return function ( Main, ModFolder, VH_Events )
 	Surrender.Name = "Surrender"
 	
 	Surrender.Parent = ReplicatedStorage
-	
-	local BaseTheme = ReplicatedStorage:FindFirstChild( "BaseTheme" ) or Instance.new( "StringValue" )
-	
-	BaseTheme.Value = "Dark"
-	
-	BaseTheme.Name = "BaseTheme"
-	
-	BaseTheme.Parent = ReplicatedStorage
 	
 	VH_Events:WaitForChild( "Destroyed" ).Event:Connect( function ( Update )
 		
@@ -243,48 +235,6 @@ return function ( Main, ModFolder, VH_Events )
 			_G.S20Config.AllowSurrender = Args[ 1 ]
 			
 			ReplicatedStorage.Surrender.Value = Args[ 1 ]
-			
-			return true
-			
-		end
-		
-	}
-	
-	Main.Commands.SetBaseTheme = {
-		
-		Alias = { "setbasetheme", "basetheme" },
-		
-		Description = "Sets the base theme",
-		
-		Category = "Theme",
-		
-		CanRun = "$debugger",
-		
-		ArgTypes = { { Func = function ( self, Strings, Plr )
-			
-			local String = table.remove( Strings, 1 )
-			
-			if String == Main.TargetLib.ValidChar then return "Light" end
-			
-			String = String:lower( )
-			
-			for a, b in pairs( ThemeUtil.BaseThemes ) do
-				
-				if String:find( a:lower( ):sub( 1, #String ) ) then
-					
-					return a
-					
-				end
-				
-			end
-			
-			return nil, false
-			
-		end, Required = true, Name = "base_theme" } },
-		
-		Callback = function ( self, Plr, Cmd, Args, NextCmds, Silent )
-			
-			BaseTheme.Value = Args[ 1 ]
 			
 			return true
 			
