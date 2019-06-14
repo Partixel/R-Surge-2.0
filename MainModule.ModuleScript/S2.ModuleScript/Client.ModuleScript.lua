@@ -5,8 +5,6 @@ while not _G.S20Config do wait( ) end
 local PoseUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "PoseUtil" ) )
 
 local KeybindUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
-
-local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" )  )
 	
 return function ( Main, ModFolder, VH_Events )
 	
@@ -85,14 +83,6 @@ return function ( Main, ModFolder, VH_Events )
 			KeybindUtil.SetToggle( "Salute", false )
 			
 		end
-		
-	end )
-	
-	ThemeUtil.SetBaseTheme( ReplicatedStorage:WaitForChild( "BaseTheme" ).Value )
-	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.BaseTheme.Changed:Connect( function( Value )
-		
-		ThemeUtil.SetBaseTheme( Value )
 		
 	end )
 
