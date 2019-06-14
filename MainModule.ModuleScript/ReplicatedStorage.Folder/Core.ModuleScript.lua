@@ -1364,14 +1364,6 @@ function Core.Destroy( Weapon )
 		
 		Core.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
 		
-		Core.Selected[ Weapon.User ][ Weapon ] = nil
-		
-		if not next( Core.Selected[ Weapon.User ] ) then
-			
-			Core.Selected[ Weapon.User ] = nil
-			
-		end
-		
 	end
 
 	Core.Weapons[ Weapon.StatObj ] = nil
