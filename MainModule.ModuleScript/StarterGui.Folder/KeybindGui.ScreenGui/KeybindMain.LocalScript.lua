@@ -4,31 +4,68 @@ local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( 
 
 local TweenService = game:GetService( "TweenService" )
 
-local KeybindGui = script.Parent:WaitForChild( "KeybindFrame" )
+ThemeUtil.BindUpdate( script.Parent.KeybindFrame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 
-ThemeUtil.BindUpdate( KeybindGui, "BackgroundColor3", "Background" )
+ThemeUtil.BindUpdate( script.Parent.KeybindFrame.Main, { ScrollBarImageColor3 = "Secondary_BackgroundColor", ScrollBarImageTransparency = "Secondary_BackgroundTransparency" } )
 
-ThemeUtil.BindUpdate( KeybindGui.Main, "ScrollBarImageColor3", "SecondaryBackground" )
+ThemeUtil.BindUpdate( { script.Parent.KeybindFrame.Search, script.Parent.KeybindFrame.Context.Gamepad, script.Parent.KeybindFrame.Context.Keyboard, script.Parent.KeybindFrame.Context:FindFirstChild( "Name" ), script.Parent.KeybindFrame.Context.Toggle }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency" } )
 
-ThemeUtil.BindUpdate( { KeybindGui.Search, KeybindGui.Bar, KeybindGui.Context.Context.Gamepad, KeybindGui.Context.Context.Keyboard, KeybindGui.Context.Context:FindFirstChild( "Name" ), KeybindGui.Context.Context.Toggle }, "BackgroundColor3", "SecondaryBackground" )
+ThemeUtil.BindUpdate( { script.Parent.KeybindFrame.Search, script.Parent.KeybindFrame.Context.Gamepad, script.Parent.KeybindFrame.Context.Keyboard, script.Parent.KeybindFrame.Context:FindFirstChild( "Name" ), script.Parent.KeybindFrame.Context.Toggle }, { TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 
-ThemeUtil.BindUpdate( { KeybindGui.Search, KeybindGui.Context.Context.Gamepad, KeybindGui.Context.Context.Keyboard, KeybindGui.Context.Context:FindFirstChild( "Name" ), KeybindGui.Context.Context.Toggle }, "TextColor3", "TextColor" )
+ThemeUtil.BindUpdate( script.Parent.KeybindFrame.Search, { PlaceholderColor3 = "Secondary_TextColor" } )
 
-ThemeUtil.BindUpdate( KeybindGui.Search, "PlaceholderColor3", "SecondaryTextColor" )
-
-KeybindGui.Main.UIListLayout:GetPropertyChangedSignal( "AbsoluteContentSize" ):Connect( function ( )
+script.Parent.KeybindFrame.Main.UIListLayout:GetPropertyChangedSignal( "AbsoluteContentSize" ):Connect( function ( )
 	
-	KeybindGui.Main.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
+	script.Parent.KeybindFrame.Main.CanvasSize = UDim2.new( 0, 0, 0, script.Parent.KeybindFrame.Main.UIListLayout.AbsoluteContentSize.Y )
 	
-	KeybindGui.Context.CanvasSize = UDim2.new( 0, 0, 0, KeybindGui.Main.UIListLayout.AbsoluteContentSize.Y )
+	if script.Parent.KeybindFrame.Main.UIListLayout.AbsoluteContentSize.Y > script.Parent.KeybindFrame.Main.AbsoluteSize.Y then
+		
+		script.Parent.KeybindFrame.Context.Size = UDim2.new( 1, -5, 0, 40 )
+		
+	else
+		
+		script.Parent.KeybindFrame.Context.Size = UDim2.new( 1, 0, 0, 40 )
+		
+	end
 	
 end )
+
+local EscapePatterns = {
+	
+	[ "(" ] = "%(",
+		
+	[ ")" ] = "%)",
+	
+	[ "." ] = "%.",
+	
+	[ "%" ] = "%%",
+	
+	[ "+" ] = "%+",
+	
+	[ "-" ] = "%-",
+	
+	[ "*" ] = "%*",
+	
+	[ "?" ] = "%?",
+	
+	[ "[" ] = "%[",
+	
+	[ "]" ] = "%]",
+	
+	[ "^" ] = "%^",
+	
+	[ "$" ] = "%$",
+	
+	[ "\0" ] = "%z"
+	
+	
+}
 
 local Hide = { }
 
 function Redraw( )
 	
-	local Old = KeybindGui.Main:GetChildren( )
+	local Old = script.Parent.KeybindFrame.Main:GetChildren( )
 	
 	for a = 1, #Old do
 		
@@ -38,7 +75,7 @@ function Redraw( )
 	
 	local Binds = KBU.GetBinds( )
 	
-	local Txt = KeybindGui.Search.Text
+	local Txt = script.Parent.KeybindFrame.Search.Text:lower( ):gsub( ".", EscapePatterns )
 	
 	local Categories = { }
 	
@@ -50,7 +87,7 @@ function Redraw( )
 			
 			Categories[ Category ] = Categories[ Category ] or { }
 			
-			local Base = KeybindGui.Base:Clone( )
+			local Base = script.Parent.KeybindFrame.Base:Clone( )
 			
 			Base.Name = Binds[ a ].Name
 			
@@ -58,9 +95,7 @@ function Redraw( )
 			
 			Base.Visible = true
 			
-			ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "BackgroundColor3", "SecondaryBackground" )
-			
-			ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, "TextColor3", "TextColor" )
+			ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 			
 			Base.Main.Text = Binds[ a ].Name
 			
@@ -120,11 +155,11 @@ function Redraw( )
 	
 	for a, b in pairs( Categories ) do
 		
-		local Cat = KeybindGui.Category:Clone( )
+		local Cat = script.Parent.KeybindFrame.Category:Clone( )
 		
-		ThemeUtil.BindUpdate( { Cat.Button.Bar, Cat.Button.OpenIndicator, Cat.Button.TitleText }, "BackgroundColor3", "SecondaryBackground" )
+		ThemeUtil.BindUpdate( { Cat.Button.BarL, Cat.Button.BarR, Cat.Button.BarR2 }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency" } )
 		
-		ThemeUtil.BindUpdate( { Cat.Button.OpenIndicator, Cat.Button.TitleText }, "TextColor3", "TextColor" )
+		ThemeUtil.BindUpdate( { Cat.Button.OpenIndicator, Cat.Button.TitleText }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 		
 		Cat.Visible = true
 		
@@ -144,7 +179,7 @@ function Redraw( )
 			
 		end )
 		
-		Cat.Parent = KeybindGui.Main
+		Cat.Parent = script.Parent.KeybindFrame.Main
 		
 		for c = 1, #b do
 			
@@ -160,7 +195,7 @@ end
 
 local Invalid = true
 
-KeybindGui.Search:GetPropertyChangedSignal( "Text" ):Connect( function ( )
+script.Parent.KeybindFrame.Search:GetPropertyChangedSignal( "Text" ):Connect( function ( )
 	
 	if script.Parent.KeybindFrame.Visible then
 		
@@ -190,7 +225,7 @@ end )
 
 KBU.BindChanged:Connect( function ( Name )
 	
-	if not KBU.GetBind( Name ) or not KeybindGui.Main:FindFirstChild( Name, true ) then
+	if not KBU.GetBind( Name ) or not script.Parent.KeybindFrame.Main:FindFirstChild( Name, true ) then
 		
 		if script.Parent.KeybindFrame.Visible then
 			
@@ -206,31 +241,49 @@ KBU.BindChanged:Connect( function ( Name )
 	
 end )
 
-if script.Parent:FindFirstChild( "Keybinds" ) then
+if script.Parent:FindFirstChild( "Toggle" ) then
 	
-	local KeybindOpen
-	
-	function UpdateColor( )
+	local function UpdateColor( )
 		
-		script.Parent.Keybinds.BackgroundColor3 = KeybindOpen and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+		script.Parent.Toggle.BackgroundColor3 = script.Parent.Open.Value and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
 		
-		script.Parent.Keybinds.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+		local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
+		
+		script.Parent.Toggle.BackgroundTransparency = Transparency
+		
+		if Transparency > 0.9 then
+			
+			script.Parent.Toggle.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+			
+			script.Parent.Toggle.TextColor3 = script.Parent.Open.Value and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
+			
+			script.Parent.Toggle.TextStrokeTransparency = 0
+			
+		else
+			
+			script.Parent.Toggle.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+			
+			script.Parent.Toggle.TextStrokeTransparency = 1
+			
+		end
 		
 	end
 	
-	ThemeUtil.BindUpdate( script.Parent.Keybinds, "BackgroundColor3", UpdateColor )
-	
-	script.Parent.Keybinds.MouseButton1Click:Connect( function ( )
+	local function ToggleGui( )
 		
-		KeybindOpen = not KeybindOpen
+		if script.Parent.Open.Value and script.Parent.Parent:FindFirstChild( "ThemeGui" ) and script.Parent.Parent.ThemeGui.Open.Value then
+			
+			script.Parent.Parent.ThemeGui.Open.Value = false
+			
+		end
 		
-		if KeybindOpen then
+		if script.Parent.Open.Value then
 			
 			if Invalid then Redraw( ) Invalid = nil end
 			
 			script.Parent.KeybindFrame.Visible = true
 			
-			TweenService:Create( KeybindGui, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = UDim2.new( 0.05, 0, 0.43, 0 ), Size = UDim2.new( 0.3, 0, 0.4, 0 ) } ):Play( )
+			TweenService:Create( script.Parent.KeybindFrame, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = UDim2.new( 0.05, 0, 0.43, 0 ), Size = UDim2.new( 0.3, 0, 0.4, 0 ) } ):Play( )
 			
 			UpdateColor( )
 			
@@ -238,13 +291,13 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 			
 			KBU.Rebinding = nil
 			
-			local Tween = TweenService:Create( KeybindGui, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = script.Parent.Keybinds.Position, Size = script.Parent.Keybinds.Size } )
+			local Tween = TweenService:Create( script.Parent.KeybindFrame, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = script.Parent.Toggle.Position, Size = script.Parent.Toggle.Size } )
 			
 			Tween.Completed:Connect( function ( State )
 				
 				if State == Enum.PlaybackState.Completed then
 					
-					KeybindGui.Visible = false
+					script.Parent.KeybindFrame.Visible = false
 					
 				end
 				
@@ -256,11 +309,21 @@ if script.Parent:FindFirstChild( "Keybinds" ) then
 			
 		end
 		
+	end
+	
+	ThemeUtil.BindUpdate( script.Parent.Toggle, { BackgroundColor3 = UpdateColor, TextTransparency = "Primary_TextTransparency" } )
+	
+	script.Parent.Toggle.MouseButton1Click:Connect( function ( )
+		
+		script.Parent.Open.Value = not script.Parent.Open.Value
+		
 	end )
 	
-else
+	script.Parent.Open:GetPropertyChangedSignal( "Value" ):Connect( ToggleGui )
 	
-	KeybindOpen = true
+	ToggleGui( )
+	
+else
 	
 	script.Parent.KeybindFrame.Visible = true
 	

@@ -122,7 +122,7 @@ for a = 1, 6 do
 		
 	end )
 	
-	ThemeUtil.BindUpdate( script.Parent.ColorFrame[ a ], "BorderColor3", "SelectionColor" )
+	ThemeUtil.BindUpdate( script.Parent.ColorFrame[ a ], { BorderColor3 = "Selection_Color3" } )
 	
 end
 
@@ -130,13 +130,31 @@ local SparklesUse = false
 
 function UpdateSparklesColor( )
 	
-	script.Parent.Sparkles.BackgroundColor3 = not OwnSparkles and ThemeUtil.GetThemeFor( "NegativeColor" ) or SparklesEnabled and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+	script.Parent.Sparkles.BackgroundColor3 = not OwnSparkles and ThemeUtil.GetThemeFor( "Negative_Color3" ) or SparklesEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
 	
-	script.Parent.Sparkles.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+	local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
+	
+	script.Parent.Sparkles.BackgroundTransparency = Transparency
+	
+	if Transparency > 0.9 then
+		
+		script.Parent.Sparkles.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		
+		script.Parent.Sparkles.TextColor3 = not OwnSparkles and ThemeUtil.GetThemeFor( "Negative_Color3" ) or SparklesEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
+		
+		script.Parent.Sparkles.TextStrokeTransparency = 0
+		
+	else
+		
+		script.Parent.Sparkles.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		
+		script.Parent.Sparkles.TextStrokeTransparency = 1
+		
+	end
 	
 end
 
-ThemeUtil.BindUpdate( script.Parent.Sparkles, "BackgroundColor3", UpdateSparklesColor )
+ThemeUtil.BindUpdate( script.Parent.Sparkles, { BackgroundColor3 = UpdateSparklesColor, TextTransparency = "Primary_TextTransparency" } )
 
 script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 	
@@ -168,13 +186,31 @@ local NeonUse = false
 
 function UpdateNeonColor( )
 	
-	script.Parent.Neon.BackgroundColor3 = not OwnNeon and ThemeUtil.GetThemeFor( "NegativeColor" ) or NeonEnabled and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+	script.Parent.Neon.BackgroundColor3 = not OwnNeon and ThemeUtil.GetThemeFor( "Negative_Color3" ) or NeonEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
 	
-	script.Parent.Neon.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+	local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
+	
+	script.Parent.Neon.BackgroundTransparency = Transparency
+	
+	if Transparency > 0.9 then
+		
+		script.Parent.Neon.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		
+		script.Parent.Neon.TextColor3 = not OwnNeon and ThemeUtil.GetThemeFor( "Negative_Color3" ) or NeonEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
+		
+		script.Parent.Neon.TextStrokeTransparency = 0
+		
+	else
+		
+		script.Parent.Neon.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		
+		script.Parent.Neon.TextStrokeTransparency = 1
+		
+	end
 	
 end
 
-ThemeUtil.BindUpdate( script.Parent.Neon, "BackgroundColor3", UpdateNeonColor )
+ThemeUtil.BindUpdate( script.Parent.Neon, { BackgroundColor3 = UpdateNeonColor, TextTransparency = "Primary_TextTransparency" } )
 
 script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 	
@@ -214,13 +250,31 @@ end
 
 function UpdateColor( )
 	
-	script.Parent.Color.BackgroundColor3 = not OwnCol and ThemeUtil.GetThemeFor( "NegativeColor" ) or ColShow and ThemeUtil.GetThemeFor( "PositiveColor" ) or ThemeUtil.GetThemeFor( "Background" )
+	script.Parent.Color.BackgroundColor3 = not OwnCol and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ColShow and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
 	
-	script.Parent.Color.TextColor3 = ThemeUtil.GetThemeFor( "TextColor" )
+	local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
+	
+	script.Parent.Color.BackgroundTransparency = Transparency
+	
+	if Transparency > 0.9 then
+		
+		script.Parent.Color.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		
+		script.Parent.Color.TextColor3 = not OwnCol and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ColShow and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
+		
+		script.Parent.Color.TextStrokeTransparency = 0
+		
+	else
+		
+		script.Parent.Color.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		
+		script.Parent.Color.TextStrokeTransparency = 1
+		
+	end
 	
 end
 
-ThemeUtil.BindUpdate( script.Parent.Color, "BackgroundColor3", UpdateColor )
+ThemeUtil.BindUpdate( script.Parent.Color, { BackgroundColor3 = UpdateColor, TextTransparency = "Primary_TextTransparency" } )
 
 script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 	

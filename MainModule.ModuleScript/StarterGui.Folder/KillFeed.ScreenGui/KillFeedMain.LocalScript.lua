@@ -121,7 +121,15 @@ local Zero = UDim2.new( 0, 0, 0, 0 )
 
 local function UpdateContrastTextStroke( Obj )
 	
-	ThemeUtil.ContrastTextStroke( Obj, Obj.Parent.ImageColor3 )
+	if Obj.Parent.BackgroundTransparency > 0.9 then
+		
+		Obj.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Inverted_TextColor" )
+		
+	else
+		
+		ThemeUtil.ContrastTextStroke( Obj, Obj.Parent.ImageColor3 )
+		
+	end
 	
 end
 
@@ -139,13 +147,13 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			local Victim = script.Victim:Clone( )
 			
-			ThemeUtil.BindUpdate( Victim, "ImageColor3", "Background" )
+			ThemeUtil.BindUpdate( Victim, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 			
 			Victim.VictimName.Text = DeathInfo.VictimInfos[ a ].User.Name
 			
-			Victim.VictimName.TextColor3 = DeathInfo.VictimInfos[ a ].User.TeamColor and DeathInfo.VictimInfos[ a ].User.TeamColor.Color or ThemeUtil.GetThemeFor( "TextColor", "InvertedBackground" )
+			Victim.VictimName.TextColor3 = DeathInfo.VictimInfos[ a ].User.TeamColor and DeathInfo.VictimInfos[ a ].User.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
 			
-			ThemeUtil.BindUpdate( Victim.VictimName, "TextStrokeColor3", UpdateContrastTextStroke )
+			ThemeUtil.BindUpdate( Victim.VictimName, { TextStrokeColor3 = UpdateContrastTextStroke } )
 			
 			Victim.Name = "Victim" .. NumVictims
 			
@@ -173,7 +181,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 					
 				end
 				
-				ThemeUtil.BindUpdate( VictimFrame, "BackgroundColor3", "Background" )
+				ThemeUtil.BindUpdate( VictimFrame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 				
 				VictimFrame.Parent = Victim
 				
@@ -189,31 +197,31 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 	
 	NewFeed.Type.Image = DmgTypes[ DeathInfo.Type ] or DmgTypes[ "Kinetic" ]
 	
-	ThemeUtil.BindUpdate( NewFeed.Type, "ImageColor3", { "TextColor", "InvertedBackground" } )
+	ThemeUtil.BindUpdate( NewFeed.Type, { ImageColor3 = "Primary_TextColor", ImageTransparency = "Primary_TextTransparency" } )
 	
-	ThemeUtil.BindUpdate( NewFeed.Killer, "ImageColor3", "Background" )
+	ThemeUtil.BindUpdate( NewFeed.Killer, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 	
-	ThemeUtil.BindUpdate( NewFeed.Frame, "BackgroundColor3", "Background" )
+	ThemeUtil.BindUpdate( NewFeed.Frame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 	
 	NewFeed.Killer.KillerName.Text = DeathInfo.Killer and DeathInfo.Killer.Name or NewFeed[ "Victim1" ].VictimName.Text
 	
 	NewFeed.Killer.KillerName.TextColor3 = DeathInfo.Killer and DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or NewFeed[ "Victim1" ].VictimName.TextColor3
 	
-	ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, "TextStrokeColor3", UpdateContrastTextStroke )
+	ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, { TextStrokeColor3 = UpdateContrastTextStroke } )
 	
 	if DeathInfo.Assister then
 		
 		local Assister = script.Assister:Clone( )
 		
-		ThemeUtil.BindUpdate( Assister, "ImageColor3", "Background" )
+		ThemeUtil.BindUpdate( Assister, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 		
-		ThemeUtil.BindUpdate( Assister.Frame, "BackgroundColor3", "Background" )
+		ThemeUtil.BindUpdate( Assister.Frame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 		
 		Assister.AssisterName.Text = DeathInfo.Assister.Name
 		
-		Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor( "TextColor", "InvertedBackground" )
+		Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
 		
-		ThemeUtil.BindUpdate( Assister.AssisterName, "TextStrokeColor3", UpdateContrastTextStroke )
+		ThemeUtil.BindUpdate( Assister.AssisterName, { TextStrokeColor3 = UpdateContrastTextStroke } )
 		
 		Assister.AssisterPct.Text = PctStr( DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
 		
