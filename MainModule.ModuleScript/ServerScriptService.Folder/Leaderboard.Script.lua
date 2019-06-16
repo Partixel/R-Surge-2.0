@@ -4,27 +4,15 @@ local Players = game:GetService( "Players" )
 
 local CollectionService = game:GetService( "CollectionService" )
 
-local Ran, DataStore = pcall( game:GetService( "DataStoreService" ).GetDataStore, game:GetService( "DataStoreService" ), "S20Data" )
+local DataStore2 = require(1936396537)
 
-if not Ran or type( DataStore ) ~= "userdata" or not pcall( function ( ) DataStore:GetAsync( "Test" ) end ) then
-	
-	DataStore = { GetAsync = function ( ) end, SetAsync = function ( ) end, UpdateAsync = function ( ) end, OnUpdate = function ( ) end }
-	
-end
+DataStore2.Combine("PartixelsVeryCoolMasterKey", "Credits")
 
 local RemoteKilled = Instance.new( "RemoteEvent" )
 
 RemoteKilled.Name = "RemoteKilled"
 
-RemoteKilled.Parent = game:GetService( "ReplicatedStorage" )
-
-local function GetCredits( UserId )
-	
-	local Ran, Credits = pcall( DataStore.GetAsync, DataStore, "Credits" .. UserId )
-	
-	return Ran and Credits or 0
-	
-end
+RemoteKilled.Parent = game:GetService( "ReplicatedStorage" ) 
 
 local function OnDeath( Damageable )
 	
@@ -222,43 +210,6 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 		
 end
 
-
-local function Save( Plr )
-	
-	if _G.S20Config.SaveCredits == 1 then
-		
-		local Credits = Plr:FindFirstChild( "Credits", true )
-		
-		if Credits then
-			
-			pcall( function ( ) DataStore:UpdateAsync( "Credits" .. Plr.UserId, function ( Value )
-				
-				return Credits.Value
-				
-			end ) end )
-			
-		end
-		
-	end
-	
-end
-
-game:BindToClose( function ( )
-	
-	for a, b in pairs( game:GetService( "Players" ):GetChildren( ) ) do
-		
-		Save( b )
-		
-	end
-	
-end )
-
-game:GetService( "Players" ).PlayerRemoving:Connect( function ( Plr )
-	
-	Save( Plr )
-	
-end )
-
 local Allies
 
 if _G.S20Config.RankGroupId then
@@ -345,7 +296,17 @@ local function PlayerAdded( Plr )
 	
 	Credits.Name = "Credits"
 	
-	Credits.Value = _G.S20Config.SaveCredits and GetCredits( Plr.UserId ) or _G.S20Config.DefaultCredits or 0
+	Credits.Value = _G.S20Config.SaveCredits and DataStore2( "Credits", Plr ):Get( ) or _G.S20Config.DefaultCredits or 0
+	
+	if _G.S20Config.SaveCredits then
+		
+		DataStore2( "Credits", Plr ):BeforeSave( function ( )
+			
+			return Credits.Value
+			
+		end )
+		
+	end
 	
 	if _G.S20Config.CreditsPerPayday and _G.S20Config.CreditsPerPayday ~= 0 and _G.S20Config.PaydayDelay and _G.S20Config.PaydayDelay > 0 then
 		
@@ -354,16 +315,6 @@ local function PlayerAdded( Plr )
 			while wait( _G.S20Config.PaydayDelay ) do
 				
 				Credits.Value = Credits.Value + _G.S20Config.CreditsPerPayday
-				
-				if _G.S20Config.SaveCredits == 1 then
-					
-					pcall( function ( ) DataStore:UpdateAsync( "Credits" .. Plr.UserId, function ( Value )
-						
-						return Credits.Value
-						
-					end ) end )
-					
-				end
 				
 			end
 			

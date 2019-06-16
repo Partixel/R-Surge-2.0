@@ -12,126 +12,82 @@ GetSavedBinds.Name = "GetSavedBinds"
 
 GetSavedBinds.Parent = game:GetService( "ReplicatedStorage" )
 
-local Ran, DataStore = pcall( game:GetService( "DataStoreService" ).GetDataStore, game:GetService( "DataStoreService" ), "KeybindUtilV2" )
+local DataStore2 = require(1936396537)
 
-if not Ran or type( DataStore ) ~= "userdata" or not pcall( function ( ) DataStore:GetAsync( "Test" ) end ) then
-	
-	DataStore = { GetAsync = function ( ) end, SetAsync = function ( ) end, UpdateAsync = function ( ) end, OnUpdate = function ( ) end }
-	
-end
-
-local function SerialiseEnum( Val )
-	
-	if typeof( Val ) ~= "EnumItem" then return Val end
-	
-	return { tostring( Val.EnumType ), Val.Name }
-	
-end
-
-local function DeserialiseEnum( Val )
-	
-	if type( Val ) ~= "table" then
-		
-		return Val
-		
-	end
-	
-	return Enum[ Val[ 1 ] ][ Val[ 2 ] ]
-	
-end
-
-local SavedBinds = { }
-
-Players.PlayerRemoving:Connect( function ( Plr )
-	
-	if SavedBinds[ Plr ] ~= nil then
-		
-		if SavedBinds[ Plr ] then
-			
-			DataStore:SetAsync( tostring( Plr.UserId ), SavedBinds[ Plr ] )
-			
-		else
-			
-			DataStore:RemoveAsync( tostring( Plr.UserId ) )
-			
-		end
-		
-		SavedBinds[ Plr ] = nil
-		
-	end
-	
-	SavedBinds[ Plr ] = nil
-	
-end )
-
-game:BindToClose( function ( )
-	
-	local Plrs = Players:GetPlayers( )
-	
-	for a = 1, #Plrs do
-		
-		if SavedBinds[ Plrs[ a ] ] ~= nil then
-			
-			if SavedBinds[ Plrs[ a ] ] then
-				
-				DataStore:SetAsync( tostring( Plrs[ a ].UserId ), SavedBinds[ Plrs[ a ] ] )
-				
-			else
-				
-				DataStore:RemoveAsync( tostring( Plrs[ a ].UserId ) )
-			
-			end
-			
-			SavedBinds[ Plrs[ a ] ] = nil
-			
-		end
-		
-	end
-	
-end )
+DataStore2.Combine("PartixelsVeryCoolMasterKey", "Keybind1")
 
 SaveBind.OnServerEvent:Connect( function ( Plr, Name, Type, Val )
 	
-	SavedBinds[ Plr ] = DataStore:GetAsync( tostring( Plr.UserId ) ) or { }
+	local DataStore = DataStore2( "Keybind1", Plr )
+	
+	local Data = DataStore:Get( { } )
 	
 	if Type == nil then
 		
-		SavedBinds[ Plr ][ Name ] = nil
+		Data[ Name ] = nil
 		
-		local Found = false
+		if not next( Data ) then
+			
+			DataStore:Set( nil )
+			
+		end
 		
-		for a, b in pairs( SavedBinds[ Plr ] ) do Found = true break end
+	else
 		
-		if not Found then SavedBinds[ Plr ] = false end
+		Data[ Name ] = Data[ Name ] or { }
 		
-		return
+		Data[ Name ][ Type ] = Val
+		
+		DataStore:Set( Data )
 		
 	end
-	
-	SavedBinds[ Plr ][ Name ] = SavedBinds[ Plr ][ Name ] or { }
-	
-	SavedBinds[ Plr ][ Name ][ Type ] = SerialiseEnum( Val )
 	
 end )
 
 GetSavedBinds.OnServerInvoke = function ( Plr )
 	
-	local Tmp = DataStore:GetAsync( tostring( Plr.UserId ) ) or { }
+	local DataStore = DataStore2( "Keybind1", Plr )
 	
-	local Binds = { }
-	
-	for a, b in pairs( Tmp ) do
+	DataStore:BeforeInitialGet( function ( Data )
 		
-		Binds[ a ] = { }
-		
-		for c, d in pairs( b ) do
+		for a, b in pairs( Data ) do
 			
-			Binds[ a ][ c ] = DeserialiseEnum( d )
+			for c, d in pairs( b ) do
+				
+				if type( d ) == "table" then
+					
+					b[ c ] = Enum[ d[ 1 ] ][ d[ 2 ] ]
+					
+				end
+				
+			end
 			
 		end
 		
-	end
+		return Data
+		
+	end )
 	
-	return Binds
+	DataStore:BeforeSave( function ( Data )
+		
+		for a, b in pairs( Data ) do
+			
+			for c, d in pairs( b ) do
+				
+				if typeof( d ) == "EnumItem" then
+					
+					b[ c ] = { tostring( d.EnumType ), d.Name }
+					
+				end
+				
+			end
+			
+		end
+		
+		return Data
+		
+	end )
+	
+	return DataStore:Get( { } )
 	
 end
