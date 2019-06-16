@@ -34,6 +34,28 @@ local function OnDeath( Damageable )
 		
 		RemoteKilled:FireAllClients( DeathInfo )
 		
+		if _G.S20Config.SupportLegacyKOs then
+			
+			local Creator = Damageable:FindFirstChild( "creator" )
+			
+			if Creator and Creator.Value then
+				
+				warn( Damageable.Parent.Name .. " has died to non-S2 damage, please update to using S2s damage system" )
+				
+				Creator.Value:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Creator.Value.leaderstats.KOs.Value + KOs
+				
+				if _G.S20Config.CreditsPerKill then
+					
+					local Credits = Creator.Value:FindFirstChild( "Credits", true )
+					
+					if Credits then Credits.Value = math.floor( Credits.Value + _G.S20Config.CreditsPerKill, 0 ) end
+					
+				end
+				
+			end
+			
+		end
+		
 	end
 	
 end
