@@ -6,33 +6,33 @@ while not _G.S20Config do wait( ) end
 
 local Config = _G.S20Config
 
-Core.ShotRemote = script:WaitForChild( "ShotRemote" )
+Core.ShotRemote = script.ShotRemote
 
 Core.ClientSync = script.ClientSync
 
 Core.DropHat = script.DropHat
 
-Core.WeaponSelected = script.WeaponSelected
+Core.WeaponSelected = Instance.new( "BindableEvent" )
 
-Core.WeaponDeselected = script.WeaponDeselected
+Core.WeaponDeselected = Instance.new( "BindableEvent" )
 
-Core.ReloadStart = script.ReloadStart
+Core.ReloadStart = Instance.new( "BindableEvent" )
 
-Core.ReloadStepped = script.ReloadStepped
+Core.ReloadStepped = Instance.new( "BindableEvent" )
 
-Core.ReloadEnd = script.ReloadEnd
+Core.ReloadEnd = Instance.new( "BindableEvent" )
 
-Core.StoredAmmoChanged = script.StoredAmmoChanged
+Core.StoredAmmoChanged = Instance.new( "BindableEvent" )
 
-Core.ClipChanged = script.ClipChanged
+Core.ClipChanged = Instance.new( "BindableEvent" )
 
-Core.FireModeChanged = script.FireModeChanged
+Core.FireModeChanged = Instance.new( "BindableEvent" )
 
-Core.WindupChanged = script.WindupChanged
+Core.WindupChanged = Instance.new( "BindableEvent" )
 
-Core.DamageableAdded = script.DamageableAdded
+Core.DamageableAdded = Instance.new( "BindableEvent" )
 
-Core.FiringEnded = script.FiringEnded
+Core.FiringEnded = Instance.new( "BindableEvent" )
 
 Core.FireModes = {
 
