@@ -1,4 +1,4 @@
-local ReplicatedStorage	= game:GetService( 'ReplicatedStorage' )
+local ReplicatedStorage	= game:GetService( "ReplicatedStorage" )
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
 
@@ -54,6 +54,14 @@ return function ( Main, ModFolder, VH_Events )
 	
 	Surrender.Parent = ReplicatedStorage
 	
+	local TeamKill = ReplicatedStorage:FindFirstChild( "TeamKill" ) or Instance.new( "BoolValue" )
+	
+	TeamKill.Value = _G.S20Config.AllowTeamKill == true
+	
+	TeamKill.Name = "TeamKill"
+	
+	TeamKill.Parent = ReplicatedStorage
+	
 	VH_Events:WaitForChild( "Destroyed" ).Event:Connect( function ( Update )
 		
 		if not Update then
@@ -70,39 +78,19 @@ return function ( Main, ModFolder, VH_Events )
 			
 			Surrender:Destroy( )
 			
+			TeamKill:Destroy( )
+			
 			return
 			
 		end
 		
 	end )
 	
-	Main.Commands[ 'TeamKill' ] = {
+	Main.Commands[ "Sprint" ] = {
 		
-		Alias = { 'teamkill', "tk" },
+		Alias = { "sprint" },
 		
-		Description = 'Toggle teamkill on/off',
-		
-		Category = "Training",
-		
-		CanRun = "$admin",	
-		
-		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
-			
-		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
-			
-			_G.S20Config.AllowTeamKill = Args[ 1 ]
-			
-			return true
-			
-		end
-		
-	}
-	
-	Main.Commands[ 'Sprint' ] = {
-		
-		Alias = { 'sprint' },
-		
-		Description = 'Toggle sprint on/off',
+		Description = "Toggle sprint on/off",
 		
 		Category = "Training",
 		
@@ -114,7 +102,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			_G.S20Config.AllowSprinting = Args[ 1 ]
 			
-			ReplicatedStorage.Sprint.Value = Args[ 1 ]
+			Sprint.Value = Args[ 1 ]
 			
 			return true
 			
@@ -122,11 +110,11 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
-	Main.Commands[ 'Crouch' ] = {
+	Main.Commands[ "Crouch" ] = {
 		
-		Alias = { 'crouch' },
+		Alias = { "crouch" },
 		
-		Description = 'Toggle crouch on/off',
+		Description = "Toggle crouch on/off",
 		
 		Category = "Training",
 		
@@ -138,7 +126,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			_G.S20Config.AllowCrouching = Args[ 1 ]
 			
-			ReplicatedStorage.Crouch.Value = Args[ 1 ]
+			Crouch.Value = Args[ 1 ]
 			
 			return true
 			
@@ -146,11 +134,11 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
-	Main.Commands[ 'AtEase' ] = {
+	Main.Commands[ "AtEase" ] = {
 		
-		Alias = { 'atease' },
+		Alias = { "atease" },
 		
-		Description = 'Toggle at ease on/off',
+		Description = "Toggle at ease on/off",
 		
 		Category = "Training",
 		
@@ -162,7 +150,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			_G.S20Config.AllowAtEase = Args[ 1 ]
 			
-			ReplicatedStorage.AtEase.Value = Args[ 1 ]
+			AtEase.Value = Args[ 1 ]
 			
 			return true
 			
@@ -170,11 +158,11 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
-	Main.Commands[ 'Salute' ] = {
+	Main.Commands[ "Salute" ] = {
 		
-		Alias = { 'salute' },
+		Alias = { "salute" },
 		
-		Description = 'Toggle salute on/off',
+		Description = "Toggle salute on/off",
 		
 		Category = "Training",
 		
@@ -186,7 +174,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			_G.S20Config.AllowSalute = Args[ 1 ]
 			
-			ReplicatedStorage.Salute.Value = Args[ 1 ]
+			Salute.Value = Args[ 1 ]
 			
 			return true
 			
@@ -194,11 +182,11 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
-	Main.Commands[ 'CharacterRotation' ] = {
+	Main.Commands[ "CharacterRotation" ] = {
 		
-		Alias = { 'characterrotation' },
+		Alias = { "characterrotation" },
 		
-		Description = 'Toggle Character Rotation on/off',
+		Description = "Toggle Character Rotation on/off",
 		
 		Category = "Training",
 		
@@ -210,7 +198,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			_G.S20Config.AllowCharacterRotation = Args[ 1 ]
 			
-			ReplicatedStorage.CharacterRotation.Value = Args[ 1 ]
+			CharacterRotation.Value = Args[ 1 ]
 			
 			return true
 			
@@ -218,11 +206,11 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
-	Main.Commands[ 'Surrender' ] = {
+	Main.Commands[ "Surrender" ] = {
 		
-		Alias = { 'surrender' },
+		Alias = { "surrender" },
 		
-		Description = 'Toggle surrender on/off',
+		Description = "Toggle surrender on/off",
 		
 		Category = "Training",
 		
@@ -234,7 +222,31 @@ return function ( Main, ModFolder, VH_Events )
 			
 			_G.S20Config.AllowSurrender = Args[ 1 ]
 			
-			ReplicatedStorage.Surrender.Value = Args[ 1 ]
+			Surrender.Value = Args[ 1 ]
+			
+			return true
+			
+		end
+		
+	}
+	
+	Main.Commands[ "TeamKill" ] = {
+		
+		Alias = { "teamkill" },
+		
+		Description = "Toggle team kill on/off",
+		
+		Category = "Training",
+		
+		CanRun = "$admin",	
+		
+		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
+			
+		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
+			
+			_G.S20Config.AllowTeamKill = Args[ 1 ]
+			
+			TeamKill.Value = Args[ 1 ]
 			
 			return true
 			

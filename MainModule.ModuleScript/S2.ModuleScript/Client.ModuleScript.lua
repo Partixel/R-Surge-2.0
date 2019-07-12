@@ -20,6 +20,8 @@ return function ( Main, ModFolder, VH_Events )
 	
 	_G.S20Config.AllowSurrender = ReplicatedStorage:WaitForChild( "Surrender" ).Value
 	
+	_G.S20Config.AllowTeamKill = ReplicatedStorage:WaitForChild( "TeamKill" ).Value
+	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Sprint.Changed:Connect( function( Value )
 		
 		_G.S20Config.AllowSprinting = Value
@@ -65,6 +67,12 @@ return function ( Main, ModFolder, VH_Events )
 			KeybindUtil.SetToggle( "Surrender", false )
 			
 		end
+		
+	end )
+	
+	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.TeamKill.Changed:Connect( function( Value )
+		
+		_G.S20Config.AllowTeamKill = Value
 		
 	end )
 	
