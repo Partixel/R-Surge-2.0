@@ -458,7 +458,7 @@ local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
 	Bullet.Color3 = Col
 	
-	Bullet.Transparency = GunStats.BulletTransparency or Core.BulletTransparency or 0.4
+	Bullet.Transparency = GunStats.BulletTransparency or Core.BulletTransparency or 0.2
 	
 	local Dist = ( Start - End ).magnitude
 	
@@ -626,19 +626,17 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	else
 		
-		--[[local Size = GunStats.BulletSize or Config.BulletSize or 0.35
+		local Size = GunStats.BulletSize or Config.BulletSize or 0.27
 		
 		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
 		
-		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 5 ) ), Speed / 60 )
+		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 0 ) ), Speed / 60 )
 		
 		local CF = CFrame.new( Barrel.Position, End )
 		
 		local Dist = ( Barrel.Position - End ).magnitude
 		
-		local Cur = math.random( 0, math.floor( Speed / 60 - Length ) )
-		
-		Cur = math.max( math.min( Cur + ( Speed * ( tick( ) + _G.ServerOffset - Time ) ), Dist - Length + Cur ), Cur )
+		local Cur = 0
 		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		
@@ -648,7 +646,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
 		
-		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.3
+		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.05
 		
 		Debris:AddItem( Bullet, 3 )
 		
@@ -656,9 +654,19 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		RunService.RenderStepped:wait( )
 		
+		local Arrived
+		
 		while Cur < Dist do
 			
 			if not Bullet or not Bullet.Parent then return end
+			
+			if not Arrived and Dist - Cur <= Length then
+				
+				Arrived = true
+				
+				Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+				
+			end
 			
 			local CurSize = math.min( Length, Dist - Cur )
 			
@@ -672,21 +680,19 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 			Cur = Cur + ( Speed * Delta )
 			
-		end]]
+		end
 		
-		local Size = GunStats.BulletSize or Config.BulletSize or 0.35
+		Bullet:Destroy( )
+		
+		--[[local Size = GunStats.BulletSize or Config.BulletSize or 0.2
 		
 		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
 		
-		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 5 ) ), Speed / 60 )
+		local Length = math.min( Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 0 ) ), Speed / 60 )
 		
 		local CF = CFrame.new( Barrel.Position, End )
 		
 		local Dist = ( Barrel.Position - End ).magnitude
-		
-		local RandStart = math.random( 0, math.floor( Speed / 60 - Length ) )
-		
-		RandStart = math.max( math.min( RandStart + ( Speed * ( tick( ) + _G.ServerOffset - Time ) ), Dist - Length + RandStart ), RandStart )
 		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		
@@ -700,9 +706,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Size = Vector3.new( Size, Size, math.min( Length, Dist ) )
 		
-		Bullet.CFrame = CF + CF.lookVector * Bullet.Size.Z / 2 + CF.lookVector * RandStart
-		
-		Dist = Dist - RandStart
+		Bullet.CFrame = CF + CF.lookVector * Bullet.Size.Z / 2 + CF.lookVector
 		
 		Debris:AddItem( Bullet, 3 )
 		
@@ -732,7 +736,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Tween.Completed:Wait( )
 		
-		Bullet:Destroy( )
+		Bullet:Destroy( )]]
 		
 	end
 	
