@@ -243,31 +243,27 @@ end )
 
 if script.Parent:FindFirstChild( "Toggle" ) then
 	
-	local function UpdateColor( )
+	local function HandleTransparency( Obj, Transparency )
 		
-		script.Parent.Toggle.BackgroundColor3 = script.Parent.Open.Value and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-		
-		local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
-		
-		script.Parent.Toggle.BackgroundTransparency = Transparency
+		Obj.BackgroundTransparency = Transparency
 		
 		if Transparency > 0.9 then
 			
-			script.Parent.Toggle.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+			ThemeUtil.BindUpdate( Obj, { TextColor3 = script.Parent.Open.Value and "Selection_Color3" or "Primary_BackgroundColor" } )
 			
-			script.Parent.Toggle.TextColor3 = script.Parent.Open.Value and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-			
-			script.Parent.Toggle.TextStrokeTransparency = 0
+			Obj.TextStrokeTransparency = 0
 			
 		else
 			
-			script.Parent.Toggle.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+			ThemeUtil.BindUpdate( Obj, { TextColor3 = "Primary_TextColor" } )
 			
-			script.Parent.Toggle.TextStrokeTransparency = 1
+			Obj.TextStrokeTransparency = 1
 			
 		end
 		
 	end
+	
+	ThemeUtil.BindUpdate( script.Parent.Toggle, { TextTransparency = "Primary_TextTransparency", TextStrokeColor3 = "Primary_TextColor", Primary_BackgroundTransparency = HandleTransparency } )
 	
 	local function ToggleGui( )
 		
@@ -285,7 +281,7 @@ if script.Parent:FindFirstChild( "Toggle" ) then
 			
 			TweenService:Create( script.Parent.KeybindFrame, TweenInfo.new( 0.5, Enum.EasingStyle.Sine ), { Position = UDim2.new( 0.05, 0, 0.43, 0 ), Size = UDim2.new( 0.3, 0, 0.4, 0 ) } ):Play( )
 			
-			UpdateColor( )
+			ThemeUtil.BindUpdate( script.Parent.Toggle, { BackgroundColor3 = script.Parent.Open.Value and "Selection_Color3" or "Primary_BackgroundColor" } )
 			
 		else
 			
@@ -305,13 +301,11 @@ if script.Parent:FindFirstChild( "Toggle" ) then
 			
 			Tween:Play( )
 			
-			UpdateColor( )
+			ThemeUtil.BindUpdate( script.Parent.Toggle, { BackgroundColor3 = script.Parent.Open.Value and "Selection_Color3" or "Primary_BackgroundColor" } )
 			
 		end
 		
 	end
-	
-	ThemeUtil.BindUpdate( script.Parent.Toggle, { BackgroundColor3 = UpdateColor, TextTransparency = "Primary_TextTransparency" } )
 	
 	script.Parent.Toggle.MouseButton1Click:Connect( function ( )
 		
