@@ -52,7 +52,7 @@ local function GetVisualBarrel( Barrel, DontCreate )
 	
 end
 
-local BulletArrived = script:WaitForChild( "BulletArrived" )
+Core.BulletArrived = Instance.new( "BindableEvent" )
 
 spawn( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { script } ) end )
 
@@ -574,7 +574,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 		end
 		
-		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 	elseif GunStats.BulletType and GunStats.BulletType.Name == "Laser" then
 		
@@ -612,7 +612,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Parent = workspace.CurrentCamera
 		
-		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 		for a = 1, GunStats.BulletType.VisibleFrames or 3 do
 			
@@ -724,7 +724,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 		end
 		
-		BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 		local Tween = TweenService:Create( Bullet, TweenInfo.new( ( ( Dist - AlmostEndDist ) / Dist ) * ( Dist / Speed ), Enum.EasingStyle.Linear ), { CFrame = CF + CF.lookVector * Dist, Size = Vector3.new( Size, Size, 0 ) } )
 		
@@ -740,7 +740,7 @@ end )
 
 local CurCC
 
-Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
+Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
 	
 	if not BulletType or BulletType.Name == "Kinectic" or BulletType.Name == "Laser" then
 		
@@ -940,7 +940,7 @@ Core.Visuals.BulletImpact = BulletArrived.Event:Connect( function ( User, Bullet
 	
 end )
 
-Core.Visuals.BulletImpactSound = BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
+Core.Visuals.BulletImpactSound = Core.BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
 	
 	if not Hit then return end
 	
