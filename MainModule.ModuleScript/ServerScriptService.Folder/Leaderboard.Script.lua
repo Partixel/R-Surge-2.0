@@ -1,12 +1,10 @@
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
 
-local Players = game:GetService( "Players" )
+local Players, GroupService, CollectionService = game:GetService( "Players" ), game:GetService( "GroupService" ), game:GetService( "CollectionService" )
 
-local CollectionService = game:GetService( "CollectionService" )
+local DataStore2 = require( 1936396537 )
 
-local DataStore2 = require(1936396537)
-
-DataStore2.Combine("PartixelsVeryCoolMasterKey", "Credits")
+DataStore2.Combine( "PartixelsVeryCoolMasterKey", "Credits" )
 
 local RemoteKilled = Instance.new( "RemoteEvent" )
 
@@ -238,13 +236,13 @@ if _G.S20Config.RankGroupId then
 	
 	Allies = { }
 	
-	local Pages = game:GetService( "GroupService" ):GetAlliesAsync( _G.S20Config.RankGroupId )
+	local Pages = GroupService:GetAlliesAsync( _G.S20Config.RankGroupId )
 	
 	while true do
 		
 		for a, b in pairs( Pages:GetCurrentPage( ) ) do
 			
-			Allies[ #Allies + 1 ] = b.Id
+			Allies[ b.Id ] = true
 			
 		end
 		
@@ -298,14 +296,22 @@ local function PlayerAdded( Plr )
 		
 		if Rank.Value == "Guest" then
 			
-			for a = 1, #Allies do
+			local Groups = GroupService:GetGroupsAsync( Plr.UserId )
+			
+			for a = 1, #Groups do
 				
-				if Plr:IsInGroup( Allies[ a ] ) then
+				if Allies[ Groups[ a ].Id ] then
 					
-					Rank.Value = "Allied"
+					Rank.Value = Groups[ a ].Name
+					
+					if Groups[ a ].IsPrimary then
+						
+						break
+						
+					end
 					
 				end
-
+				
 			end
 			
 		end
