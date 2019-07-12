@@ -228,96 +228,203 @@ end )
 
 Term.Visible = false
 
-local TermFlag = workspace:WaitForChild( "TermFlag", 5 )
-
-if not TermFlag then return end
-
-local Owner = workspace.TermFlag:WaitForChild( "Flag" )
-
-local WinTimer = workspace.TermFlag:WaitForChild( "BrickTimer" ):GetChildren( )[ 1 ]
-
-Term.BackgroundColor3 = Owner.BrickColor.Color
-
-Term.Bkg.TextLabel.Text = WinTimer.Name
-
-Term.Bkg.Size = UDim2.new( 1, 0, 0, 0 )
-
-Term.Visible = true
-
-Term.Bkg.Visible = false
-
-function FormatTime( Time )
+if game.ReplicatedStorage:FindFirstChild( "HomeWinAmount" ) then
 	
-	return ( "%.2d:%.2d:%.2d" ):format( Time / ( 60 * 60 ), Time / 60 % 60, Time % 60 )
+	local HomeWinAmount = game.ReplicatedStorage:WaitForChild( "HomeWinAmount" )
 	
-end
-
-function Update( )
+	local AwayWinAmount = game.ReplicatedStorage:WaitForChild( "AwayWinAmount" )
 	
-	Term.BackgroundColor3 = Owner.BrickColor.Color
+	local WinPoints = 0
 	
-	if WinTimer.Name == "Raiders do not own the main flag" or WinTimer.Name == "No raid in progress" or WinTimer.Name == "Raiders aren't raiding" then
+	function Changed( )
 		
-		Term.Bkg:TweenSize( UDim2.new( 1, 0, 0, 0 ), nil, nil, 0.5, true, function ( ) Term.Bkg.Visible = false end )
+		Term.Bkg.TextLabel.Text = "TRA - " .. math.floor( HomeWinAmount.Value ) .. "/" .. WinPoints .. "\nRaiders - " .. math.floor( AwayWinAmount.Value ) .. "/" .. WinPoints
 		
-		return
+		if HomeWinAmount.Value > AwayWinAmount.Value then
+			
+			Term.BackgroundColor3 = BrickColor.Green( ).Color
+			
+		elseif AwayWinAmount.Value > HomeWinAmount.Value then
+			
+			Term.BackgroundColor3 = BrickColor.Red( ).Color
+			
+		else
+			
+			Term.BackgroundColor3 = BrickColor.Gray( ).Color
+			
+		end
 		
 	end
 	
-	Term.Bkg.Visible = true
+	HomeWinAmount:GetPropertyChangedSignal( "Value" ):Connect( Changed )
 	
-	Term.Bkg:TweenSize( UDim2.new( 1, 0, -4, 0 ), nil, nil, 0.5, true )
+	AwayWinAmount:GetPropertyChangedSignal( "Value" ):Connect( Changed )
 	
-	local YScale = Term.Position.Y.Scale
+	Changed( )
 	
-	Term:TweenPosition( UDim2.new( 0.1, -4, YScale, 0 ), nil, nil, 0.1, true, function ( )
+	function Toggle( )
 		
-		Term:TweenPosition( UDim2.new( -0.1, -4, YScale, 0 ), nil, nil, 0.1, true, function ( )
+		
+	end
+	
+	Term.Visible = true
+	
+	local OfficialRaid = game.ReplicatedStorage:WaitForChild( "OfficialRaid" )
+	
+	if not OfficialRaid.Value then
+		
+		Term.Bkg.Size = UDim2.new( 1, 0, 0, 0 )
+		
+		Term.Bkg.Visible = false
+		
+	end
+	
+	OfficialRaid:GetPropertyChangedSignal( "Value" ):Connect( function ( )
+		
+		if OfficialRaid.Value then
 			
-			Term:TweenPosition( UDim2.new( 0, -4, YScale, 0 ), nil, nil, 0.1, true )
+			Term.Bkg.Visible = true
 			
-		end )
+			Term.Bkg:TweenSize( UDim2.new( 1, 0, -4, 0 ), nil, nil, 0.5, true )
+			
+		else
+			
+			Term.Bkg:TweenSize( UDim2.new( 1, 0, 0, 0 ), nil, nil, 0.5, true, function ( ) Term.Bkg.Visible = false end )
+			
+		end
 		
 	end )
 	
-	Term.Bkg.TextLabel.Text = WinTimer.Name
-	
-end
-
-WinTimer:GetPropertyChangedSignal( "Name" ):Connect( Update )
-
-Update( )
-
-Owner:GetPropertyChangedSignal( "BrickColor" ):Connect( function ( )
-	
-	Term.BackgroundColor3 = Owner.BrickColor.Color
-	
-end )
-
-local Event = game.ReplicatedStorage:WaitForChild( "RaidTimerEvent" )
-
-local Start, Limit
-
-Term.Text = ""
-
-Event:FireServer( )
-
-Event.OnClientEvent:Connect( function ( S, L )
-	
-	while not _G.ServerOffset do wait( ) end
-	
-	Start, Limit = S, L
-	
-	if not S then return end
-	
-	Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
-	
-	while wait( 1 ) and Start == S and Limit == L do
+	function FormatTime( Time )
 		
-		Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+		return ( "%.2d:%.2d:%.2d" ):format( Time / ( 60 * 60 ), Time / 60 % 60, Time % 60 )
 		
 	end
 	
+	local Event = game.ReplicatedStorage:WaitForChild( "RaidTimerEvent" )
+	
+	local Start, Limit
+	
 	Term.Text = ""
 	
-end )
+	Event.OnClientEvent:Connect( function ( S, L, W )
+		
+		if W then WinPoints = W Changed( ) end
+		
+		while not _G.ServerOffset do wait( ) end
+		
+		Start, Limit = S, L
+		
+		if not S then return end
+		
+		Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+		
+		while wait( 1 ) and Start == S and Limit == L do
+			
+			Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+			
+		end
+		
+		Term.Text = ""
+		
+	end )
+	
+	Event:FireServer( )
+	
+else
+	
+	local TermFlag = workspace:WaitForChild( "TermFlag", 5 )
+	
+	if not TermFlag then return end
+	
+	local Owner = workspace.TermFlag:WaitForChild( "Flag" )
+	
+	local WinTimer = workspace.TermFlag:WaitForChild( "BrickTimer" ):GetChildren( )[ 1 ]
+	
+	Term.BackgroundColor3 = Owner.BrickColor.Color
+	
+	Term.Bkg.TextLabel.Text = WinTimer.Name
+	
+	Term.Visible = true
+	
+	Term.Bkg.Size = UDim2.new( 1, 0, 0, 0 )
+	
+	Term.Bkg.Visible = false
+	
+	function FormatTime( Time )
+		
+		return ( "%.2d:%.2d:%.2d" ):format( Time / ( 60 * 60 ), Time / 60 % 60, Time % 60 )
+		
+	end
+	
+	function Update( )
+		
+		Term.BackgroundColor3 = Owner.BrickColor.Color
+		
+		if WinTimer.Name == "Raiders do not own the main flag" or WinTimer.Name == "No raid in progress" or WinTimer.Name == "Raiders aren't raiding" then
+			
+			Term.Bkg:TweenSize( UDim2.new( 1, 0, 0, 0 ), nil, nil, 0.5, true, function ( ) Term.Bkg.Visible = false end )
+			
+			return
+			
+		end
+		
+		Term.Bkg.Visible = true
+		
+		Term.Bkg:TweenSize( UDim2.new( 1, 0, -4, 0 ), nil, nil, 0.5, true )
+		
+		local YScale = Term.Position.Y.Scale
+		
+		Term:TweenPosition( UDim2.new( 0.1, -4, YScale, 0 ), nil, nil, 0.1, true, function ( )
+			
+			Term:TweenPosition( UDim2.new( -0.1, -4, YScale, 0 ), nil, nil, 0.1, true, function ( )
+				
+				Term:TweenPosition( UDim2.new( 0, -4, YScale, 0 ), nil, nil, 0.1, true )
+				
+			end )
+			
+		end )
+		
+		Term.Bkg.TextLabel.Text = WinTimer.Name
+		
+	end
+	
+	WinTimer:GetPropertyChangedSignal( "Name" ):Connect( Update )
+	
+	Update( )
+	
+	Owner:GetPropertyChangedSignal( "BrickColor" ):Connect( function ( )
+		
+		Term.BackgroundColor3 = Owner.BrickColor.Color
+		
+	end )
+	
+	local Event = game.ReplicatedStorage:WaitForChild( "RaidTimerEvent" )
+	
+	local Start, Limit
+	
+	Term.Text = ""
+	
+	Event.OnClientEvent:Connect( function ( S, L )
+		
+		while not _G.ServerOffset do wait( ) end
+		
+		Start, Limit = S, L
+		
+		if not S then return end
+		
+		Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+		
+		while wait( 1 ) and Start == S and Limit == L do
+			
+			Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+			
+		end
+		
+		Term.Text = ""
+		
+	end )
+	
+	Event:FireServer( )
+	
+end
