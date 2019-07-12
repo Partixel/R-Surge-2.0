@@ -128,35 +128,29 @@ end
 
 local SparklesUse = false
 
-function UpdateSparklesColor( )
+local function HandleTransparency( Obj, Transparency )
 	
-	script.Parent.Sparkles.BackgroundColor3 = not OwnSparkles and ThemeUtil.GetThemeFor( "Negative_Color3" ) or SparklesEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-	
-	local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
-	
-	script.Parent.Sparkles.BackgroundTransparency = Transparency
+	Obj.BackgroundTransparency = Transparency
 	
 	if Transparency > 0.9 then
 		
-		script.Parent.Sparkles.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		ThemeUtil.BindUpdate( Obj, { TextColor3 = script.Parent.Open.Value and "Selection_Color3" or "Primary_BackgroundColor" } )
 		
-		script.Parent.Sparkles.TextColor3 = not OwnSparkles and ThemeUtil.GetThemeFor( "Negative_Color3" ) or SparklesEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-		
-		script.Parent.Sparkles.TextStrokeTransparency = 0
+		Obj.TextStrokeTransparency = 0
 		
 	else
 		
-		script.Parent.Sparkles.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		ThemeUtil.BindUpdate( Obj, { TextColor3 = "Primary_TextColor" } )
 		
-		script.Parent.Sparkles.TextStrokeTransparency = 1
+		Obj.TextStrokeTransparency = 1
 		
 	end
 	
 end
 
-ThemeUtil.BindUpdate( script.Parent.Sparkles, { BackgroundColor3 = UpdateSparklesColor, TextTransparency = "Primary_TextTransparency" } )
+ThemeUtil.BindUpdate( script.Parent.Sparkles, { BackgroundColor3 = not OwnSparkles and "Negative_Color3" or SparklesEnabled and "Selection_Color3" or "Primary_BackgroundColor", TextTransparency = "Primary_TextTransparency", TextStrokeColor3 = "Primary_TextColor", Primary_BackgroundTransparency = HandleTransparency } )
 
-script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
+script.Parent.Sparkles.MouseButton1Click:Connect( function ( )
 	
 	if SparklesUse then return end
 	
@@ -166,15 +160,13 @@ script.Parent:WaitForChild( "Sparkles" ).MouseButton1Click:Connect( function ( )
 		
 		OwnSparkles = VIPFunc:InvokeServer( "BuySparkles" )
 		
-		UpdateSparklesColor( )
-		
 	else
 		
 		SparklesEnabled = not SparklesEnabled
 		
 		VIPEvent:FireServer( "SetSparkles", SparklesEnabled )
 		
-		UpdateSparklesColor( )
+		ThemeUtil.BindUpdate( script.Parent.Sparkles, { BackgroundColor3 = SparklesEnabled and "Selection_Color3" or "Primary_BackgroundColor" } )
 		
 	end
 	
@@ -184,35 +176,9 @@ end )
 
 local NeonUse = false
 
-function UpdateNeonColor( )
-	
-	script.Parent.Neon.BackgroundColor3 = not OwnNeon and ThemeUtil.GetThemeFor( "Negative_Color3" ) or NeonEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-	
-	local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
-	
-	script.Parent.Neon.BackgroundTransparency = Transparency
-	
-	if Transparency > 0.9 then
-		
-		script.Parent.Neon.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
-		
-		script.Parent.Neon.TextColor3 = not OwnNeon and ThemeUtil.GetThemeFor( "Negative_Color3" ) or NeonEnabled and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-		
-		script.Parent.Neon.TextStrokeTransparency = 0
-		
-	else
-		
-		script.Parent.Neon.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
-		
-		script.Parent.Neon.TextStrokeTransparency = 1
-		
-	end
-	
-end
+ThemeUtil.BindUpdate( script.Parent.Neon, { BackgroundColor3 = not OwnNeon and "Negative_Color3" or NeonEnabled and "Selection_Color3" or "Primary_BackgroundColor", TextTransparency = "Primary_TextTransparency", TextStrokeColor3 = "Primary_TextColor", Primary_BackgroundTransparency = HandleTransparency } )
 
-ThemeUtil.BindUpdate( script.Parent.Neon, { BackgroundColor3 = UpdateNeonColor, TextTransparency = "Primary_TextTransparency" } )
-
-script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
+script.Parent.Neon.MouseButton1Click:Connect( function ( )
 	
 	if NeonUse then return end
 	
@@ -222,15 +188,13 @@ script.Parent:WaitForChild( "Neon" ).MouseButton1Click:Connect( function ( )
 		
 		OwnNeon = VIPFunc:InvokeServer( "BuyNeon" )
 		
-		UpdateNeonColor( )
-		
 	else
 		
 		NeonEnabled = not NeonEnabled
 		
 		VIPEvent:FireServer( "SetNeon", NeonEnabled and "Neon" or "" )
 		
-		UpdateNeonColor( )
+		ThemeUtil.BindUpdate( script.Parent.Neon, { BackgroundColor3 = NeonEnabled and "Selection_Color3" or "Primary_BackgroundColor" } )
 		
 	end
 	
@@ -248,35 +212,9 @@ if OwnCol then
 	
 end
 
-function UpdateColor( )
-	
-	script.Parent.Color.BackgroundColor3 = not OwnCol and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ColShow and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-	
-	local Transparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" )
-	
-	script.Parent.Color.BackgroundTransparency = Transparency
-	
-	if Transparency > 0.9 then
-		
-		script.Parent.Color.TextStrokeColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
-		
-		script.Parent.Color.TextColor3 = not OwnCol and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ColShow and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Primary_BackgroundColor" )
-		
-		script.Parent.Color.TextStrokeTransparency = 0
-		
-	else
-		
-		script.Parent.Color.TextColor3 = ThemeUtil.GetThemeFor( "Primary_TextColor" )
-		
-		script.Parent.Color.TextStrokeTransparency = 1
-		
-	end
-	
-end
+ThemeUtil.BindUpdate( script.Parent.Color, { BackgroundColor3 = not OwnCol and "Negative_Color3" or ColShow and "Selection_Color3" or "Primary_BackgroundColor", TextTransparency = "Primary_TextTransparency", TextStrokeColor3 = "Primary_TextColor", Primary_BackgroundTransparency = HandleTransparency } )
 
-ThemeUtil.BindUpdate( script.Parent.Color, { BackgroundColor3 = UpdateColor, TextTransparency = "Primary_TextTransparency" } )
-
-script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
+script.Parent.Color.MouseButton1Click:Connect( function ( )
 	
 	if ColUse then return end
 	
@@ -286,13 +224,11 @@ script.Parent:WaitForChild( "Color" ).MouseButton1Click:Connect( function ( )
 		
 		OwnCol = VIPFunc:InvokeServer( "BuyCol" )
 		
-		UpdateColor( )
-		
 	else
 		
 		ColShow = not ColShow
 		
-		UpdateColor( )
+		ThemeUtil.BindUpdate( script.Parent.Color, { BackgroundColor3 = ColShow and "Selection_Color3" or "Primary_BackgroundColor" } )
 		
 		script.Parent.ColorFrame.Visible = ColShow
 		
