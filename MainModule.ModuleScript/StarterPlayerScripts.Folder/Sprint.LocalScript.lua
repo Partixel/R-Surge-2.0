@@ -174,6 +174,12 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 			
 			PU.SetPose( "Scoping", false )
 			
+			Core.PreventSprint[ "Debounce" ] = true
+			
+			wait( )
+			
+			Core.PreventSprint[ "Debounce" ] = nil
+			
 		end
 		
 	else

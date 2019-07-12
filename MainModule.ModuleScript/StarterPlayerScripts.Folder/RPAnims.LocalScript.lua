@@ -2,7 +2,11 @@ local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 
+local StarterGui = game:GetService( "StarterGui" )
+
 local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
+
+local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "PoseUtil" ) )
 
 local Animations = { [ Enum.HumanoidRigType.R6 ] = { "rbxassetid://580605334", "rbxassetid://955877742", "rbxassetid://1173354695" }, [ Enum.HumanoidRigType.R15 ] = { "rbxassetid://2225371665", "rbxassetid://2225372526", "rbxassetid://2225382014" } }
 
@@ -52,6 +56,10 @@ Spawned( Plr.Character or Plr.CharacterAdded:Wait( ) )
 
 Plr.CharacterAdded:Connect( Spawned )
 
+local Surrendered
+
+local SDebounce
+
 KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then return end
@@ -60,13 +68,19 @@ KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Began then
 		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowSalute == false then return false end
+		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowSalute == false or SDebounce or Surrendered ~= nil then return false end
+		
+		SDebounce = true
 		
 		KBU.SetToggle( "At_ease", false )
 		
 		KBU.SetToggle( "Surrender", false )
 		
 		Salute:Play( )
+		
+		wait( )
+		
+		SDebounce = nil
 		
 	else
 		
@@ -76,6 +90,8 @@ KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Bega
 	
 end, Key = Enum.KeyCode.T, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true }
 
+local ADebounce
+
 KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then return end
@@ -84,13 +100,17 @@ KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Beg
 	
 	if Began then
 		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowAtEase == false then return false end
+		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowAtEase == false or ADebounce or Surrendered ~= nil then return false end
+		
+		ADebounce = true
 		
 		KBU.SetToggle( "Salute", false )
 		
 		KBU.SetToggle( "Surrender", false )
 		
 		AtEase:Play( )
+		
+		ADebounce = nil
 		
 	else
 		
@@ -108,6 +128,10 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 		
 		Core.PreventCrouch[ "Surrender" ] = nil
 		
+		StarterGui:SetCoreGuiEnabled( Enum.CoreGuiType.Backpack, Surrendered )
+		
+		Surrendered = nil
+		
 		return
 		
 	end
@@ -122,15 +146,23 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 		
 	end
 	
+	if Surrendered ~= nil then return true end
+	
 	if Began then
 		
 		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowSurrender == false then return false end
+		
+		Surrendered = StarterGui:GetCoreGuiEnabled( Enum.CoreGuiType.Backpack )
+		
+		StarterGui:SetCoreGuiEnabled( Enum.CoreGuiType.Backpack, false )
 		
 		KBU.SetToggle( "Salute", false )
 		
 		KBU.SetToggle( "At_ease", false )
 		
-		KBU.SetToggle( "Crouch", true )
+		KBU.SetToggle( "Crouch", false )
+		
+		PU.SetPose( "Crouching", true )
 		
 		Core.PreventSprint[ "Surrender" ] = true
 		
@@ -138,19 +170,9 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 		
 		Surrender:Play( )
 		
-	else
-		
-		Core.PreventSprint[ "Surrender" ] = nil
-		
-		Core.PreventCrouch[ "Surrender" ] = nil
-		
-		KBU.SetToggle( "Crouch", false )
-		
-		Surrender:Stop( )
-		
 	end
 	
-end, Key = Enum.KeyCode.U, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true }
+end, Key = Enum.KeyCode.U, ToggleState = true, OffOnDeath = true, NoHandled = true }
 
 Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
@@ -159,7 +181,5 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	KBU.SetToggle( "Salute", false )
 	
 	KBU.SetToggle( "At_ease", false )
-	
-	KBU.SetToggle( "Surrender", false )
 	
 end )
