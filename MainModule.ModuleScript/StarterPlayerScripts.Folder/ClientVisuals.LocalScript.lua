@@ -264,26 +264,6 @@ Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User
 		
 		if not Noise then return end
 		
-		if Plr:FindFirstChild( "PlayerGui" ) then
-			
-			local GunCursor = Plr.PlayerGui:FindFirstChild( "GunCursor" )
-			
-			if GunCursor then
-		
-				Core.ResetHitMarker = tick( ) + 0.2
-				
-				GunCursor.Center.TopDiag.Visible = true
-				
-				GunCursor.Center.LeftDiag.Visible = true
-				
-				GunCursor.Center.BottomDiag.Visible = true
-				
-				GunCursor.Center.RightDiag.Visible = true
-				
-			end
-			
-		end
-		
 		local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
 		
 		HitSound.Pitch = HitSound.Pitch * Type
