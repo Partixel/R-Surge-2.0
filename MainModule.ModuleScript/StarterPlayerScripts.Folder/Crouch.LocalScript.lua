@@ -94,13 +94,13 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 				
 				Time =  LeftHip.C0:toObjectSpace( TargetA ).p.magnitude
 				
-				local Perc = math.min( Offset / Time, 1 )
+				local Perc = TweenService:GetValue( math.min( Offset / Time, 1 ), Enum.EasingStyle.Quint, Enum.EasingDirection.Out )
 				
 				LeftHip.C0, LeftHip.C1 = LeftHip.C0:lerp( TargetA, Perc ), LeftHip.C1:lerp( TargetB, Perc )
 				
 				if Perc < 1 then
 					
-					TweenService:Create( LeftHip, TweenInfo.new( Time - Offset ), { C0 = TargetA, C1 = TargetB } ):Play( )
+					TweenService:Create( LeftHip, TweenInfo.new( Time - Offset, Enum.EasingStyle.Quint, Enum.EasingDirection.Out ), { C0 = TargetA, C1 = TargetB } ):Play( )
 					
 				end
 				
@@ -114,25 +114,25 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 				
 				Time = Time or RightHip.C0:toObjectSpace( TargetA ).p.magnitude
 				
-				local Perc = math.min( Offset / Time, 1 )
+				local Perc = TweenService:GetValue( math.min( Offset / Time, 1 ), Enum.EasingStyle.Quint, Enum.EasingDirection.Out )
 				
 				RightHip.C0, RightHip.C1 = RightHip.C0:lerp( TargetA, Perc ), RightHip.C1:lerp( TargetB, Perc )
 				
 				if Perc < 1 then
 					
-					TweenService:Create( RightHip, TweenInfo.new( Time - Offset ), { C0 = TargetA, C1 = TargetB } ):Play( )
+					TweenService:Create( RightHip, TweenInfo.new( Time - Offset, Enum.EasingStyle.Quint, Enum.EasingDirection.Out ), { C0 = TargetA, C1 = TargetB } ):Play( )
 					
 				end
 				
 			end
 			
-			local Perc = math.min( Offset / ( Time or 1 ), 1 )
+			local Perc = TweenService:GetValue( math.min( Offset / ( Time or 1 ), 1 ), Enum.EasingStyle.Quint, Enum.EasingDirection.Out )
 			
 			Hum.HipHeight = lerp( Hum.HipHeight, State and -1 or 0, Perc )
 			
 			if Perc < 1 then
 				
-				TweenService:Create( Hum, TweenInfo.new( ( Time or 1 ) - Offset ), { HipHeight = State and -1 or 0 } ):Play( )
+				TweenService:Create( Hum, TweenInfo.new( ( Time or 1 ) - Offset, Enum.EasingStyle.Quint, Enum.EasingDirection.Out ), { HipHeight = State and -1 or 0 } ):Play( )
 				
 			end
 			
