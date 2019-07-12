@@ -112,7 +112,7 @@ local function PctStr( Num, Decimals )
 	return string.format( "%." .. Decimals .. "f", Num > 0 and Num < Min and Min or Num > 100 - Min and Num < 100 and 100 - Min or Num )
 end
 
-local VictimTypes = { Head = "rbxassetid://1693819171" }
+local VictimTypes = { Head = "rbxassetid://1693819171", NewHead = "rbxassetid://1693819171" }
 -- Need suicide dmgtype
 --local DmgTypes = { Kinetic = "rbxassetid://2625025813", Explosive = "rbxassetid://2625029682", Slash = "rbxassetid://2625006640" }
 local DmgTypes = { Kinetic = "rbxassetid://1693831893", Explosive = "rbxassetid://1693825708" }
@@ -153,7 +153,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			Victim.VictimName.TextColor3 = DeathInfo.VictimInfos[ a ].User.TeamColor and DeathInfo.VictimInfos[ a ].User.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
 			
-			ThemeUtil.BindUpdate( Victim.VictimName, { TextStrokeColor3 = UpdateContrastTextStroke } )
+			ThemeUtil.BindUpdate( Victim.VictimName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
 			
 			Victim.Name = "Victim" .. NumVictims
 			
@@ -207,7 +207,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 	
 	NewFeed.Killer.KillerName.TextColor3 = DeathInfo.Killer and DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or NewFeed[ "Victim1" ].VictimName.TextColor3
 	
-	ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, { TextStrokeColor3 = UpdateContrastTextStroke } )
+	ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
 	
 	if DeathInfo.Assister then
 		
@@ -221,7 +221,7 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		
 		Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
 		
-		ThemeUtil.BindUpdate( Assister.AssisterName, { TextStrokeColor3 = UpdateContrastTextStroke } )
+		ThemeUtil.BindUpdate( Assister.AssisterName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
 		
 		Assister.AssisterPct.Text = PctStr( DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
 		
