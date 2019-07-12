@@ -30,6 +30,10 @@ SaveBind.OnServerEvent:Connect( function ( Plr, Name, Type, Val )
 			
 			DataStore:Set( nil )
 			
+		else
+			
+			DataStore:Set( Data )
+			
 		end
 		
 	else
