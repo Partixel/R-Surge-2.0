@@ -22,7 +22,7 @@ Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( St
 			
 			Until = tick( ) + 5
 			
-			local Event Event = game:GetService( "RunService" ).Heartbeat:Connect( function ( )
+			local Event Event = game:GetService( "RunService" ).Stepped:Connect( function ( )
 				
 				if Until < tick( ) or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then Event:Disconnect( ) Until = nil return end
 				
