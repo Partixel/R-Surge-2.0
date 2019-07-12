@@ -12,6 +12,48 @@ RemoteKilled.Name = "RemoteKilled"
 
 RemoteKilled.Parent = game:GetService( "ReplicatedStorage" ) 
 
+if _G.S20Config.CountTeam then
+	
+	local Teams = game:GetService( "Teams" )
+	
+	local TeamObjs = Teams:GetTeams( )
+	
+	for a = 1, #TeamObjs do
+		
+		local Name = TeamObjs[ a ].Name
+		
+		TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+		
+		local Obj = Instance.new( "ObjectValue" )
+		
+		Obj.Name = "S2_" .. Name
+		
+		Obj.Value = TeamObjs[ a ]
+		
+		Obj.Parent = Teams
+		
+		TeamObjs[ a ].PlayerAdded:Connect( function ( )
+			
+			TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+			
+		end )
+		
+		TeamObjs[ a ].PlayerRemoved:Connect( function ( )
+			
+			TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+			
+		end )
+		
+		Players.PlayerRemoving:Connect( function ( )
+			
+			TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+			
+		end )
+		
+	end
+	
+end
+
 local function OnDeath( Damageable )
 	
 	local Victim = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent )
