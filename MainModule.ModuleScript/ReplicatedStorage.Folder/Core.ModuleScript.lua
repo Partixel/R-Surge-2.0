@@ -6,7 +6,7 @@ while not _G.S20Config do wait( ) end
 
 local Config = _G.S20Config
 
-Core.ShotRemote = script.ShotRemote
+Core.ShotRemote = script:WaitForChild( "ShotRemote" )
 
 Core.ClientSync = script.ClientSync
 
@@ -498,7 +498,17 @@ function RunWeaponTick( )
 	
 	WeaponTickHB = RunService.Heartbeat:Connect( function ( Step )
 		
-		if not next( Core.WeaponTick ) then WeaponTickHB:Disconnect( ) WeaponTickHB = nil return end
+		if not WeaponTickHB then return end
+		
+		if not next( Core.WeaponTick ) then
+			
+			WeaponTickHB:Disconnect( )
+			
+			WeaponTickHB = nil
+			
+			return
+			
+		end
 		
 		for c, _ in pairs( Core.WeaponTick ) do
 			
@@ -606,6 +616,968 @@ function Core.SetMouseDown( Weapon )
 		
 	end
 	
+end
+
+Core.WeaponSelected.Event:Connect( function ( StatObj, User )
+
+	local Weapon = Core.GetWeapon( StatObj )
+
+	if not Weapon then return end
+
+	if Weapon.LastClick < tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 ) then
+
+		Weapon.LastClick = tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 )
+
+	end
+	
+	if Weapon.GunStats.ClipReloadPerSecond and Weapon.Clip < Weapon.GunStats.ClipSize and ( not Weapon.StoredAmmo or Weapon.StoredAmmo ~= 0 ) then
+		
+		Core.WeaponTick[ Weapon ] = true
+		
+		RunWeaponTick( )
+		
+	end
+	
+	Core.Selected[ User ] = Core.Selected[ User ] or { }
+	
+	Core.Selected[ User ][ Weapon ] = tick( )
+	
+	if not SelectedHB then
+		
+		RunSelected( )
+		
+	end
+	
+	if not Weapon.GunStats.ReloadWhileUnequipped then
+		
+		Weapon.Reloading = nil
+		
+	end
+
+	if Weapon.ReloadDelay then
+
+		ContextActionService:BindAction( "Reload", function ( Name, State, Input )
+
+			if State ~= Enum.UserInputState.Begin or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
+
+			Core.Reload( Weapon )
+
+		end, true )
+
+		ContextActionService:SetImage( "Reload", "rbxassetid://371461853" )
+
+	end
+
+end )
+
+Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
+
+	local Weapon = Core.GetWeapon( StatObj )
+
+	if not Weapon then return end
+
+	Weapon.ShotRecoil = 0
+
+	Weapon.ModeShots = 0
+
+	if Weapon.Windup then
+
+		Core.SetWindup( Weapon, 0 )
+
+	end
+	
+	if Core.Selected[ User ] then
+		
+		Core.Selected[ User ][ Weapon ] = nil
+		
+		if not next( Core.Selected[ User ] ) then
+			
+			Core.Selected[ User ] = nil
+			
+		end
+		
+	end
+	
+	Core.WeaponTick[ Weapon ] = nil
+	
+	Weapon.MouseDown = nil
+	
+	if not Weapon.GunStats.ReloadWhileUnequipped then
+		
+		Weapon.Reloading = nil
+		
+	end
+
+	if Weapon.ReloadDelay then
+
+		ContextActionService:UnbindAction( "Reload" )
+
+	end
+
+	Core.ReloadEnd:Fire( StatObj )
+
+end )
+
+function Core.Destroy( Weapon )
+
+	if not Weapon.StatObj then return end
+
+	if Core.Selected[ Weapon.User ] and Core.Selected[ Weapon.User ][ Weapon ] then
+		
+		Core.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
+		
+	end
+
+	Core.Weapons[ Weapon.StatObj ] = nil
+
+	ContextActionService:UnbindAction( "Reload" )
+
+	for a, b in pairs( Weapon.Events ) do
+
+		Weapon.Events[ a ]:Disconnect( )
+
+		Weapon.Events[ a ] = nil
+
+	end
+
+	if Weapon.StatObj.Parent then
+
+		Weapon.StatObj.Parent:Destroy( )
+
+	end
+
+	for a, b in pairs( Weapon ) do
+
+		Weapon[ a ] = nil
+
+	end
+
+	Weapon = nil
+
+end
+
+function Core.PlayerToUser( Weapon, Plr )
+
+	Weapon.User = Weapon.User or Plr
+
+	Weapon.Ignore = Weapon.Ignore or { }
+
+	Weapon.Ignore[ #Weapon.Ignore + 1 ] = Weapon.User.Character
+
+	Weapon.Events[ #Weapon.Events + 1 ] = Plr.CharacterAdded:Connect( function ( Char )
+
+		Weapon.Ignore[ #Weapon.Ignore + 1 ] = Char
+
+	end )
+
+	Weapon.Target = Weapon.Target or Core.GetLPlrsTarget
+
+	return Weapon
+
+end
+
+function Core.Setup( StatObj )
+
+	local GunStats = Core.GetGunStats( StatObj )
+
+	local Weapon = { }
+
+	Core.Weapons[ StatObj ] = Weapon
+
+	Weapon.GunStats = GunStats
+
+	Weapon.Ignore = GunStats.Ignores and GunStats.Ignores( StatObj ) or { }
+
+	Weapon.Target = GunStats.Target
+
+	Weapon.User = GunStats.User
+
+	Weapon.Events = { }
+
+	Weapon.LastClick = 0
+
+	Weapon.ShotRecoil = 0
+
+	Weapon.StatObj = StatObj
+
+	Weapon.Clip = GunStats.StartingClip or GunStats.ClipSize
+
+	Weapon.StoredAmmo = GunStats.StartingStoredAmmo or GunStats.MaxStoredAmmo
+
+	if Weapon.StoredAmmo and Weapon.Clip then Weapon.StoredAmmo = Weapon.StoredAmmo - Weapon.Clip end
+
+	Weapon.CurBarrel = 1
+
+	Weapon.ModeShots = 0
+
+	Weapon.CurFireMode = 1
+
+	Weapon.BarrelPart = GunStats.Barrels( StatObj )
+
+	if StatObj.Parent and StatObj.Parent:IsA( "Tool" ) then
+
+		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Equipped:Connect( function ( )
+			
+			Core.WeaponSelected:Fire( StatObj, Weapon.User )
+
+		end )
+
+		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Unequipped:Connect( function ( )
+			
+			Core.WeaponDeselected:Fire( StatObj, Weapon.User )
+
+		end )
+
+	end
+
+	return Weapon
+
+end
+
+function Core.SetWindup( Weapon, Value )
+
+	local Started
+
+	if not Weapon.Windup then
+
+		Started = true
+
+	elseif Value == 0 then
+
+		Value = nil
+
+		Started = false
+
+	end
+
+	Weapon.Windup = Value
+	
+	Core.WindupChanged:Fire( Weapon.StatObj, Value, Started )
+
+end
+
+function Core.GetFireMode( Weapon )
+
+	local Mode = Weapon.GunStats.FireModes[ Weapon.CurFireMode ]
+
+	if Core.FireModes[ Mode ] then return Core.FireModes[ Mode ] end
+
+	return Mode
+
+end
+
+function Core.SetFireMode( Weapon, Value )
+
+	Weapon.CurFireMode = Value
+
+	Core.FireModeChanged:Fire( Weapon.StatObj, Value )
+
+end
+
+function Core.NextFireMode( Weapon )
+
+	if Weapon.CurFireMode + 1 > #Weapon.GunStats.FireModes then
+
+		Core.SetFireMode( Weapon, 1 )
+
+	else
+
+		Core.SetFireMode( Weapon, Weapon.CurFireMode + 1 )
+
+	end
+
+end
+
+function Core.GetBulletType( GunStats )
+
+	if not GunStats.BulletType then return Core.BulletTypes.Kinetic end
+
+	if Core.BulletTypes[ GunStats.BulletType.Name ] then return Core.BulletTypes[ GunStats.BulletType.Name ] end
+
+	return GunStats.BulletType
+
+end
+
+function Core.IgnoreFunction( Part )
+	
+    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Core.GetValidHumanoid( Part ) == nil and Part.CanCollide == false ) ) or false
+
+end
+
+if IsServer then
+	
+	-------------- TODO REMOVE THIS SMH
+	
+	for a, b in pairs( workspace:GetDescendants( ) ) do
+		
+		pcall( function ( )
+			
+			if b:IsA( "BasePart" ) and b.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( b.Parent ) and not Core.IgnoreFunction( b ) then
+				
+				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. b:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. b.Parent:GetFullName( ) )
+				
+			end
+			
+		end )
+		
+	end
+	
+	workspace.DescendantAdded:Connect( function ( Obj )
+		
+		pcall( function ( )
+			
+			if Obj:IsA( "BasePart" ) and Obj.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( Obj.Parent ) and not Core.IgnoreFunction( Obj ) then
+				
+				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. Obj:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. Obj.Parent:GetFullName( ) )
+				
+			end
+			
+		end )
+		
+	end )
+	
+end
+
+function Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
+	
+	local Hit, Pos, Normal, Material = workspace:FindPartOnRayWithIgnoreList( R, Ignore, false, IgnoreWater == nil and true or IgnoreWater )
+	
+	if not Hit or not IgnoreFunction( Hit ) then
+
+		return Hit, Pos, Normal, Material
+
+	end
+
+	Ignore[ #Ignore + 1 ] = Hit
+
+	R = Ray.new( Pos - R.Unit.Direction, R.Unit.Direction * ( R.Direction.magnitude - ( Pos - R.Origin ).magnitude ) )
+
+	return Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
+
+end
+
+function Core.GetAccuracy( Weapon )
+
+	local ShotRecoil = Weapon.ShotRecoil
+	
+	if  Weapon.User.Character and Weapon.User.Character:FindFirstChild( "HumanoidRootPart" ) then
+
+		local Vel = Weapon.User.Character.HumanoidRootPart.Velocity / Vector3.new( 1, 3, 1 )
+
+		if Vel.magnitude > 0.1 then
+
+			ShotRecoil = ShotRecoil + ( Vel.magnitude / 4 * Config.MovementAccuracyPercentage )
+
+		end
+
+	end
+	
+	return math.max( Weapon.GunStats.AccurateRange - ShotRecoil, 1 )
+
+end
+
+Core.PreventReload = { }
+
+function Core.Reload( Weapon )
+	
+	if not Weapon.StatObj or not Weapon.GunStats.ClipSize or Weapon.GunStats.ReloadDelay < 0 or Weapon.GunStats.FireRate == 0 or Weapon.Reloading or next( Core.PreventReload ) or ( Weapon.StoredAmmo and Weapon.StoredAmmo == 0 ) then return end
+
+	if Weapon.GunStats.ClipSize > 0 and Weapon.Clip ~= Weapon.GunStats.ClipSize then
+
+		local ReloadTick = Weapon.MouseDown or tick( )
+
+		Weapon.Reloading = ReloadTick
+
+		Weapon.ModeShots = 0
+
+		local NewClip = math.floor( Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 ) ) * ( Weapon.GunStats.ReloadAmount or 1 )
+
+		if Weapon.StoredAmmo then
+
+			Core.SetStoredAmmo( Weapon, Weapon.StoredAmmo + Weapon.Clip - NewClip )
+
+		end
+
+		Core.SetClip( Weapon, NewClip )
+
+		Core.ReloadStart:Fire( Weapon.StatObj )
+
+		local Delay = Weapon.GunStats.ReloadDelay / math.ceil( Weapon.GunStats.ClipSize / ( Weapon.GunStats.ReloadAmount or 1 ) )
+
+		Weapon.ReloadStart = tick( ) - Delay * Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 )
+
+		if Weapon.GunStats.InitialReloadDelay or ( Weapon.GunStats.ReloadAmount or 1 ) == 1 then hbwait( Weapon.GunStats.InitialReloadDelay or 0.25 ) end
+
+		if Weapon.Reloading == ReloadTick then
+
+			local w = Delay
+
+			local TotalExtra = 0
+
+			for i = Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 ), math.ceil( Weapon.GunStats.ClipSize / ( Weapon.GunStats.ReloadAmount or 1 ) ) - 1 do
+
+				Core.ReloadStepped:Fire( Weapon.StatObj )
+
+				TotalExtra = TotalExtra + w - Delay
+
+				if TotalExtra > Delay then
+
+					TotalExtra = TotalExtra - Delay + Delay - w
+
+				else
+
+					w = hbwait( Delay + Delay - w )
+
+				end
+
+				if Weapon.Reloading ~= ReloadTick then
+					
+					break
+
+				end
+
+				local Add = Weapon.StoredAmmo and math.min( ( Weapon.GunStats.ReloadAmount or 1 ), Weapon.StoredAmmo ) or ( Weapon.GunStats.ReloadAmount or 1 )
+
+				Core.SetClip( Weapon, Weapon.Clip + Add )
+
+				if Weapon.StoredAmmo then
+
+					Core.SetStoredAmmo( Weapon, Weapon.StoredAmmo - Add )
+
+					if Weapon.StoredAmmo == 0 then
+
+						break
+
+					end
+
+				end
+
+			end
+
+		end
+
+		if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
+
+			Core.ReloadEnd:Fire( Weapon.StatObj )
+
+			if Weapon.GunStats.FinalReloadDelay then hbwait( Weapon.GunStats.FinalReloadDelay ) end
+
+			Weapon.Reloading = nil
+
+			Weapon.ReloadStart = nil
+
+		end
+
+	end
+
+end
+
+function Core.SetStoredAmmo( Weapon, Value )
+	
+	if not Weapon.StoredAmmo or Weapon.StoredAmmo == Value then return end
+	
+	Weapon.StoredAmmo = Value
+	
+	Core.StoredAmmoChanged:Fire( Weapon.StatObj, Value )
+	
+	if Weapon.GunStats.ClipReloadPerSecond and Weapon.Clip < Weapon.GunStats.ClipSize and Value ~= 0 then
+		
+		Core.WeaponTick[ Weapon ] = true
+		
+		if not WeaponTickHB then
+			
+			RunWeaponTick( )
+			
+		end
+		
+	end
+	
+end
+
+function Core.SetClip( Weapon, Value )
+
+	if not Weapon.Clip or Weapon.Clip == Value then return end
+
+	Weapon.Clip = Value
+
+	Core.ClipChanged:Fire( Weapon.StatObj, Value )
+
+end
+
+Core.PreventFire = { }
+
+function Core.CanFire( Weapon, Barrel )
+	
+	if next( Core.PreventFire ) then return false end
+
+	if ( typeof( Weapon.User ) == "Instance" and Weapon.User:IsA( "Player" ) and not Weapon.User.Character ) or ( Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Humanoid" ) and Weapon.User.Character.Humanoid:GetState( ) == Enum.HumanoidStateType.Dead ) then return false end
+
+	if not Weapon.StatObj or Weapon.GunStats.UseBarrelAsOrigin or Weapon.GunStats.NoAntiWall or not Weapon.User.Character then return end
+
+	local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position ), Core.IgnoreFunction, Weapon.Ignore )
+
+	if Hit then
+
+		return Hit, End, Normal, Material
+
+	end
+
+end
+
+function TableCopy( Table )
+
+	local New = { }
+
+	for a = 1, #Table do
+
+		New[ a ] = Table[ a ]
+
+	end
+
+	return New
+
+end
+
+function Core.Fire( Weapon )
+
+	if Weapon == nil then return end
+
+	local FireMode = Core.GetFireMode( Weapon )
+	
+	if Weapon.Clip ~= 0 and Weapon.Reloading and Weapon.Reloading ~= Weapon.MouseDown then
+
+		Weapon.Reloading = false
+
+	end
+
+	if FireMode.PreventFire or Weapon.LastClick >= tick( ) or Weapon.Reloading ~= nil then return end
+
+	if Weapon.Clip == 0 then
+
+		Core.Reload( Weapon )
+
+		return
+
+	end
+
+	local ShotsPerClick = Weapon.GunStats.ShotsPerClick or 1
+
+	local OneAmmoPerClick = Weapon.GunStats.OneAmmoPerClick or false
+
+	if Weapon.GunStats.ClipSize and Weapon.Clip - ( OneAmmoPerClick and 1 or ShotsPerClick ) < 0 then
+
+		Core.Reload( Weapon )
+
+		return
+
+	end
+
+	local LastClick = 1 / Weapon.GunStats.FireRate
+
+	local Start = tick( )
+
+	local DelayBetweenShots = Weapon.GunStats.DelayBetweenShots or 0
+
+	Weapon.LastClick = Start + LastClick + ( DelayBetweenShots * ShotsPerClick )
+
+	local ActualFired = 0
+
+	local CurFireMode = Weapon.CurFireMode
+	
+	local ToNetwork = ShotsPerClick > 1 and DelayBetweenShots == 0 and { } or nil
+
+	for BulNum = 1, ShotsPerClick do
+
+		if ( not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] ) or Weapon.CurFireMode ~= CurFireMode then break end
+
+		local Barrel = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ Weapon.CurBarrel ] or Weapon.BarrelPart
+
+		if Barrel and Barrel.Parent and Barrel.Parent.Parent then
+
+			if type( Weapon.BarrelPart ) == "table" then
+
+				if Weapon.CurBarrel >= #Weapon.BarrelPart then
+
+					Weapon.CurBarrel = 1
+
+				else
+
+					Weapon.CurBarrel = Weapon.CurBarrel + 1
+
+				end
+
+			end
+
+			ActualFired = ActualFired + 1
+
+			local Hit, End, Normal, Material = Core.CanFire( Weapon, Barrel )
+			
+			if Hit ~= false then
+
+				local IgnoreWater = Weapon.GunStats.BulletType and ( Weapon.GunStats.BulletType.Name == "Fire" or Weapon.GunStats.BulletType.Name == "Lightning" )
+
+				if IgnoreWater then
+
+					if workspace.Terrain:ReadVoxels(Region3.new( Barrel.Position - Vector3.new( 2, 2, 2 ), Barrel.Position + Vector3.new( 2, 2, 2 ) ):ExpandToGrid(4), 4)[1][1][1] == Enum.Material.Water then
+
+						Hit, End, Normal, Material = workspace.Terrain, Barrel.Position, -Barrel.CFrame.lookVector, Enum.Material.Water
+
+					end
+
+				end
+
+				if not Hit then
+
+					local _, Target = Weapon.Target( Weapon.StatObj, Barrel )
+
+					if Target then
+
+						local Origin = not Weapon.GunStats.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Head" ) and Weapon.User.Character.Head.Position or Barrel.Position
+						
+						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
+						
+                        Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Core.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range - Vector3.new( 0, Config.BulletDrop / 1000 * Weapon.GunStats.Range, 0 ) ), Core.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
+						
+					else
+
+						Hit = false
+
+					end
+
+				end
+
+				if Hit ~= false then
+
+					if Weapon.Clip  and ( not OneAmmoPerClick or ( ShotsPerClick and ShotsPerClick > 1 and BulNum == 1 ) ) then
+
+						Core.SetClip( Weapon, Weapon.Clip - 1 )
+
+					end
+
+					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.GunStats.Damage ) / 50, math.abs( Weapon.GunStats.Damage ) / 5 * ShotsPerClick )
+
+					local Offset = Hit and ( Hit.CFrame:pointToObjectSpace( End ) / Hit.Size ) or nil
+					
+					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ).Func or Core.BulletTypes.Kinetic.Func )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
+
+					if IsClient then
+						
+						local FirstShot
+						
+						if ShotsPerClick > 1 then FirstShot = BulNum == 1 end
+
+						if Players.LocalPlayer == Weapon.User then
+
+							Core.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, FirstShot )
+
+						end
+
+						if not IsServer then
+
+							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
+
+						end
+
+					end
+					
+					if ToNetwork then
+						
+						ToNetwork[ BulNum ] = { Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil }
+						
+					else
+						
+						if IsServer then
+							
+							Core.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+							
+							else
+							
+							Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
+							
+						end
+						
+					end
+					
+				end
+
+			end
+
+			if DelayBetweenShots > 0 and ShotsPerClick > 1 and Weapon.Clip ~= 0 then
+
+				hbwait( DelayBetweenShots )
+
+			end
+
+		end
+
+	end
+	
+	if ToNetwork then
+		
+		if IsServer then
+			
+			Core.HandleServer( nil, tick( ), Weapon.StatObj, ToNetwork, Weapon.User )
+			
+		else
+			
+			Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, ToNetwork, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil )
+			
+		end
+		
+	end
+
+	if ShotsPerClick > 1 and ShotsPerClick ~= ActualFired then
+
+		Weapon.LastClick = Start + LastClick + ( DelayBetweenShots * ActualFired )
+
+	end
+
+	Weapon.ModeShots = Weapon.ModeShots + 1
+
+	if not FireMode.Automatic and ( not FireMode.Shots or FireMode.Shots == 1 or Weapon.ModeShots >= FireMode.Shots ) then
+		
+		Weapon.MouseDown = nil
+		
+		Core.FiringEnded:Fire( Weapon.StatObj )
+
+		Weapon.ModeShots = 0
+
+	end
+
+end
+
+Core.DamageType = {
+
+	Kinetic = "Kinetic",
+
+	Explosive = "Explosive",
+
+	Slash = "Slash",
+
+	Fire = "Fire",
+
+	Electricity = "Electricity",
+	
+	Heal = "Heal"
+
+}
+
+function Core.GetTeamInfo( Obj )
+
+	if type( Obj ) == "table" then
+
+		return Obj.TeamColor, Obj.Neutral
+
+	end
+
+	if Obj:IsA( "Player" ) then
+
+		return Obj.TeamColor, Obj.Neutral, Obj
+
+	end
+
+	local PlrObj = Players:GetPlayerFromCharacter( Obj.Parent )
+
+	if PlrObj then
+
+		return PlrObj.TeamColor, PlrObj.Neutral, PlrObj
+
+	end
+
+	if Obj:FindFirstChild( "TeamColor" ) then
+
+		return Obj.TeamColor.Value, false
+
+	end
+
+	return BrickColor.White( ), true
+
+end
+
+local function ActualTeamKill( TC1, N1, TC2, N2 )
+
+	if TC1 == TC2 or ( N1 and N2 ) then
+
+		return false
+
+	end
+
+	local CanKill = true
+
+	for a = 1, #Config.AllowTeamKillFor do
+
+		if Config.AllowTeamKillFor[ a ][ TC1.name ] and Config.AllowTeamKillFor[ a ][ TC2.name ] then
+
+			CanKill = false
+
+		end
+
+	end
+
+	return CanKill
+	
+end
+
+function Core.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
+	
+	local TC1, N1, PlrObj1 = Core.GetTeamInfo( P1 )
+
+	local TC2, N2, PlrObj2 = Core.GetTeamInfo( P2 )
+
+	if PlrObj1 and PlrObj2 and PlrObj1 == PlrObj2 then return Config.SelfDamage or false end
+	
+	if ( AllowTeamKill == nil and Config.AllowTeamKill ) or AllowTeamKill then return true end
+
+	if Config.AllowNeutralTeamKill and ( N1 or N2 ) then return true end
+
+	if InvertTeamKill then return not ActualTeamKill( TC1, N1, TC2, N2 ) else return ActualTeamKill( TC1, N1, TC2, N2 ) end
+
+end
+
+function Core.GetValidHumanoid( Obj )
+
+	if not Obj or not Obj:IsDescendantOf( game ) then return end
+
+	local Hum = Obj:FindFirstChild( "Health" ) or Obj.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent:FindFirstChild( "Health" ) or Obj.Parent.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent.Parent:FindFirstChild( "Health" )
+	
+	if Hum and ( ( Hum:IsA( "Humanoid" ) and Hum.Health > 0 ) or ( not Hum:IsA( "Humanoid" ) and Hum.Value > 0 ) ) then
+		
+		local Health = Hum:FindFirstChild( "Health" )
+		
+		while Health and Health.Value > 0 do
+			
+			Hum, Health = Health, Health:FindFirstChild( "Health" )
+			
+		end
+		
+		return Hum
+	
+	end
+
+end
+
+function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill, InvertDistanceModifier )
+
+	local Humanoid = Core.GetValidHumanoid( Hit )
+
+	if not Humanoid then return end
+
+	if Core.IgnoreFunction( Hit ) then return false end
+
+	if not Core.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
+	
+	local Damage = OrigDamage
+
+	local hitName = Hit.Name:lower( )
+
+	if hitName == "head" or hitName == "uppertorso" or CollectionService:HasTag( Hit, "s2headdamage" ) then
+
+		Damage = Damage * Config.HeadDamageMultiplier
+
+	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or CollectionService:HasTag( Hit, "s2limbdamage" ) then
+
+		Damage = Damage * Config.LimbDamageMultiplier
+
+	elseif hitName:find( "hand" ) or hitName:find( "foot" ) or CollectionService:HasTag( Hit, "s2appendagedamage" ) then
+
+		Damage = Damage * Config.AppendageDamageMultiplier
+
+	end
+
+	if Distance then
+
+		if Distance > 1 then return false end
+		
+		if InvertDistanceModifier or ( InvertDistanceModifier ~= false and Config.InvertDistanceModifier ) then
+			
+			Distance = ( 1 - Distance ) * ( DistanceModifier or Config.DistanceDamageMultiplier )
+			
+			Damage = Damage * Distance
+			
+		else
+			
+			Distance = Distance * ( DistanceModifier or Config.DistanceDamageMultiplier )
+			
+			Damage = Damage * ( 1 - Distance )
+			
+		end
+
+	end
+
+	local Resistance = 1
+	
+	if Humanoid:FindFirstChild( "Resistances" ) then
+		
+		local Resistances = Humanoid.Resistances:GetChildren( )
+		
+		for a = 1, #Resistances do
+			
+			if Resistances[ a ].Name == WeaponName or Resistances[ a ].Name == Type or Resistances[ a ].Name == "All" then
+				
+				Resistance = Resistance * Resistances[ a ].Value
+				
+			end
+			
+		end
+		
+	end
+	
+	if Config.Resistances and Config.Resistances[ Type ] then
+		
+		Resistance = Resistance * Config.Resistances[ Type ]
+		
+	end
+
+	Damage = Damage * Resistance * ( Config.GlobalDamageMultiplier or 1 )
+
+	if Damage == 0 or ( OrigDamage > 0 and Damage < 0 ) or ( OrigDamage < 0 and Damage > 0 ) then
+
+		return false
+
+	end
+
+	return Humanoid, Damage
+
+end
+
+if IsClient then
+
+	if Players.LocalPlayer.Character then
+
+		Core.Spawned( Players.LocalPlayer )
+
+	end
+
+	Players.LocalPlayer.CharacterAdded:Connect( function ( )
+
+		Core.Spawned( Players.LocalPlayer )
+
+	end )
+
+else
+	
+	local function HandlePlr( Plr )
+		
+		if Plr.Character then Core.Spawned( Plr ) end
+
+		Plr.CharacterAdded:Connect( function ( )
+
+			Core.Spawned( Plr )
+
+		end )
+		
+	end
+
+	Players.PlayerAdded:Connect( HandlePlr )
+	
+	local Plrs = Players:GetPlayers( )
+	
+	for a = 1, #Plrs do
+		
+		HandlePlr( Plrs[ a ] )
+		
+	end
+
 end
 
 if IsServer then
@@ -1251,968 +2223,6 @@ if IsClient then
 		end
 		
 		return Damaged
-		
-	end
-
-end
-
-Core.WeaponSelected.Event:Connect( function ( StatObj, User )
-
-	local Weapon = Core.GetWeapon( StatObj )
-
-	if not Weapon then return end
-
-	if Weapon.LastClick < tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 ) then
-
-		Weapon.LastClick = tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 )
-
-	end
-	
-	if Weapon.GunStats.ClipReloadPerSecond and Weapon.Clip < Weapon.GunStats.ClipSize and ( not Weapon.StoredAmmo or Weapon.StoredAmmo ~= 0 ) then
-		
-		Core.WeaponTick[ Weapon ] = true
-		
-		RunWeaponTick( )
-		
-	end
-	
-	Core.Selected[ User ] = Core.Selected[ User ] or { }
-	
-	Core.Selected[ User ][ Weapon ] = tick( )
-	
-	if not SelectedHB then
-		
-		RunSelected( )
-		
-	end
-	
-	if not Weapon.GunStats.ReloadWhileUnequipped then
-		
-		Weapon.Reloading = nil
-		
-	end
-
-	if Weapon.ReloadDelay then
-
-		ContextActionService:BindAction( "Reload", function ( Name, State, Input )
-
-			if State ~= Enum.UserInputState.Begin or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
-
-			Core.Reload( Weapon )
-
-		end, true )
-
-		ContextActionService:SetImage( "Reload", "rbxassetid://371461853" )
-
-	end
-
-end )
-
-Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
-
-	local Weapon = Core.GetWeapon( StatObj )
-
-	if not Weapon then return end
-
-	Weapon.ShotRecoil = 0
-
-	Weapon.ModeShots = 0
-
-	if Weapon.Windup then
-
-		Core.SetWindup( Weapon, 0 )
-
-	end
-	
-	if Core.Selected[ User ] then
-		
-		Core.Selected[ User ][ Weapon ] = nil
-		
-		if not next( Core.Selected[ User ] ) then
-			
-			Core.Selected[ User ] = nil
-			
-		end
-		
-	end
-	
-	Core.WeaponTick[ Weapon ] = nil
-	
-	Weapon.MouseDown = nil
-	
-	if not Weapon.GunStats.ReloadWhileUnequipped then
-		
-		Weapon.Reloading = nil
-		
-	end
-
-	if Weapon.ReloadDelay then
-
-		ContextActionService:UnbindAction( "Reload" )
-
-	end
-
-	Core.ReloadEnd:Fire( StatObj )
-
-end )
-
-function Core.Destroy( Weapon )
-
-	if not Weapon.StatObj then return end
-
-	if Core.Selected[ Weapon.User ] and Core.Selected[ Weapon.User ][ Weapon ] then
-		
-		Core.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
-		
-	end
-
-	Core.Weapons[ Weapon.StatObj ] = nil
-
-	ContextActionService:UnbindAction( "Reload" )
-
-	for a, b in pairs( Weapon.Events ) do
-
-		Weapon.Events[ a ]:Disconnect( )
-
-		Weapon.Events[ a ] = nil
-
-	end
-
-	if Weapon.StatObj.Parent then
-
-		Weapon.StatObj.Parent:Destroy( )
-
-	end
-
-	for a, b in pairs( Weapon ) do
-
-		Weapon[ a ] = nil
-
-	end
-
-	Weapon = nil
-
-end
-
-function Core.PlayerToUser( Weapon, Plr )
-
-	Weapon.User = Weapon.User or Plr
-
-	Weapon.Ignore = Weapon.Ignore or { }
-
-	Weapon.Ignore[ #Weapon.Ignore + 1 ] = Weapon.User.Character
-
-	Weapon.Events[ #Weapon.Events + 1 ] = Plr.CharacterAdded:Connect( function ( Char )
-
-		Weapon.Ignore[ #Weapon.Ignore + 1 ] = Char
-
-	end )
-
-	Weapon.Target = Weapon.Target or Core.GetLPlrsTarget
-
-	return Weapon
-
-end
-
-function Core.Setup( StatObj )
-
-	local GunStats = Core.GetGunStats( StatObj )
-
-	local Weapon = { }
-
-	Core.Weapons[ StatObj ] = Weapon
-
-	Weapon.GunStats = GunStats
-
-	Weapon.Ignore = GunStats.Ignores and GunStats.Ignores( StatObj ) or { }
-
-	Weapon.Target = GunStats.Target
-
-	Weapon.User = GunStats.User
-
-	Weapon.Events = { }
-
-	Weapon.LastClick = 0
-
-	Weapon.ShotRecoil = 0
-
-	Weapon.StatObj = StatObj
-
-	Weapon.Clip = GunStats.StartingClip or GunStats.ClipSize
-
-	Weapon.StoredAmmo = GunStats.StartingStoredAmmo or GunStats.MaxStoredAmmo
-
-	if Weapon.StoredAmmo and Weapon.Clip then Weapon.StoredAmmo = Weapon.StoredAmmo - Weapon.Clip end
-
-	Weapon.CurBarrel = 1
-
-	Weapon.ModeShots = 0
-
-	Weapon.CurFireMode = 1
-
-	Weapon.BarrelPart = GunStats.Barrels( StatObj )
-
-	if StatObj.Parent and StatObj.Parent:IsA( "Tool" ) then
-
-		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Equipped:Connect( function ( )
-			
-			Core.WeaponSelected:Fire( StatObj, Weapon.User )
-
-		end )
-
-		Weapon.Events[ #Weapon.Events + 1 ] = StatObj.Parent.Unequipped:Connect( function ( )
-			
-			Core.WeaponDeselected:Fire( StatObj, Weapon.User )
-
-		end )
-
-	end
-
-	return Weapon
-
-end
-
-function Core.SetWindup( Weapon, Value )
-
-	local Started
-
-	if not Weapon.Windup then
-
-		Started = true
-
-	elseif Value == 0 then
-
-		Value = nil
-
-		Started = false
-
-	end
-
-	Weapon.Windup = Value
-	
-	Core.WindupChanged:Fire( Weapon.StatObj, Value, Started )
-
-end
-
-function Core.GetFireMode( Weapon )
-
-	local Mode = Weapon.GunStats.FireModes[ Weapon.CurFireMode ]
-
-	if Core.FireModes[ Mode ] then return Core.FireModes[ Mode ] end
-
-	return Mode
-
-end
-
-function Core.SetFireMode( Weapon, Value )
-
-	Weapon.CurFireMode = Value
-
-	Core.FireModeChanged:Fire( Weapon.StatObj, Value )
-
-end
-
-function Core.NextFireMode( Weapon )
-
-	if Weapon.CurFireMode + 1 > #Weapon.GunStats.FireModes then
-
-		Core.SetFireMode( Weapon, 1 )
-
-	else
-
-		Core.SetFireMode( Weapon, Weapon.CurFireMode + 1 )
-
-	end
-
-end
-
-function Core.GetBulletType( GunStats )
-
-	if not GunStats.BulletType then return Core.BulletTypes.Kinetic end
-
-	if Core.BulletTypes[ GunStats.BulletType.Name ] then return Core.BulletTypes[ GunStats.BulletType.Name ] end
-
-	return GunStats.BulletType
-
-end
-
-function Core.IgnoreFunction( Part )
-	
-    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Core.GetValidHumanoid( Part ) == nil and Part.CanCollide == false ) ) or false
-
-end
-
-if IsServer then
-	
-	-------------- TODO REMOVE THIS SMH
-	
-	for a, b in pairs( workspace:GetDescendants( ) ) do
-		
-		pcall( function ( )
-			
-			if b:IsA( "BasePart" ) and b.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( b.Parent ) and not Core.IgnoreFunction( b ) then
-				
-				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. b:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. b.Parent:GetFullName( ) )
-				
-			end
-			
-		end )
-		
-	end
-	
-	workspace.DescendantAdded:Connect( function ( Obj )
-		
-		pcall( function ( )
-			
-			if Obj:IsA( "BasePart" ) and Obj.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( Obj.Parent ) and not Core.IgnoreFunction( Obj ) then
-				
-				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. Obj:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. Obj.Parent:GetFullName( ) )
-				
-			end
-			
-		end )
-		
-	end )
-	
-end
-
-function Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
-
-	local Hit, Pos, Normal, Material = workspace( "FindPartOnRayWithIgnoreList", R, Ignore, false, IgnoreWater == nil and true or IgnoreWater )
-
-	if not Hit or not IgnoreFunction( Hit ) then
-
-		return Hit, Pos, Normal, Material
-
-	end
-
-	Ignore[ #Ignore + 1 ] = Hit
-
-	R = Ray.new( Pos - R.Unit.Direction, R.Unit.Direction * ( R.Direction.magnitude - ( Pos - R.Origin ).magnitude ) )
-
-	return Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
-
-end
-
-function Core.GetAccuracy( Weapon )
-
-	local ShotRecoil = Weapon.ShotRecoil
-	
-	if  Weapon.User.Character and Weapon.User.Character:FindFirstChild( "HumanoidRootPart" ) then
-
-		local Vel = Weapon.User.Character.HumanoidRootPart.Velocity / Vector3.new( 1, 3, 1 )
-
-		if Vel.magnitude > 0.1 then
-
-			ShotRecoil = ShotRecoil + ( Vel.magnitude / 4 * Config.MovementAccuracyPercentage )
-
-		end
-
-	end
-	
-	return math.max( Weapon.GunStats.AccurateRange - ShotRecoil, 1 )
-
-end
-
-Core.PreventReload = { }
-
-function Core.Reload( Weapon )
-	
-	if not Weapon.StatObj or not Weapon.GunStats.ClipSize or Weapon.GunStats.ReloadDelay < 0 or Weapon.GunStats.FireRate == 0 or Weapon.Reloading or next( Core.PreventReload ) or ( Weapon.StoredAmmo and Weapon.StoredAmmo == 0 ) then return end
-
-	if Weapon.GunStats.ClipSize > 0 and Weapon.Clip ~= Weapon.GunStats.ClipSize then
-
-		local ReloadTick = Weapon.MouseDown or tick( )
-
-		Weapon.Reloading = ReloadTick
-
-		Weapon.ModeShots = 0
-
-		local NewClip = math.floor( Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 ) ) * ( Weapon.GunStats.ReloadAmount or 1 )
-
-		if Weapon.StoredAmmo then
-
-			Core.SetStoredAmmo( Weapon, Weapon.StoredAmmo + Weapon.Clip - NewClip )
-
-		end
-
-		Core.SetClip( Weapon, NewClip )
-
-		Core.ReloadStart:Fire( Weapon.StatObj )
-
-		local Delay = Weapon.GunStats.ReloadDelay / math.ceil( Weapon.GunStats.ClipSize / ( Weapon.GunStats.ReloadAmount or 1 ) )
-
-		Weapon.ReloadStart = tick( ) - Delay * Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 )
-
-		if Weapon.GunStats.InitialReloadDelay or ( Weapon.GunStats.ReloadAmount or 1 ) == 1 then hbwait( Weapon.GunStats.InitialReloadDelay or 0.25 ) end
-
-		if Weapon.Reloading == ReloadTick then
-
-			local w = Delay
-
-			local TotalExtra = 0
-
-			for i = Weapon.Clip / ( Weapon.GunStats.ReloadAmount or 1 ), math.ceil( Weapon.GunStats.ClipSize / ( Weapon.GunStats.ReloadAmount or 1 ) ) - 1 do
-
-				Core.ReloadStepped:Fire( Weapon.StatObj )
-
-				TotalExtra = TotalExtra + w - Delay
-
-				if TotalExtra > Delay then
-
-					TotalExtra = TotalExtra - Delay + Delay - w
-
-				else
-
-					w = hbwait( Delay + Delay - w )
-
-				end
-
-				if Weapon.Reloading ~= ReloadTick then
-					
-					break
-
-				end
-
-				local Add = Weapon.StoredAmmo and math.min( ( Weapon.GunStats.ReloadAmount or 1 ), Weapon.StoredAmmo ) or ( Weapon.GunStats.ReloadAmount or 1 )
-
-				Core.SetClip( Weapon, Weapon.Clip + Add )
-
-				if Weapon.StoredAmmo then
-
-					Core.SetStoredAmmo( Weapon, Weapon.StoredAmmo - Add )
-
-					if Weapon.StoredAmmo == 0 then
-
-						break
-
-					end
-
-				end
-
-			end
-
-		end
-
-		if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
-
-			Core.ReloadEnd:Fire( Weapon.StatObj )
-
-			if Weapon.GunStats.FinalReloadDelay then hbwait( Weapon.GunStats.FinalReloadDelay ) end
-
-			Weapon.Reloading = nil
-
-			Weapon.ReloadStart = nil
-
-		end
-
-	end
-
-end
-
-function Core.SetStoredAmmo( Weapon, Value )
-	
-	if not Weapon.StoredAmmo or Weapon.StoredAmmo == Value then return end
-	
-	Weapon.StoredAmmo = Value
-	
-	Core.StoredAmmoChanged:Fire( Weapon.StatObj, Value )
-	
-	if Weapon.GunStats.ClipReloadPerSecond and Weapon.Clip < Weapon.GunStats.ClipSize and Value ~= 0 then
-		
-		Core.WeaponTick[ Weapon ] = true
-		
-		if not WeaponTickHB then
-			
-			RunWeaponTick( )
-			
-		end
-		
-	end
-	
-end
-
-function Core.SetClip( Weapon, Value )
-
-	if not Weapon.Clip or Weapon.Clip == Value then return end
-
-	Weapon.Clip = Value
-
-	Core.ClipChanged:Fire( Weapon.StatObj, Value )
-
-end
-
-Core.PreventFire = { }
-
-function Core.CanFire( Weapon, Barrel )
-	
-	if next( Core.PreventFire ) then return false end
-
-	if ( typeof( Weapon.User ) == "Instance" and Weapon.User:IsA( "Player" ) and not Weapon.User.Character ) or ( Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Humanoid" ) and Weapon.User.Character.Humanoid:GetState( ) == Enum.HumanoidStateType.Dead ) then return false end
-
-	if not Weapon.StatObj or Weapon.GunStats.UseBarrelAsOrigin or Weapon.GunStats.NoAntiWall or not Weapon.User.Character then return end
-
-	local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position ), Core.IgnoreFunction, Weapon.Ignore )
-
-	if Hit then
-
-		return Hit, End, Normal, Material
-
-	end
-
-end
-
-function TableCopy( Table )
-
-	local New = { }
-
-	for a = 1, #Table do
-
-		New[ a ] = Table[ a ]
-
-	end
-
-	return New
-
-end
-
-function Core.Fire( Weapon )
-
-	if Weapon == nil then return end
-
-	local FireMode = Core.GetFireMode( Weapon )
-	
-	if Weapon.Clip ~= 0 and Weapon.Reloading and Weapon.Reloading ~= Weapon.MouseDown then
-
-		Weapon.Reloading = false
-
-	end
-
-	if FireMode.PreventFire or Weapon.LastClick >= tick( ) or Weapon.Reloading ~= nil then return end
-
-	if Weapon.Clip == 0 then
-
-		Core.Reload( Weapon )
-
-		return
-
-	end
-
-	local ShotsPerClick = Weapon.GunStats.ShotsPerClick or 1
-
-	local OneAmmoPerClick = Weapon.GunStats.OneAmmoPerClick or false
-
-	if Weapon.GunStats.ClipSize and Weapon.Clip - ( OneAmmoPerClick and 1 or ShotsPerClick ) < 0 then
-
-		Core.Reload( Weapon )
-
-		return
-
-	end
-
-	local LastClick = 1 / Weapon.GunStats.FireRate
-
-	local Start = tick( )
-
-	local DelayBetweenShots = Weapon.GunStats.DelayBetweenShots or 0
-
-	Weapon.LastClick = Start + LastClick + ( DelayBetweenShots * ShotsPerClick )
-
-	local ActualFired = 0
-
-	local CurFireMode = Weapon.CurFireMode
-	
-	local ToNetwork = ShotsPerClick > 1 and DelayBetweenShots == 0 and { } or nil
-
-	for BulNum = 1, ShotsPerClick do
-
-		if ( not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] ) or Weapon.CurFireMode ~= CurFireMode then break end
-
-		local Barrel = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ Weapon.CurBarrel ] or Weapon.BarrelPart
-
-		if Barrel and Barrel.Parent and Barrel.Parent.Parent then
-
-			if type( Weapon.BarrelPart ) == "table" then
-
-				if Weapon.CurBarrel >= #Weapon.BarrelPart then
-
-					Weapon.CurBarrel = 1
-
-				else
-
-					Weapon.CurBarrel = Weapon.CurBarrel + 1
-
-				end
-
-			end
-
-			ActualFired = ActualFired + 1
-
-			local Hit, End, Normal, Material = Core.CanFire( Weapon, Barrel )
-			
-			if Hit ~= false then
-
-				local IgnoreWater = Weapon.GunStats.BulletType and ( Weapon.GunStats.BulletType.Name == "Fire" or Weapon.GunStats.BulletType.Name == "Lightning" )
-
-				if IgnoreWater then
-
-					if workspace.Terrain:ReadVoxels(Region3.new( Barrel.Position - Vector3.new( 2, 2, 2 ), Barrel.Position + Vector3.new( 2, 2, 2 ) ):ExpandToGrid(4), 4)[1][1][1] == Enum.Material.Water then
-
-						Hit, End, Normal, Material = workspace.Terrain, Barrel.Position, -Barrel.CFrame.lookVector, Enum.Material.Water
-
-					end
-
-				end
-
-				if not Hit then
-
-					local _, Target = Weapon.Target( Weapon.StatObj, Barrel )
-
-					if Target then
-
-						local Origin = not Weapon.GunStats.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Head" ) and Weapon.User.Character.Head.Position or Barrel.Position
-						
-						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
-						
-                        Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Core.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range - Vector3.new( 0, Config.BulletDrop / 1000 * Weapon.GunStats.Range, 0 ) ), Core.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
-						
-					else
-
-						Hit = false
-
-					end
-
-				end
-
-				if Hit ~= false then
-
-					if Weapon.Clip  and ( not OneAmmoPerClick or ( ShotsPerClick and ShotsPerClick > 1 and BulNum == 1 ) ) then
-
-						Core.SetClip( Weapon, Weapon.Clip - 1 )
-
-					end
-
-					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.GunStats.Damage ) / 50, math.abs( Weapon.GunStats.Damage ) / 5 * ShotsPerClick )
-
-					local Offset = Hit and ( Hit.CFrame:pointToObjectSpace( End ) / Hit.Size ) or nil
-					
-					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ).Func or Core.BulletTypes.Kinetic.Func )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
-
-					if IsClient then
-						
-						local FirstShot
-						
-						if ShotsPerClick > 1 then FirstShot = BulNum == 1 end
-
-						if Players.LocalPlayer == Weapon.User then
-
-							Core.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, FirstShot )
-
-						end
-
-						if not IsServer then
-
-							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
-
-						end
-
-					end
-					
-					if ToNetwork then
-						
-						ToNetwork[ BulNum ] = { Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil }
-						
-					else
-						
-						if IsServer then
-							
-							Core.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
-							
-							else
-							
-							Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
-							
-						end
-						
-					end
-					
-				end
-
-			end
-
-			if DelayBetweenShots > 0 and ShotsPerClick > 1 and Weapon.Clip ~= 0 then
-
-				hbwait( DelayBetweenShots )
-
-			end
-
-		end
-
-	end
-	
-	if ToNetwork then
-		
-		if IsServer then
-			
-			Core.HandleServer( nil, tick( ), Weapon.StatObj, ToNetwork, Weapon.User )
-			
-		else
-			
-			Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, ToNetwork, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil )
-			
-		end
-		
-	end
-
-	if ShotsPerClick > 1 and ShotsPerClick ~= ActualFired then
-
-		Weapon.LastClick = Start + LastClick + ( DelayBetweenShots * ActualFired )
-
-	end
-
-	Weapon.ModeShots = Weapon.ModeShots + 1
-
-	if not FireMode.Automatic and ( not FireMode.Shots or FireMode.Shots == 1 or Weapon.ModeShots >= FireMode.Shots ) then
-		
-		Weapon.MouseDown = nil
-		
-		Core.FiringEnded:Fire( Weapon.StatObj )
-
-		Weapon.ModeShots = 0
-
-	end
-
-end
-
-Core.DamageType = {
-
-	Kinetic = "Kinetic",
-
-	Explosive = "Explosive",
-
-	Slash = "Slash",
-
-	Fire = "Fire",
-
-	Electricity = "Electricity",
-	
-	Heal = "Heal"
-
-}
-
-function Core.GetTeamInfo( Obj )
-
-	if type( Obj ) == "table" then
-
-		return Obj.TeamColor, Obj.Neutral
-
-	end
-
-	if Obj:IsA( "Player" ) then
-
-		return Obj.TeamColor, Obj.Neutral, Obj
-
-	end
-
-	local PlrObj = Players:GetPlayerFromCharacter( Obj.Parent )
-
-	if PlrObj then
-
-		return PlrObj.TeamColor, PlrObj.Neutral, PlrObj
-
-	end
-
-	if Obj:FindFirstChild( "TeamColor" ) then
-
-		return Obj.TeamColor.Value, false
-
-	end
-
-	return BrickColor.White( ), true
-
-end
-
-local function ActualTeamKill( TC1, N1, TC2, N2 )
-
-	if TC1 == TC2 or ( N1 and N2 ) then
-
-		return false
-
-	end
-
-	local CanKill = true
-
-	for a = 1, #Config.AllowTeamKillFor do
-
-		if Config.AllowTeamKillFor[ a ][ TC1.name ] and Config.AllowTeamKillFor[ a ][ TC2.name ] then
-
-			CanKill = false
-
-		end
-
-	end
-
-	return CanKill
-	
-end
-
-function Core.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
-	
-	local TC1, N1, PlrObj1 = Core.GetTeamInfo( P1 )
-
-	local TC2, N2, PlrObj2 = Core.GetTeamInfo( P2 )
-
-	if PlrObj1 and PlrObj2 and PlrObj1 == PlrObj2 then return Config.SelfDamage or false end
-	
-	if ( AllowTeamKill == nil and Config.AllowTeamKill ) or AllowTeamKill then return true end
-
-	if Config.AllowNeutralTeamKill and ( N1 or N2 ) then return true end
-
-	if InvertTeamKill then return not ActualTeamKill( TC1, N1, TC2, N2 ) else return ActualTeamKill( TC1, N1, TC2, N2 ) end
-
-end
-
-function Core.GetValidHumanoid( Obj )
-
-	if not Obj or not Obj:IsDescendantOf( game ) then return end
-
-	local Hum = Obj:FindFirstChild( "Health" ) or Obj.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent:FindFirstChild( "Health" ) or Obj.Parent.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent.Parent:FindFirstChild( "Health" )
-	
-	if Hum and ( ( Hum:IsA( "Humanoid" ) and Hum.Health > 0 ) or ( not Hum:IsA( "Humanoid" ) and Hum.Value > 0 ) ) then
-		
-		local Health = Hum:FindFirstChild( "Health" )
-		
-		while Health and Health.Value > 0 do
-			
-			Hum, Health = Health, Health:FindFirstChild( "Health" )
-			
-		end
-		
-		return Hum
-	
-	end
-
-end
-
-function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill, InvertDistanceModifier )
-
-	local Humanoid = Core.GetValidHumanoid( Hit )
-
-	if not Humanoid then return end
-
-	if Core.IgnoreFunction( Hit ) then return false end
-
-	if not Core.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
-	
-	local Damage = OrigDamage
-
-	local hitName = Hit.Name:lower( )
-
-	if hitName == "head" or hitName == "uppertorso" or CollectionService:HasTag( Hit, "s2headdamage" ) then
-
-		Damage = Damage * Config.HeadDamageMultiplier
-
-	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or CollectionService:HasTag( Hit, "s2limbdamage" ) then
-
-		Damage = Damage * Config.LimbDamageMultiplier
-
-	elseif hitName:find( "hand" ) or hitName:find( "foot" ) or CollectionService:HasTag( Hit, "s2appendagedamage" ) then
-
-		Damage = Damage * Config.AppendageDamageMultiplier
-
-	end
-
-	if Distance then
-
-		if Distance > 1 then return false end
-		
-		if InvertDistanceModifier or ( InvertDistanceModifier ~= false and Config.InvertDistanceModifier ) then
-			
-			Distance = ( 1 - Distance ) * ( DistanceModifier or Config.DistanceDamageMultiplier )
-			
-			Damage = Damage * Distance
-			
-		else
-			
-			Distance = Distance * ( DistanceModifier or Config.DistanceDamageMultiplier )
-			
-			Damage = Damage * ( 1 - Distance )
-			
-		end
-
-	end
-
-	local Resistance = 1
-	
-	if Humanoid:FindFirstChild( "Resistances" ) then
-		
-		local Resistances = Humanoid.Resistances:GetChildren( )
-		
-		for a = 1, #Resistances do
-			
-			if Resistances[ a ].Name == WeaponName or Resistances[ a ].Name == Type or Resistances[ a ].Name == "All" then
-				
-				Resistance = Resistance * Resistances[ a ].Value
-				
-			end
-			
-		end
-		
-	end
-	
-	if Config.Resistances and Config.Resistances[ Type ] then
-		
-		Resistance = Resistance * Config.Resistances[ Type ]
-		
-	end
-
-	Damage = Damage * Resistance * ( Config.GlobalDamageMultiplier or 1 )
-
-	if Damage == 0 or ( OrigDamage > 0 and Damage < 0 ) or ( OrigDamage < 0 and Damage > 0 ) then
-
-		return false
-
-	end
-
-	return Humanoid, Damage
-
-end
-
-if IsClient then
-
-	if Players.LocalPlayer.Character then
-
-		Core.Spawned( Players.LocalPlayer )
-
-	end
-
-	Players.LocalPlayer.CharacterAdded:Connect( function ( )
-
-		Core.Spawned( Players.LocalPlayer )
-
-	end )
-
-else
-	
-	local function HandlePlr( Plr )
-		
-		if Plr.Character then Core.Spawned( Plr ) end
-
-		Plr.CharacterAdded:Connect( function ( )
-
-			Core.Spawned( Plr )
-
-		end )
-		
-	end
-
-	Players.PlayerAdded:Connect( HandlePlr )
-	
-	local Plrs = Players:GetPlayers( )
-	
-	for a = 1, #Plrs do
-		
-		HandlePlr( Plrs[ a ] )
 		
 	end
 
