@@ -80,12 +80,6 @@ end
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
 
-local function KeyBackColor( Obj )
-	
-	Obj.ImageColor3 = ( Obj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ Obj ] ) and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Secondary_BackgroundColor" )
-	
-end
-
 Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	if NotMyGui( InteractObj ) then return end
@@ -109,8 +103,6 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 			Gui.StudsOffset = InteractObj.StudsOffset.Value
 			
 		end
-		
-		ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = KeyBackColor } )
 		
 		ThemeUtil.BindUpdate( Gui.KeyBack.KeyText, { BackgroundColor3 = "Primary_BackgroundColor", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 		
@@ -160,7 +152,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	Gui.KeyBack.KeyText.Text = Key
 	
-	Gui.KeyBack.ImageColor3 = ( InteractObj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ InteractObj ] ) and ThemeUtil.GetThemeFor( "Positive_Color3" ) or ThemeUtil.GetThemeFor( "Secondary_BackgroundColor" )
+	ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = ( InteractObj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ InteractObj ] ) and "Positive_Color3" or "Secondary_BackgroundColor" } )
 	
 	if InteractObj:FindFirstChild( "Disabled" )  then
 		
@@ -232,7 +224,13 @@ Interactables.EnableGui:Connect( function ( InteractObj, Gui, Key )
 	
 	if NotMyGui( InteractObj ) then return end
 	
-	TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "Primary_BackgroundColor" ) } ):Play( )
+	local OldCol = Gui.KeyBack.ImageColor3
+	
+	ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = "Secondary_BackgroundColor" } )
+	
+	Gui.KeyBack.ImageColor3 = OldCol
+	
+	TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "Secondary_BackgroundColor" ) } ):Play( )
 	
 	Gui.KeyBack.KeyText.Text = Key
 	
@@ -279,6 +277,12 @@ Interactables.MinimiseGui:Connect( function ( InteractObj, Gui, CooldownLeft )
 	if NotMyGui( InteractObj ) then return end
 	
 	if CooldownLeft then
+		
+		local OldCol = Gui.KeyBack.ImageColor3
+		
+		ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = "Positive_Color3" } )
+		
+		Gui.KeyBack.ImageColor3 = OldCol
 		
 		TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "Positive_Color3" ) } ):Play( )
 		
@@ -341,6 +345,12 @@ Interactables.EndHold:Connect( function ( InteractObj, Gui, Completed, Cooldown 
 		Gui.Progress.ImageRectOffset = Vector2new( GetOffset( SpriteConfig.Count - 1 ) )
 		
 		Gui.KeyBack.KeyText.Text = Cooldown and math.ceil( Cooldown ) or "1" 
+		
+		local OldCol = Gui.KeyBack.ImageColor3
+		
+		ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = "Positive_Color3" } )
+		
+		Gui.KeyBack.ImageColor3 = OldCol
 		
 		TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageColor3 = ThemeUtil.GetThemeFor( "Positive_Color3" ) } ):Play( )
 		
