@@ -82,7 +82,7 @@ local function OnDeath( Damageable )
 				
 				warn( Damageable.Parent.Name .. " has died to non-S2 damage, please update to using S2s damage system" )
 				
-				Creator.Value:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Creator.Value.leaderstats.KOs.Value + KOs
+				Creator.Value:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Creator.Value.leaderstats.KOs.Value + 1
 				
 				if _G.S20Config.CreditsPerKill then
 					
