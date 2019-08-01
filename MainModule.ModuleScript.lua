@@ -1,3 +1,5 @@
+script.GameAnalytics.Parent = game:GetService( "ServerStorage" )
+
 local function AddObjs( PermPar, Name )
 	
 	local Objs = script:FindFirstChild( PermPar.Name ):GetChildren( )
