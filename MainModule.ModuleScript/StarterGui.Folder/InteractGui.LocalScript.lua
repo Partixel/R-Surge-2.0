@@ -108,8 +108,6 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 		
 		ThemeUtil.BindUpdate( Gui.Back, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 		
-		ThemeUtil.BindUpdate( Gui.NameBack.AddonFrame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
-		
 		ThemeUtil.BindUpdate( Gui.NameBack, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 		
 		ThemeUtil.BindUpdate( Gui.NameBack.NameText, { TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
@@ -152,7 +150,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	Gui.KeyBack.KeyText.Text = Key
 	
-	ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = ( InteractObj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ InteractObj ] ) and "Positive_Color3" or "Secondary_BackgroundColor" } )
+	ThemeUtil.BindUpdate( Gui.KeyBack, { ImageColor3 = ( InteractObj:FindFirstChild( "Disabled" ) or Interactables.LocalDisabled[ InteractObj ] ) and "Positive_Color3" or "Secondary_BackgroundColor", ImageTransparency = "Secondary_BackgroundTransparency" } )
 	
 	if InteractObj:FindFirstChild( "Disabled" )  then
 		
