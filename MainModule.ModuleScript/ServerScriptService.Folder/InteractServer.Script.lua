@@ -42,4 +42,4 @@ InteractRemote.OnServerEvent:Connect( function ( Plr, InteractObj, Start, Subjec
 	
 end )
 
-InteractRemote.Parent = game:GetService( "ReplicatedStorage" )
+InteractRemote.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )

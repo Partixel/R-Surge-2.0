@@ -1,6 +1,8 @@
-local Config, Core = _G.S20Config, require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
-repeat wait( ) until Config
+while not _G.S20Config do wait( ) end
+
+Config = _G.S20Config
 
 local RunService, Debris, Plr, CollectionService = game:GetService( "RunService" ), game:GetService( "Debris" ), game:GetService( "Players" ).LocalPlayer, game:GetService( "CollectionService" )
 
@@ -198,9 +200,9 @@ Core.Visuals.FireSoundEnd = Core.FiringEnded.Event:Connect( function ( StatObj )
 		
 		local Barrels = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart or { Weapon.BarrelPart }
 		
-		for a = 1, #Barrels do
+		for _, Obj in ipairs( Barrels ) do
 			
-			local Part = GetVisualBarrel( Barrels[ a ], true )
+			local Part = GetVisualBarrel( Obj, true )
 			
 			local FireSound = Part and Part:FindFirstChild( "FireSound" )
 			
@@ -242,26 +244,26 @@ Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj
 	
 end )
 
-Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User, _, _, _, _, _, _, _, Humanoids )
+Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User, _, Hit, _, _, _, _, _, Humanoids )
 	
 	if Humanoids and User == Plr then
 		
-		local Type = 1
+		local Type = Hit and Hit.Name:lower( ):find( "head" ) and 2 or 0.75
 		
 		local Noise
 		
-		for a = 1, #Humanoids do
+		for _, Hum in ipairs( Humanoids ) do
 			
-			if Humanoids[ a ][ 1 ].Parent then
+			if Hum[ 1 ].Parent then
 				
-				if not CollectionService:HasTag( Humanoids[ a ][ 1 ], "s2_silent" ) then Noise = true end
+				if not CollectionService:HasTag( Hum[ 1 ], "s2_silent" ) then Noise = true end
 				
-				if Humanoids[ a ][ 1 ]:IsA( "Humanoid" ) then Type = 2 end
+				if Type ~= 2 and Hum[ 1 ]:IsA( "Humanoid" ) then Type = 1.25 end
 				
 			end
 			
 		end
-		
+		print(Hit, Type)
 		if not Noise then return end
 		
 		local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
@@ -370,13 +372,13 @@ Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatOb
 		
 		local Col = BrickColor.Random( ).Color
 		
-		for a = 1, #Sparks do
+		for _, Spark in ipairs( Sparks ) do
 			
-			if Sparks[ a ]:IsA( "Sparkles" ) then
+			if Spark:IsA( "Sparkles" ) then
 				
-				Sparks[ a ].SparkleColor = Col
+				Spark.SparkleColor = Col
 				
-				Sparks[ a ].Enabled = true
+				Spark.Enabled = true
 				
 			end
 			
@@ -384,11 +386,11 @@ Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatOb
 		
 		wait( 0.2 )
 		
-		for a = 1, #Sparks do
+		for _, Spark in ipairs( Sparks ) do
 			
-			if Sparks[ a ]:IsA( "Sparkles" ) then
+			if Spark:IsA( "Sparkles" ) then
 				
-				Sparks[ a ].Enabled = false
+				Spark.Enabled = false
 				
 			end
 			
@@ -456,7 +458,7 @@ local function RenderSegment( User, GunStats, Start, End, Thickness )
 		
 	end
 	
-	Bullet.Color3 = Col
+	Bullet.Color3 = Color3.new( Col.r * 3, Col.g * 3, Col.b * 3 )
 	
 	Bullet.Transparency = GunStats.BulletTransparency or Core.BulletTransparency or 0.2
 	
@@ -596,7 +598,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 		end
 		
-		Bullet.Color3 = Col
+		Bullet.Color3 = Color3.new( Col.r * 3, Col.g * 3, Col.b * 3 )
 		
 		Bullet.Transparency = GunStats.BulletTransparency or Core.BulletTransparency or 0.4
 		
@@ -645,6 +647,8 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		Bullet.Adornee = workspace.Terrain
 		
 		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
+		
+		Bullet.Color3 = Color3.new( Bullet.Color3.r * 3, Bullet.Color3.g * 3, Bullet.Color3.b * 3 )
 		
 		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.05
 		

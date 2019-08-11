@@ -26,17 +26,17 @@ Plr.CharacterAdded:Connect( function ( Char )
 	
 end )
 
-local HeadRotRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "HeadRot" )
+local HeadRotRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "HeadRot" )
 
 HeadRotRemote.OnClientEvent:Connect( function ( Rotations )
 	
-	for a = 1, #Rotations do
+	for _, Rot in ipairs( Rotations ) do
 		
-		local Neck = Rotations[ a ][ 1 ].Character and Rotations[ a ][ 1 ].Character:FindFirstChild( "Neck", true )
+		local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
 		
 		if Neck then
 			
-			TweenService:Create( Neck, TweenInfo.new( 1/30, Enum.EasingStyle.Linear ), { C0 = Rotations[ a ][ 2 ] } ):Play( )
+			TweenService:Create( Neck, TweenInfo.new( 1/30, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
 			
 		end
 		
@@ -68,17 +68,15 @@ game:GetService("RunService").Stepped:Connect( function ( )
 		
 	end
 	
-	local Plrs = Players:GetPlayers( )
-	
-	for a = 1, #Plrs do
+	for _, Plr in ipairs( Players:GetPlayers( ) ) do
 		
-		if Plrs[ a ].Character and Plrs[ a ].Character:FindFirstChild( "Head" ) then
+		if Plr.Character and Plr.Character:FindFirstChild( "Head" ) then
 			
-			local Humanoid = Plrs[ a ].Character:FindFirstChildOfClass( "Humanoid" )
+			local Humanoid = Plr.Character:FindFirstChildOfClass( "Humanoid" )
 			
 			if Humanoid and Humanoid.Health ~= 0 then
 				
-				Plrs[ a ].Character.Head.CanCollide = false
+				Plr.Character.Head.CanCollide = false
 				
 			end
 			

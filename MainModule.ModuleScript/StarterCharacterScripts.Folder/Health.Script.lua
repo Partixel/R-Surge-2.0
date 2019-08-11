@@ -5,7 +5,7 @@ local REGEN_STEP = 1 -- Wait this long between each regeneration step.
 
 --------------------------------------------------------------------------------
 
-local Character = script.Parent
+local Character = script.Parent.Parent
 local Humanoid = Character:WaitForChild'Humanoid'
 
 --------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Config" ) )
+require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Config" ) )
 
 local LuaRequire = function ( ... ) return require( ... ) end
 

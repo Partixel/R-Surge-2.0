@@ -1,6 +1,6 @@
 local Players, TweenService = game:GetService( "Players" ), game:GetService("TweenService" )
 
-local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
 local function Scale( Feed )
 	
@@ -30,23 +30,23 @@ local function Scale( Feed )
 	
 	local Kids = Feed:GetChildren( )
 	
-	for a = 1, #Kids do
+	for _, Obj in ipairs( Kids ) do
 		
-		if Kids[ a ].Name:sub( 1, 6 ) == "Victim" then
+		if Obj.Name:sub( 1, 6 ) == "Victim" then
 	
-			Kids[ a ].Size = UDim2.new( 10, 0, 1, 0 )
+			Obj.Size = UDim2.new( 10, 0, 1, 0 )
 			
-			Max = math.max( Max, ( Kids[ a ].VictimName.TextBounds.X ~= 0 and Kids[ a ].VictimName.TextBounds.X + 10 or 0 ) + ( Kids[ a ]:FindFirstChild( "VictimType" ) and Kids[ a ].VictimType.AbsoluteSize.X + 5 or 0 ) )
+			Max = math.max( Max, ( Obj.VictimName.TextBounds.X ~= 0 and Obj.VictimName.TextBounds.X + 10 or 0 ) + ( Obj:FindFirstChild( "VictimType" ) and Obj.VictimType.AbsoluteSize.X + 5 or 0 ) )
 			
 		end
 		
 	end
 	
-	for a = 1, #Kids do
+	for _, Obj in ipairs( Kids ) do
 		
-		if Kids[ a ].Name:sub( 1, 6 ) == "Victim" then
+		if Obj.Name:sub( 1, 6 ) == "Victim" then
 			
-			Kids[ a ].Size = UDim2.new( Max / Feed.AbsoluteSize.X, 0, 1, 0 )
+			Obj.Size = UDim2.new( Max / Feed.AbsoluteSize.X, 0, 1, 0 )
 			
 		end
 		
@@ -91,13 +91,11 @@ workspace.CurrentCamera:GetPropertyChangedSignal( "ViewportSize" ):Connect( func
 	
 	wait( )
 	
-	local Feeds = script.Parent.Container:GetChildren( )
-	
-	for a = 1, #Feeds do
+	for _, Feed in ipairs( script.Parent.Container:GetChildren( )) do
 		
-		if Feeds[ a ]:IsA( "Frame" ) then
+		if Feed:IsA( "Frame" ) then
 			
-			Scale( Feeds[ a ] )
+			Scale( Feed )
 			
 		end
 		
@@ -133,15 +131,15 @@ local function UpdateContrastTextStroke( Obj )
 	
 end
 
-game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEvent:Connect( function ( DeathInfo )
+game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "RemoteKilled" ).OnClientEvent:Connect( function ( DeathInfo )
 	
 	local NewFeed = script.Feed:Clone( )
 	
 	local NumVictims = 0
 	
-	for a = 1, #DeathInfo.VictimInfos do
+	for _, Info in ipairs( DeathInfo.VictimInfos ) do
 		
-		if not DeathInfo.VictimInfos[ a ].NoFeed then
+		if not Info.NoFeed then
 			
 			NumVictims = NumVictims + 1
 			
@@ -149,15 +147,15 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 			
 			ThemeUtil.BindUpdate( Victim, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 			
-			Victim.VictimName.Text = DeathInfo.VictimInfos[ a ].User.Name
+			Victim.VictimName.Text = Info.User.Name
 			
-			Victim.VictimName.TextColor3 = DeathInfo.VictimInfos[ a ].User.TeamColor and DeathInfo.VictimInfos[ a ].User.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
+			Victim.VictimName.TextColor3 = Info.User.TeamColor and Info.User.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
 			
 			ThemeUtil.BindUpdate( Victim.VictimName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
 			
 			Victim.Name = "Victim" .. NumVictims
 			
-			local Type = VictimTypes[ DeathInfo.VictimInfos[ a ].Hit ]
+			local Type = VictimTypes[ Info.Hit ]
 			
 			if Type then
 				
@@ -243,27 +241,25 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		
 	end
 	
-	local Feeds = script.Parent.Container:GetChildren( )
-	
-	for a = 1, #Feeds do
+	for _, Feed in ipairs( script.Parent.Container:GetChildren( ) ) do
 		
-		if Feeds[ a ]:IsA( "Frame" ) then
+		if Feed:IsA( "Frame" ) then
 			
-			Feeds[ a ].ActualPos.Value = Feeds[ a ].ActualPos.Value + 0.035 + math.max( 0.035 * ( NumVictims - 1 ), DeathInfo.Assister and 0.015 or 0 )
+			Feed.ActualPos.Value = Feed.ActualPos.Value + 0.035 + math.max( 0.035 * ( NumVictims - 1 ), DeathInfo.Assister and 0.015 or 0 )
 			
 			if _G.S20Config.KillFeedVerticalAlign == "Bottom" then
 				
-				TweenService:Create( Feeds[ a ], TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feeds[ a ].Position.X.Scale, Feeds[ a ].Position.X.Offset, 0.175 - Feeds[ a ].ActualPos.Value, 0  ) } ):Play( )
+				TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feed.Position.X.Scale, Feed.Position.X.Offset, 0.175 - Feed.ActualPos.Value, 0  ) } ):Play( )
 				
 			else
 				
-				TweenService:Create( Feeds[ a ], TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feeds[ a ].Position.X.Scale, Feeds[ a ].Position.X.Offset, Feeds[ a ].ActualPos.Value, 0  ) } ):Play( )
+				TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feed.Position.X.Scale, Feed.Position.X.Offset, Feed.ActualPos.Value, 0  ) } ):Play( )
 				
 			end
 			
-			if Feeds[ a ].ActualPos.Value > 0.175 and Feeds[ a ].Name ~= "Destroying" then
+			if Feed.ActualPos.Value > 0.175 and Feed.Name ~= "Destroying" then
 				
-				local Feed = Feeds[ a ]
+				local Feed = Feed
 				
 				Feed.Name = "Destroying"
 				
@@ -283,13 +279,11 @@ game:GetService( "ReplicatedStorage" ):WaitForChild( "RemoteKilled" ).OnClientEv
 		
 	end
 	
-	Feeds = NewFeed:GetDescendants( )
-	
-	for a = 1, #Feeds do
+	for _, Feed in ipairs( NewFeed:GetDescendants( ) ) do
 		
-		if Feeds[ a ]:IsA( "TextLabel" ) then
+		if Feed:IsA( "TextLabel" ) then
 			
-			local Obj = Feeds[ a ]
+			local Obj = Feed
 			
 			Obj:GetPropertyChangedSignal( "AbsoluteSize" ):Connect( function ( )
 				

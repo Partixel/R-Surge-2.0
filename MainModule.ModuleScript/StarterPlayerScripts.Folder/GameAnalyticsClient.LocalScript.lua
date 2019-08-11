@@ -4,7 +4,7 @@
 --Services
 local GS = game:GetService("GuiService")
 local UIS = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild( "S2" )
 local getPlatform = ReplicatedStorage:WaitForChild( "getPlatform" )
 
 --Functions
@@ -72,17 +72,15 @@ function LogError(message, messageType)
 	
     local m = message
 	
-	local Plrs = game:GetService( "Players" ):GetPlayers( )
-	
-	for a = 1, #Plrs do
+	for _, Plr in ipairs( game:GetService( "Players" ):GetPlayers( ) ) do
 		
-		m = m:gsub( PatternSafe( Plrs[ a ].Name ), "<Player>" )	
+		m = m:gsub( PatternSafe( Plr.Name ), "<Player>" )	
 		
 	end
 	
-	for a = 1, #Filter do
+	for _, Fil in ipairs( Filter ) do
 		
-		if m:match( Filter[ a ] ) == m then
+		if m:match( Fil ) == m then
 			
 			return
 			
@@ -123,10 +121,8 @@ end
 --Error Logging
 game:GetService( "LogService" ).MessageOut:Connect( LogError )
 
-local Logs = game:GetService( "LogService" ):GetLogHistory( )
-
-for a = 1, #Logs do
+for _, Log in ipairs( game:GetService( "LogService" ):GetLogHistory( ) ) do
 	
-	LogError( Logs[ a ].message, Logs[ a ].messageType )
+	LogError( Log.message, Log.messageType )
 	
 end

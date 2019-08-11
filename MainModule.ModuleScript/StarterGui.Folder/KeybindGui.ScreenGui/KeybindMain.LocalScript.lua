@@ -1,6 +1,6 @@
-local KBU = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
+local KBU = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) )
 
-local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
 local TweenService = game:GetService( "TweenService" )
 
@@ -20,11 +20,11 @@ script.Parent.KeybindFrame.Main.UIListLayout:GetPropertyChangedSignal( "Absolute
 	
 	if script.Parent.KeybindFrame.Main.UIListLayout.AbsoluteContentSize.Y > script.Parent.KeybindFrame.Main.AbsoluteSize.Y then
 		
-		script.Parent.KeybindFrame.Context.Size = UDim2.new( 1, -5, 0, 40 )
+		script.Parent.KeybindFrame.Context.Size = UDim2.new( 1, -5, 0, 25 )
 		
 	else
 		
-		script.Parent.KeybindFrame.Context.Size = UDim2.new( 1, 0, 0, 40 )
+		script.Parent.KeybindFrame.Context.Size = UDim2.new( 1, 0, 0, 25 )
 		
 	end
 	
@@ -65,11 +65,9 @@ local Hide = { }
 
 function Redraw( )
 	
-	local Old = script.Parent.KeybindFrame.Main:GetChildren( )
-	
-	for a = 1, #Old do
+	for _, Obj in ipairs( script.Parent.KeybindFrame.Main:GetChildren( ) ) do
 		
-		if Old[ a ]:IsA( "Frame" ) or Old[ a ]:IsA( "TextButton" ) then Old[ a ]:Destroy( ) end
+		if Obj:IsA( "Frame" ) or Obj:IsA( "TextButton" ) then Obj:Destroy( ) end
 		
 	end
 	
@@ -79,67 +77,65 @@ function Redraw( )
 	
 	local Categories = { }
 	
-	for a = 1, #Binds do
+	for _, Bind in ipairs( Binds ) do
 		
-		if Binds[ a ].Name:lower( ):find( Txt ) and not Binds[ a ].NonRebindable then
+		if Bind.Name:lower( ):find( Txt ) and not Bind.NonRebindable then
 			
-			local Category = Binds[ a ].Category or "Uncategorised"
+			local Category = Bind.Category or "Uncategorised"
 			
 			Categories[ Category ] = Categories[ Category ] or { }
 			
-			local Base = script.Parent.KeybindFrame.Base:Clone( )
+			local Base = script.Base:Clone( )
 			
-			Base.Name = Binds[ a ].Name
+			Base.Name = Bind.Name
 			
 			Categories[ Category ][ #Categories[ Category ] + 1 ] = Base
 			
-			Base.Visible = true
-			
 			ThemeUtil.BindUpdate( { Base.Gamepad, Base.Keyboard, Base.Main, Base.Toggle }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 			
-			Base.Main.Text = Binds[ a ].Name
+			Base.Main.Text = Bind.Name
 			
 			Base.Main.MouseButton1Click:Connect( function ( )
 				
-				KBU.Defaults( Binds[ a ].Name )
+				KBU.Defaults( Bind.Name )
 				
-				KBU.WriteToObj( Base.Keyboard, Binds[ a ].Key )
+				KBU.WriteToObj( Base.Keyboard, Bind.Key )
 				
-				KBU.WriteToObj( Base.Gamepad, Binds[ a ].PadKey )
+				KBU.WriteToObj( Base.Gamepad, Bind.PadKey )
 				
-				KBU.WriteToObj( Base.Toggle, Binds[ a ].ToggleState or false )
+				KBU.WriteToObj( Base.Toggle, Bind.ToggleState or false )
 				
 			end )
 			
-			KBU.WriteToObj( Base.Keyboard, Binds[ a ].Key )
+			KBU.WriteToObj( Base.Keyboard, Bind.Key )
 			
 			Base.Keyboard.MouseButton1Click:Connect( function ( )
 				
-				KBU.Rebind( Binds[ a ].Name, Enum.UserInputType.Keyboard, Base.Keyboard )
+				KBU.Rebind( Bind.Name, Enum.UserInputType.Keyboard, Base.Keyboard )
 				
-				KBU.WriteToObj( Base.Keyboard, Binds[ a ].Key )
+				KBU.WriteToObj( Base.Keyboard, Bind.Key )
 				
 			end )
 			
-			KBU.WriteToObj( Base.Gamepad, Binds[ a ].PadKey )
+			KBU.WriteToObj( Base.Gamepad, Bind.PadKey )
 			
 			Base.Gamepad.MouseButton1Click:Connect( function ( )
 				
-				KBU.Rebind( Binds[ a ].Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
+				KBU.Rebind( Bind.Name, Enum.UserInputType.Gamepad1, Base.Gamepad )
 				
-				KBU.WriteToObj( Base.Gamepad, Binds[ a ].PadKey )
+				KBU.WriteToObj( Base.Gamepad, Bind.PadKey )
 				
 			end )
 			
-			if Binds[ a ].CanToggle then
+			if Bind.CanToggle then
 				
-				KBU.WriteToObj( Base.Toggle, Binds[ a ].ToggleState or false )
+				KBU.WriteToObj( Base.Toggle, Bind.ToggleState or false )
 				
 				Base.Toggle.MouseButton1Click:Connect( function ( )
 					
-					KBU.Rebind( Binds[ a ].Name, "Toggle", Base.Toggle )
+					KBU.Rebind( Bind.Name, "Toggle", Base.Toggle )
 					
-					KBU.WriteToObj( Base.Toggle, Binds[ a ].ToggleState or false )
+					KBU.WriteToObj( Base.Toggle, Bind.ToggleState or false )
 					
 				end )
 				
@@ -155,13 +151,11 @@ function Redraw( )
 	
 	for a, b in pairs( Categories ) do
 		
-		local Cat = script.Parent.KeybindFrame.Category:Clone( )
+		local Cat = script.Category:Clone( )
 		
 		ThemeUtil.BindUpdate( { Cat.Button.BarL, Cat.Button.BarR, Cat.Button.BarR2 }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency" } )
 		
 		ThemeUtil.BindUpdate( { Cat.Button.OpenIndicator, Cat.Button.TitleText }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
-		
-		Cat.Visible = true
 		
 		Cat.Name = a
 		
@@ -181,9 +175,9 @@ function Redraw( )
 		
 		Cat.Parent = script.Parent.KeybindFrame.Main
 		
-		for c = 1, #b do
+		for _, Obj in ipairs( b ) do
 			
-			b[ c ].Parent = Cat
+			Obj.Parent = Cat
 			
 		end
 		
@@ -267,13 +261,15 @@ if script.Parent:FindFirstChild( "Toggle" ) then
 	
 	local function ToggleGui( )
 		
-		if script.Parent.Open.Value and script.Parent.Parent:FindFirstChild( "ThemeGui" ) and script.Parent.Parent.ThemeGui.Open.Value then
+		if script.Parent.Open.Value and _G.OpenPxlGui then
 			
-			script.Parent.Parent.ThemeGui.Open.Value = false
+			_G.OpenPxlGui.Value = false
 			
 		end
 		
 		if script.Parent.Open.Value then
+			
+			_G.OpenPxlGui = script.Parent.Open
 			
 			if Invalid then Redraw( ) Invalid = nil end
 			
@@ -284,6 +280,8 @@ if script.Parent:FindFirstChild( "Toggle" ) then
 			ThemeUtil.BindUpdate( script.Parent.Toggle, { BackgroundColor3 = script.Parent.Open.Value and "Selection_Color3" or "Primary_BackgroundColor" } )
 			
 		else
+			
+			_G.OpenPxlGui = nil
 			
 			KBU.Rebinding = nil
 			

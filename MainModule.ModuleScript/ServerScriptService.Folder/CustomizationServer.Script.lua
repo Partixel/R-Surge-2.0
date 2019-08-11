@@ -1,22 +1,26 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local VIPFunc = Instance.new( "RemoteFunction" )
 
 VIPFunc.Name = "VIPFunc"
 
-VIPFunc.Parent = game:GetService( "ReplicatedStorage" )
+VIPFunc.Parent = game:GetService( "ReplicatedStorage" ).S2
 
 local VIPEvent = Instance.new( "RemoteEvent" )
 
 VIPEvent.Name = "VIPEvent"
 
-VIPEvent.Parent = game:GetService( "ReplicatedStorage" )
+VIPEvent.Parent = game:GetService( "ReplicatedStorage" ).S2
 
 local MarketplaceService = game:GetService( "MarketplaceService" )
 
 function GetColor( Plr )
 	
-	local Color = Plr:FindFirstChild( "S2Color" )
+	local S2Folder = Plr:FindFirstChild( "S2" )
+	
+	if not S2Folder then return Plr.TeamColor end
+	
+	local Color = S2Folder:FindFirstChild( "VIPColor" )
 	
 	if Color then Color = Color.Value else Color = Plr.TeamColor end
 	
@@ -26,7 +30,11 @@ end
 
 function GetMaterial( Plr )
 	
-	local Mat = Plr:FindFirstChild( "S2Material" )
+	local S2Folder = Plr:FindFirstChild( "S2" )
+	
+	if not S2Folder then return end
+	
+	local Mat = S2Folder:FindFirstChild( "VIPMaterial" )
 	
 	if Mat and Mat.Value ~= "" then return Mat.Value end
 	
@@ -50,43 +58,41 @@ local function ColorGun( Tool, User )
 	
 	local Col, Mat = GetColor( User ), GetMaterial( User )
 	
-	local Descendants = Tool:GetDescendants( )
-	
-	for a = 1, #Descendants do
+	for _, Obj in ipairs( Tool:GetDescendants( ) ) do
 		
-		if CollectionService:HasTag( Descendants[ a ], "s2color" ) then
+		if CollectionService:HasTag( Obj, "s2color" ) then
 			
-			if Descendants[ a ]:IsA( "SpecialMesh" ) then
+			if Obj:IsA( "SpecialMesh" ) then
 				
-				Descendants[ a ].VertexColor = Vector3.new( Col.r, Col.g, Col.b )
+				Obj.VertexColor = Vector3.new( Col.r, Col.g, Col.b )
 				
-				Descendants[ a ] = Descendants[ a ].Parent
+				Obj = Obj.Parent
 				
 			else
 				
-				Descendants[ a ].BrickColor = Col
+				Obj.BrickColor = Col
 				
 			end
 			
-			if not Descendants[ a ]:FindFirstChild( "OrigMat" ) then
+			if not Obj:FindFirstChild( "OrigMat" ) then
 				
 				local Mat = Instance.new( "StringValue" )
 				
 				Mat.Name = "OrigMat"
 				
-				Mat.Value = tostring( Descendants[ a ].Material ):sub( 15, 100 )
+				Mat.Value = tostring( Obj.Material ):sub( 15, 100 )
 				
-				Mat.Parent = Descendants[ a ]
+				Mat.Parent = Obj
 				
 			end
 			
 			if Mat then
 				
-				Descendants[ a ].Material = Mat
+				Obj.Material = Mat
 				
 			else
 				
-				Descendants[ a ].Material = Enum.Material[ Descendants[ a ].OrigMat.Value ]
+				Obj.Material = Enum.Material[ Obj.OrigMat.Value ]
 				
 			end
 			
@@ -118,9 +124,9 @@ VIPFunc.OnServerInvoke = function ( Plr, Val )
 		
 		if OwnSparkles then
 			
-			local Sparkles = Plr:FindFirstChild( "S2Sparkles" ) or Instance.new( "BoolValue" )
+			local Sparkles = Plr:FindFirstChild( "VIPSparkles" ) or Instance.new( "BoolValue" )
 			
-			Sparkles.Name = "S2Sparkles"
+			Sparkles.Name = "VIPSparkles"
 			
 			Sparkles.Value = false
 			
@@ -130,9 +136,9 @@ VIPFunc.OnServerInvoke = function ( Plr, Val )
 		
 		if OwnCol then
 			
-			local Color = Plr:FindFirstChild( "S2Color" ) or Instance.new( "BrickColorValue" )
+			local Color = Plr:FindFirstChild( "VIPColor" ) or Instance.new( "BrickColorValue" )
 			
-			Color.Name = "S2Color"
+			Color.Name = "VIPColor"
 			
 			Color.Value = Plr.TeamColor
 			
@@ -212,13 +218,19 @@ VIPEvent.OnServerEvent:Connect( function ( Plr, Val, Chosen )
 		
 	if Val == "SetNeon" then
 		
-		local Mat = Plr:FindFirstChild( "S2Material" ) or Instance.new( "StringValue" )
+		local S2Folder = Plr:FindFirstChild( "S2" ) or Instance.new( "Folder" )
 		
-		Mat.Name = "S2Material"
+		S2Folder.Name = "S2"
+		
+		S2Folder.Parent = Plr
+		
+		local Mat = S2Folder:FindFirstChild( "VIPMaterial" ) or Instance.new( "StringValue" )
+		
+		Mat.Name = "VIPMaterial"
 		
 		Mat.Value = Chosen
 		
-		Mat.Parent = Plr
+		Mat.Parent = S2Folder
 		
 		local CurWep = GetWep( Plr )
 		
@@ -230,23 +242,35 @@ VIPEvent.OnServerEvent:Connect( function ( Plr, Val, Chosen )
 		
 	elseif Val == "SetSparkles" then
 		
-		local Sparkles = Plr:FindFirstChild( "S2Sparkles" ) or Instance.new( "BoolValue" )
+		local S2Folder = Plr:FindFirstChild( "S2" ) or Instance.new( "Folder" )
 		
-		Sparkles.Name = "S2Sparkles"
+		S2Folder.Name = "S2"
+		
+		S2Folder.Parent = Plr
+		
+		local Sparkles = S2Folder:FindFirstChild( "VIPSparkles" ) or Instance.new( "BoolValue" )
+		
+		Sparkles.Name = "VIPSparkles"
 		
 		Sparkles.Value = Chosen
 		
-		Sparkles.Parent = Plr
+		Sparkles.Parent = S2Folder
 		
 	elseif Val == "ChosenCol" then
 		
-		local Color = Plr:FindFirstChild( "S2Color" ) or Instance.new( "BrickColorValue" )
+		local S2Folder = Plr:FindFirstChild( "S2" ) or Instance.new( "Folder" )
 		
-		Color.Name = "S2Color"
+		S2Folder.Name = "S2"
+		
+		S2Folder.Parent = Plr
+		
+		local Color = S2Folder:FindFirstChild( "VIPColor" ) or Instance.new( "BrickColorValue" )
+		
+		Color.Name = "VIPColor"
 		
 		Color.Value = Chosen
 		
-		Color.Parent = Plr
+		Color.Parent = S2Folder
 		
 		local CurWep = GetWep( Plr )
 		
@@ -292,11 +316,9 @@ function HandlePlr( Plr )
 	
 end
 
-local Plrs = game:GetService( "Players" ):GetPlayers( )
-
-for a = 1, #Plrs do
+for _, Plr in ipairs( game:GetService( "Players" ):GetPlayers( ) ) do
 	
-	HandlePlr( Plrs[ a ] )
+	HandlePlr( Plr )
 	
 end
 

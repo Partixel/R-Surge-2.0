@@ -1,4 +1,4 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local Players, GroupService, CollectionService = game:GetService( "Players" ), game:GetService( "GroupService" ), game:GetService( "CollectionService" )
 
@@ -10,43 +10,41 @@ local RemoteKilled = Instance.new( "RemoteEvent" )
 
 RemoteKilled.Name = "RemoteKilled"
 
-RemoteKilled.Parent = game:GetService( "ReplicatedStorage" ) 
+RemoteKilled.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
 if _G.S20Config.CountTeam then
 	
 	local Teams = game:GetService( "Teams" )
 	
-	local TeamObjs = Teams:GetTeams( )
-	
-	for a = 1, #TeamObjs do
+	for _, Team in ipairs( Teams:GetTeams( ) ) do
 		
-		local Name = TeamObjs[ a ].Name
+		local Name = Team.Name
 		
-		TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+		Team.Name = Name .. " - " .. #Team:GetPlayers( )
 		
 		local Obj = Instance.new( "ObjectValue" )
 		
 		Obj.Name = "S2_" .. Name
 		
-		Obj.Value = TeamObjs[ a ]
+		Obj.Value = Team
 		
 		Obj.Parent = Teams
 		
-		TeamObjs[ a ].PlayerAdded:Connect( function ( )
+		Team.PlayerAdded:Connect( function ( )
 			
-			TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+			Team.Name = Name .. " - " .. #Team:GetPlayers( )
 			
 		end )
 		
-		TeamObjs[ a ].PlayerRemoved:Connect( function ( )
+		Team.PlayerRemoved:Connect( function ( )
 			
-			TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+			Team.Name = Name .. " - " .. #Team:GetPlayers( )
 			
 		end )
 		
 		Players.PlayerRemoving:Connect( function ( )
 			
-			TeamObjs[ a ].Name = Name .. " - " .. #TeamObjs[ a ]:GetPlayers( )
+			Team.Name = Name .. " - " .. #Team:GetPlayers( )
 			
 		end )
 		
@@ -338,15 +336,13 @@ local function PlayerAdded( Plr )
 		
 		if Rank.Value == "Guest" then
 			
-			local Groups = GroupService:GetGroupsAsync( Plr.UserId )
-			
-			for a = 1, #Groups do
+			for _, Group in ipairs( GroupService:GetGroupsAsync( Plr.UserId ) ) do
 				
-				if Allies[ Groups[ a ].Id ] then
+				if Allies[ Group.Id ] then
 					
-					Rank.Value = Groups[ a ].Name
+					Rank.Value = Group.Name
 					
-					if Groups[ a ].IsPrimary then
+					if Group.IsPrimary then
 						
 						break
 						
@@ -398,10 +394,8 @@ end
 
 game:GetService( "Players" ).PlayerAdded:Connect( PlayerAdded )
 
-local Plrs = game:GetService( "Players" ):GetPlayers( )
-
-for a = 1, #Plrs do
+for _, Plr in ipairs( game:GetService( "Players" ):GetPlayers( ) ) do
 	
-	PlayerAdded( Plrs[ a ] )
+	PlayerAdded( Plr )
 	
 end

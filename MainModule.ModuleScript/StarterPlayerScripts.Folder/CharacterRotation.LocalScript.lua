@@ -1,4 +1,4 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 

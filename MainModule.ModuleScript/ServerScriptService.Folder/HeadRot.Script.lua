@@ -12,7 +12,7 @@ HeadRotRemote.OnServerEvent:Connect( function ( Plr, Rotation )
 	
 end )
 
-HeadRotRemote.Parent = game:GetService( "ReplicatedStorage" )
+HeadRotRemote.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
 local Players = game:GetService( "Players" )
 
@@ -66,11 +66,9 @@ end
 
 Players.PlayerAdded:Connect( PlayerAdded )
 
-local Plrs = Players:GetPlayers( )
-
-for a = 1, #Plrs do
+for _, Plr in ipairs( Players:GetPlayers( ) ) do
 	
-	PlayerAdded( Plrs[ a ] )
+	PlayerAdded( Plr )
 	
 end
 
@@ -78,19 +76,17 @@ while wait( 1/30 ) do
 	
 	if next( Rotations ) then
 		
-		local Plrs = Players:GetPlayers( )
-		
 		local Rots
 		
-		for a = 1, #Plrs do
+		for _, Plr in ipairs( Players:GetPlayers( ) ) do
 			
-			if Rotations[ Plrs[ a ] ] then
+			if Rotations[ Plr ] then
 				
 				local Rots = { }
 				
 				for b, c in pairs( Rotations ) do
 					
-					if b ~= Plrs[ a ] then
+					if b ~= Plr then
 						
 						Rots[ #Rots + 1 ] = { b, c }
 						
@@ -100,7 +96,7 @@ while wait( 1/30 ) do
 				
 				if next( Rots ) then
 					
-					HeadRotRemote:FireClient( Plrs[ a ], Rots )
+					HeadRotRemote:FireClient( Plr, Rots )
 					
 				end
 				
@@ -118,7 +114,7 @@ while wait( 1/30 ) do
 					
 				end
 				
-				HeadRotRemote:FireClient( Plrs[ a ], Rots )
+				HeadRotRemote:FireClient( Plr, Rots )
 				
 			end
 			

@@ -2,11 +2,11 @@ local Plr = game:GetService( "Players" ).LocalPlayer
 
 local TweenService = game:GetService( "TweenService" )
 
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
-local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
+local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) )
 
-local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "PoseUtil" ) )
+local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "PoseUtil" ) )
 
 local Animation = { CFrame.new( 0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0 ) * CFrame.Angles( 0, math.rad( 5 ), math.rad( 15 ) ), CFrame.new( 0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0 ) }
 

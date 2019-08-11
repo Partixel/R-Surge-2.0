@@ -1,6 +1,6 @@
 local Players = game:GetService( "Players" )
 
-local SendPose = game:GetService( "ReplicatedStorage" ):WaitForChild( "SendPose" )
+local SendPose = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "SendPose" )
 
 local Module = { }
 
@@ -22,13 +22,11 @@ Players.PlayerAdded:Connect( function ( Plr )
 	
 end )
 
-local Plrs = Players:GetPlayers( )
-
-for a = 1, #Plrs do
+for _, Plr in ipairs( Players:GetPlayers( ) ) do
 	
-	Plrs[ a ].CharacterAdded:Connect( function ( )
+	Plr.CharacterAdded:Connect( function ( )
 		
-		PlrPoses[ tostring( Plrs[ a ].UserId ) ] = nil
+		PlrPoses[ tostring( Plr.UserId ) ] = nil
 		
 	end )
 	

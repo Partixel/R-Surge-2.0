@@ -1,22 +1,14 @@
 local Players = game:GetService( "Players" )
 
-local SaveBind = Instance.new( "RemoteEvent" )
-
-SaveBind.Name = "SaveBind"
-
-SaveBind.Parent = game:GetService( "ReplicatedStorage" )
-
-local GetSavedBinds = Instance.new( "RemoteFunction" )
-
-GetSavedBinds.Name = "GetSavedBinds"
-
-GetSavedBinds.Parent = game:GetService( "ReplicatedStorage" )
-
 local DataStore2 = require(1936396537)
 
 DataStore2.Combine("PartixelsVeryCoolMasterKey", "Keybind1")
 
-SaveBind.OnServerEvent:Connect( function ( Plr, Name, Type, Val )
+local KeybindRemote = Instance.new( "RemoteEvent" )
+
+KeybindRemote.Name = "KeybindRemote"
+
+KeybindRemote.OnServerEvent:Connect( function ( Plr, Name, Type, Val )
 	
 	local DataStore = DataStore2( "Keybind1", Plr )
 	
@@ -48,7 +40,9 @@ SaveBind.OnServerEvent:Connect( function ( Plr, Name, Type, Val )
 	
 end )
 
-GetSavedBinds.OnServerInvoke = function ( Plr )
+KeybindRemote.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
+
+function HandlePlr( Plr )
 	
 	local DataStore = DataStore2( "Keybind1", Plr )
 	
@@ -92,6 +86,20 @@ GetSavedBinds.OnServerInvoke = function ( Plr )
 		
 	end )
 	
-	return DataStore:Get( { } )
+	local Binds = DataStore:Get( { } )
+	
+	if Binds then
+		
+		KeybindRemote:FireClient( Plr, Binds )
+		
+	end
 	
 end
+
+for _, Plr in ipairs( game:GetService( "Players" ):GetPlayers( ) ) do
+	
+	HandlePlr( Plr )
+	
+end
+
+game.Players.PlayerAdded:Connect( HandlePlr )

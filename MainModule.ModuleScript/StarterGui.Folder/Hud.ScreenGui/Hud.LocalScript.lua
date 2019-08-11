@@ -1,4 +1,4 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 
@@ -228,11 +228,11 @@ end )
 
 Term.Visible = false
 
-if game.ReplicatedStorage:FindFirstChild( "HomeWinAmount" ) then
+if game.ReplicatedStorage:WaitForChild("RaidLib"):FindFirstChild( "HomeWinAmount" ) then
 	
-	local HomeWinAmount = game.ReplicatedStorage:WaitForChild( "HomeWinAmount" )
+	local HomeWinAmount = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "HomeWinAmount" )
 	
-	local AwayWinAmount = game.ReplicatedStorage:WaitForChild( "AwayWinAmount" )
+	local AwayWinAmount = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "AwayWinAmount" )
 	
 	local WinPoints = 0
 	
@@ -269,7 +269,7 @@ if game.ReplicatedStorage:FindFirstChild( "HomeWinAmount" ) then
 	
 	Term.Visible = true
 	
-	local OfficialRaid = game.ReplicatedStorage:WaitForChild( "OfficialRaid" )
+	local OfficialRaid = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "OfficialRaid" )
 	
 	if not OfficialRaid.Value then
 		
@@ -301,7 +301,7 @@ if game.ReplicatedStorage:FindFirstChild( "HomeWinAmount" ) then
 		
 	end
 	
-	local Event = game.ReplicatedStorage:WaitForChild( "RaidTimerEvent" )
+	local Event = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "RaidTimerEvent" )
 	
 	local Start, Limit
 	
@@ -399,7 +399,7 @@ else
 		
 	end )
 	
-	local Event = game.ReplicatedStorage:WaitForChild( "RaidTimerEvent" )
+	local Event = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "RaidTimerEvent" )
 	
 	local Start, Limit
 	

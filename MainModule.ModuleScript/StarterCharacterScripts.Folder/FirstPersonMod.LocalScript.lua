@@ -28,13 +28,11 @@ script.Parent.DescendantAdded:Connect( function ( Obj )
 	
 end )
 
-local Kids = script.Parent:GetDescendants( )
-
-for a = 1, #Kids do
+for _, Obj in ipairs( script.Parent:GetDescendants( )) do
 	
-	if not Handled[ Kids[ a ] ] then
+	if not Handled[ Obj ] then
 		
-		HandlePart( Kids[ a ] )
+		HandlePart( Obj )
 		
 	end
 	

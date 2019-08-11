@@ -1,6 +1,6 @@
 local Plr = game:GetService( "Players" ).LocalPlayer
 
-local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
 local CloseColsCache = { }
 
@@ -44,9 +44,9 @@ function CloseCols( Col )
 	
 end
 
-local VIPFunc = game:GetService( "ReplicatedStorage" ):WaitForChild( "VIPFunc" )
+local VIPFunc = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "VIPFunc" )
 
-local VIPEvent = game:GetService( "ReplicatedStorage" ):WaitForChild( "VIPEvent" )
+local VIPEvent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "VIPEvent" )
 
 local ChosenCol = { }
 

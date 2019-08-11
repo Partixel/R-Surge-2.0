@@ -1161,6 +1161,8 @@ function Core.Fire( Weapon )
 	local CurFireMode = Weapon.CurFireMode
 	
 	local ToNetwork = ShotsPerClick > 1 and DelayBetweenShots == 0 and { } or nil
+	
+	local OverStep = 0
 
 	for BulNum = 1, ShotsPerClick do
 
@@ -1247,9 +1249,9 @@ function Core.Fire( Weapon )
 							Core.ClientVisuals:Fire( Weapon.StatObj, Barrel, Hit, End, Normal, Material, Offset, FirstShot )
 
 						end
-
+						
 						if not IsServer then
-
+							
 							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
 
 						end
@@ -1274,14 +1276,24 @@ function Core.Fire( Weapon )
 						
 					end
 					
+					--Weapon.Shotaaa = ( Weapon.Shotaaa or 0  ) + 1
+					
 				end
 
 			end
 
 			if DelayBetweenShots > 0 and ShotsPerClick > 1 and Weapon.Clip ~= 0 then
-
-				hbwait( DelayBetweenShots )
-
+				
+				if OverStep < DelayBetweenShots then
+					
+					OverStep = OverStep + ( hbwait( DelayBetweenShots ) - DelayBetweenShots )
+					
+				else
+					
+					OverStep = OverStep - DelayBetweenShots
+					
+				end
+				
 			end
 
 		end
@@ -1321,6 +1333,26 @@ function Core.Fire( Weapon )
 	end
 
 end
+
+--[[spawn( function ( )
+	
+	while wait( 1 ) do
+		
+		for _, a in pairs( Core.Selected ) do
+			
+			for c, _ in pairs( a ) do
+				
+				print( c.Shotaaa )
+				
+				c.Shotaaa = 0
+				
+			end
+		
+		end
+		
+	end
+	
+end)]]
 
 Core.DamageType = {
 
@@ -1737,24 +1769,12 @@ if IsServer then
 		end
 
 	end )
-
-	local ClntDmg = Instance.new( "RemoteEvent" )
-
-	ClntDmg.Name = "ClientDamage"
-	
-	ClntDmg.OnServerEvent:Connect( function ( Plr, Time, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
-		
-		Core.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-	end )
-
-	ClntDmg.Parent = game:GetService( "ReplicatedStorage" )
 	
 	Core.KilledEvents = { }
 	
 	Core.DamageInfos = setmetatable( { }, { __mode = "k" } )
+
+	local ClntDmg = Instance.new( "RemoteEvent" )
 
 	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
 		
@@ -1762,11 +1782,9 @@ if IsServer then
 		
 		local Damaged = { }
 		
-		local a, b = next( DamageInfos )
-		
-		while a do
+		for _, a in pairs( DamageInfos ) do
 			
-			local Damageable, Damage = b[ 1 ], b[ 2 ]
+			local Damageable, Damage = a[ 1 ], a[ 2 ]
 			
 			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
 				
@@ -1782,7 +1800,7 @@ if IsServer then
 					
 					if PrevHealth > 0 and Damageable.Health <= 0 then
 						
-						Killed[ Damageable ] = b[ 3 ]
+						Killed[ Damageable ] = a[ 3 ]
 						
 					end
 	
@@ -1792,7 +1810,7 @@ if IsServer then
 	
 					end
 					
-				elseif Damageable:IsA( "DoubleConstrainedValue" ) then
+				else
 					
 					PrevHealth = Damageable.Value
 					
@@ -1802,7 +1820,7 @@ if IsServer then
 					
 					if PrevHealth > 0 and Damageable.Value <= 0 then
 						
-						Killed[ Damageable ] = b[ 3 ]
+						Killed[ Damageable ] = a[ 3 ]
 						
 					end
 	
@@ -1812,11 +1830,11 @@ if IsServer then
 					
 					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
 						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, b[ 3 ] }
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, a[ 3 ] }
 						
 					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
 						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, b[ 3 ] }
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, a[ 3 ] }
 						
 					end
 					
@@ -1869,8 +1887,6 @@ if IsServer then
 				end
 				
 			end
-			
-			a, b = next( DamageInfos, a )
 	
 		end
 		
@@ -1891,6 +1907,18 @@ if IsServer then
 		return Damaged
 		
 	end
+
+	ClntDmg.Name = "ClientDamage"
+	
+	ClntDmg.OnServerEvent:Connect( function ( Plr, Time, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
+		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
+		
+		Core.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
+	end )
+
+	ClntDmg.Parent = script.Parent
 	
 end
 
@@ -1900,43 +1928,65 @@ if IsClient then
 
 	Core.SharedVisuals = Instance.new( "BindableEvent" )
 	
-	local Mouse = Players.LocalPlayer:GetMouse( )
+	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
+		local Damaged = { }
+		
+		local a, b = next( DamageInfos )
+		
+		while a do
+			
+			local Damageable, Damage = b[ 1 ], b[ 2 ]
+			
+			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
+				
+				local Amount, PrevHealth
+				
+				if Damageable:IsA( "Humanoid" ) then
+					
+					PrevHealth = Damageable.Health
+					
+					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
+					
+				elseif Damageable:IsA( "DoubleConstrainedValue" ) then
+					
+					PrevHealth = Damageable.Value
+					
+					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
 	
-	local PrevIcon
-	 
-	Core.WeaponSelected.Event:Connect( function ( Mod )
-		
-		local Weapon = Core.GetWeapon( Mod )
-		
-		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
-		
-		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
+				end
+				
+				if Damage ~= Amount and Damageable.Parent then
+					
+					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
+						
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, b[ 3 ] }
+						
+					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
+						
+						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, b[ 3 ] }
+						
+					end
+					
+				end
+				
+				if Amount ~= 0 then
+					
+					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
+					
+				end
+				
+			end
 			
-			PrevIcon = Mouse.Icon
-			
-			Mouse.Icon = Weapon.CursorImage or _G.S20Config.CursorImage
-			
+			a, b = next( DamageInfos, a )
+	
 		end
 		
-	end )
-	 
-	Core.WeaponDeselected.Event:Connect( function ( Mod )
+		return Damaged
 		
-		local Weapon = Core.GetWeapon( Mod )
-		
-		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
-		
-		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
-			
-			Mouse.Icon = PrevIcon
-			
-			PrevIcon = nil
-			
-		end
-		
-	end )
+	end
 
-	game:GetService( "ReplicatedStorage" ):WaitForChild( "ClientDamage" ).OnClientEvent:Connect( function ( Other, Amount, Killed )
+	game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "ClientDamage" ).OnClientEvent:Connect( function ( Other, Amount, Killed )
 
 		if Killed then
 
@@ -2013,8 +2063,44 @@ if IsClient then
 		end
 
 	end )
+	
+	local Mouse = Players.LocalPlayer:GetMouse( )
+	
+	local PrevIcon
+	 
+	Core.WeaponSelected.Event:Connect( function ( Mod )
+		
+		local Weapon = Core.GetWeapon( Mod )
+		
+		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
+		
+		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
+			
+			PrevIcon = Mouse.Icon
+			
+			Mouse.Icon = Weapon.CursorImage or _G.S20Config.CursorImage
+			
+		end
+		
+	end )
+	 
+	Core.WeaponDeselected.Event:Connect( function ( Mod )
+		
+		local Weapon = Core.GetWeapon( Mod )
+		
+		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
+		
+		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
+			
+			Mouse.Icon = PrevIcon
+			
+			PrevIcon = nil
+			
+		end
+		
+	end )
 
-	local KBU = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
+	local KBU = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) )
 
 	KBU.AddBind{ Name = "Fire", Category = "Surge 2.0", Callback = function ( Began )
 		
@@ -2143,64 +2229,6 @@ if IsClient then
 		end
 
 	end )
-
-	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-		local Damaged = { }
-		
-		local a, b = next( DamageInfos )
-		
-		while a do
-			
-			local Damageable, Damage = b[ 1 ], b[ 2 ]
-			
-			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
-				
-				local Amount, PrevHealth
-				
-				if Damageable:IsA( "Humanoid" ) then
-					
-					PrevHealth = Damageable.Health
-					
-					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
-					
-				elseif Damageable:IsA( "DoubleConstrainedValue" ) then
-					
-					PrevHealth = Damageable.Value
-					
-					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
-	
-				end
-				
-				if Damage ~= Amount and Damageable.Parent then
-					
-					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
-						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, b[ 3 ] }
-						
-					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
-						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, b[ 3 ] }
-						
-					end
-					
-				end
-				
-				if Amount ~= 0 then
-					
-					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
-					
-				end
-				
-			end
-			
-			a, b = next( DamageInfos, a )
-	
-		end
-		
-		return Damaged
-		
-	end
 
 end
 

@@ -4,7 +4,7 @@
 
 --]]
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild( "S2" )
 local ServerStorage = game:GetService("ServerStorage")
 
 --Validate
@@ -107,11 +107,11 @@ local Filter = { "<Player> took too long to send shot packet%, discarding%! %- %
 
 local Actual = { 'TRAD Loader module disabled', 'Image "http://assetgame.roblox.com/asset/?id=" failed to load in "Workspace.<Player>.Humanoid.Clothes": Request failed', 'Image "http://assetgame.roblox.com/asset/?id=1" failed to load in "Workspace.<Player>.Humanoid.Clothes": Request failed', 'Animation "rbxassetid://955877742" failed to load in "Animation.AnimationId": Animation failed to load', 'Animation "rbxassetid://5555" failed to load in "Animation.AnimationId": Animation failed to load', 'Failed to load sound rbxassetid://1544900801: Unable to download sound data', 'Failed to load sound rbxassetid://123353: Unable to download sound data', 'Image "rbxasset://textures/slate/specular.dds" failed to load: File not found', 'Image "rbxasset://textures/slate/diffuse.dds" failed to load: File not found', 'Image "https://assetdelivery.roblox.com/v1/asset?id=" failed to load in "Workspace.<Player>.Humanoid.Clothes": Request failed' }
 
-for a = 1, #Actual do
+for _, Act in ipairs( Actual ) do
 	local Match
-	for b = 1, #Filter do
+	for _, Fil in ipairs( Filter ) do
 		
-		if Actual[ a ]:match( Filter[ b ] ) == Actual[ a ] then
+		if Act:match( Fil ) == Act then
 			
 			Match = true
 			
@@ -120,16 +120,18 @@ for a = 1, #Actual do
 	end
 	
 	
-	if not Match then print( "no match\n" .. Actual[ a ] ) else print( "match\n" .. Actual[ a ] ) end
+	if not Match then print( "no match\n" .. Act ) else print( "match\n" .. Act ) end
 	
 end
 
 ]]
 
+local RunService = game:GetService( "RunService" )
+
 local function LogError(message, messageType, Plr)
 	
     --Validate
-    if not state.ReportErrors then
+    if not state.ReportErrors or RunService:IsStudio( ) then
         return
     end
 	
@@ -139,11 +141,9 @@ local function LogError(message, messageType, Plr)
 
     local m = message
 	
-	local Plrs = game:GetService( "Players" ):GetPlayers( )
-	
-	for a = 1, #Plrs do
+	for _, Plr in ipairs( game:GetService( "Players" ):GetPlayers( ) ) do
 		
-		m = m:gsub( PatternSafe( Plrs[ a ].Name ), "<Player>" )	
+		m = m:gsub( PatternSafe( Plr.Name ), "<Player>" )	
 		
 	end
 	
@@ -153,9 +153,9 @@ local function LogError(message, messageType, Plr)
 		
 	end
 	
-	for a = 1, #Filter do
+	for _, Fil in ipairs( Filter ) do
 		
-		if m:match( Filter[ a ] ) == m then
+		if m:match( Fil ) == m then
 			
 			return
 			
@@ -207,11 +207,9 @@ ClientLog.Parent = ReplicatedStorage
 --Error Logging
 LS.MessageOut:Connect( LogError )
 
-local Logs = LS:GetLogHistory( )
-
-for a = 1, #Logs do
+for _, Log in ipairs( LS:GetLogHistory( ) ) do
 	
-	LogError( Logs[ a ].message, Logs[ a ].messageType )
+	LogError( Log.message, Log.messageType )
 	
 end
 

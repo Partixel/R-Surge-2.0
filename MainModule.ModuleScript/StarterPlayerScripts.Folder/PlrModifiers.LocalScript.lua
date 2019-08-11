@@ -2,17 +2,15 @@ function ApplyModifier( Obj, Property, Normals, Events, First )
 	
 	local Modifier, PropertyMod = 1, Property .. "Modifier"
 	
-	local Kids = Obj:GetChildren( )
-	
-	for a = 1, #Kids do
+	for _, Obj in ipairs( Obj:GetChildren( ) ) do
 		
-		if Kids[ a ].Name == PropertyMod then
+		if Obj.Name == PropertyMod then
 			
-			Modifier = Modifier * Kids[ a ].Value
+			Modifier = Modifier * Obj.Value
 			
 			if First then
 				
-				Kids[ a ]:GetPropertyChangedSignal( "Value" ):Connect( function ( )
+				Obj:GetPropertyChangedSignal( "Value" ):Connect( function ( )
 					
 					ApplyModifier( Obj, Property, Normals, Events )
 					
@@ -46,11 +44,11 @@ function HandleProperties( Obj, Properties )
 	
 	local Normals, Events = { }, { }
 	
-	for a = 1, #Properties do
+	for _, Prop in ipairs( Properties ) do
 		
-		Normals[ Properties[ a ] ] = Obj[ Properties[ a ] ]
+		Normals[ Prop ] = Obj[ Prop ]
 		
-		ApplyModifier( Obj, Properties[ a ], Normals, Events, true )
+		ApplyModifier( Obj, Prop, Normals, Events, true )
 		
 	end
 	

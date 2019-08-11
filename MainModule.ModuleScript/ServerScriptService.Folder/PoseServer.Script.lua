@@ -4,7 +4,7 @@ local SendPose = Instance.new( "RemoteEvent" )
 
 SendPose.Name = "SendPose"
 
-SendPose.Parent = game:GetService( "ReplicatedStorage" )
+SendPose.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
 local PlrPoses = { }
 
@@ -16,13 +16,11 @@ SendPose.OnServerEvent:Connect( function ( Plr, Pose, State )
 	
 	PlrPoses[ UserId ][ Pose ] = State
 	
-	local Plrs = Players:GetPlayers( )
-	
-	for a = 1, #Plrs do
+	for _, OPlr in ipairs( Players:GetPlayers( ) )  do
 		
-		if Plrs[ a ] ~= Plr then
+		if OPlr ~= Plr then
 			
-			SendPose:FireClient( Plrs[ a ], Plr, Pose, State )
+			SendPose:FireClient( OPlr, Plr, Pose, State )
 			
 		end
 		

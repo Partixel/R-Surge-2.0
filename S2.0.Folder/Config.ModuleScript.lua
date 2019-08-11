@@ -1,4 +1,4 @@
-_G.S20Config = { }
+_G.S20Config = { CountTeam = true }
 
 -- Teams that cannot team kill each other e.g. { { [ "Bright green" ] = true , White = true } }
 -- will stop teams Bright green and White from killing each other ( Default { } )

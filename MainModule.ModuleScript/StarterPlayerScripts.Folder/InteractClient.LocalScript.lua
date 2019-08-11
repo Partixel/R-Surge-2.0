@@ -2,9 +2,9 @@ local InteractObjs = { }
 
 local Plr, UserInputService = game:GetService( "Players" ).LocalPlayer, game:GetService("UserInputService" )
 
-local KBU, Core = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) ), require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local KBU, Core = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) ), require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
-local InteractRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "InteractRemote" )
+local InteractRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "InteractRemote" )
 
 local IsServer = game:GetService( "RunService" ):IsServer( )
 
@@ -112,11 +112,9 @@ end )
 
 local function Obscured( Part )
 	
-	local Obscuring, Obscured = workspace.CurrentCamera:GetPartsObscuringTarget( { Part.Position }, { Part, Plr.Character } )
-	
-	for a = 1, #Obscuring do
+	for _, Obj in ipairs( workspace.CurrentCamera:GetPartsObscuringTarget( { Part.Position }, { Part, Plr.Character } ) )do
 		
-		if not Core.IgnoreFunction( Obscuring[ a ] ) then return true end
+		if not Core.IgnoreFunction( Obj ) then return true end
 		
 	end
 	
@@ -454,13 +452,11 @@ workspace.DescendantAdded:Connect( function ( Obj )
 	
 end )
 
-local Objs = workspace:GetDescendants( )
-
-for a = 1, #Objs do
+for _, Obj in ipairs( workspace:GetDescendants( ) ) do
 	
-	if Objs[ a ]:IsA( "BindableEvent" ) and Objs[ a ].Name == "InteractObject" then
+	if Obj:IsA( "BindableEvent" ) and Obj.Name == "InteractObject" then
 		
-		InteractObjs[ Objs[ a ] ] = true
+		InteractObjs[ Obj ] = true
 		
 		if not HBEvent then
 			

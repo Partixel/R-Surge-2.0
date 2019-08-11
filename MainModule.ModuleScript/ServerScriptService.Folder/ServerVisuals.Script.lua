@@ -1,6 +1,6 @@
-repeat wait( ) until _G.S20Config
+while not _G.S20Config do wait( ) end
 
-local Config, Core = _G.S20Config, require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Config, Core = _G.S20Config, require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 Core.Visuals.ShotKnockback = Core.ServerVisuals.Event:Connect( function ( StatObj, _, Barrel, Hit, End )
 	

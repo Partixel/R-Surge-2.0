@@ -1,12 +1,12 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 
 local StarterGui = game:GetService( "StarterGui" )
 
-local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "KeybindUtil" ) )
+local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) )
 
-local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "PoseUtil" ) )
+local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "PoseUtil" ) )
 
 local Animations = { [ Enum.HumanoidRigType.R6 ] = { "rbxassetid://580605334", "rbxassetid://955877742", "rbxassetid://1173354695" }, [ Enum.HumanoidRigType.R15 ] = { "rbxassetid://2225371665", "rbxassetid://2225372526", "rbxassetid://2225382014" } }
 

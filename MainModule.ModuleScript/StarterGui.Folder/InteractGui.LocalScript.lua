@@ -78,7 +78,7 @@ local function NotMyGui( InteractObj )
 	
 end
 
-local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
 Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
@@ -192,7 +192,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	Gui.Name = "InteractGui"
 	
-	Gui.Parent = Plr:WaitForChild( "PlayerGui" )
+	Gui.Parent = script.Parent
 	
 	TweenService:Create( Gui, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 0, MinXSize, 0, MinXSize / Ratio ) } ):Play( )
 	

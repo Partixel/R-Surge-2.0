@@ -1,6 +1,6 @@
-local Core, Plr, CollectionService = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "Core" ) ), game:GetService( "Players" ).LocalPlayer, game:GetService( "CollectionService" )
+local Core, Plr, CollectionService = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) ), game:GetService( "Players" ).LocalPlayer, game:GetService( "CollectionService" )
 
-local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ) )
+local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
 local Mouse = Plr:GetMouse( )
 
@@ -24,43 +24,79 @@ end
 
 local ShowCursor = Core.ShowCursor
 
-ThemeUtil.AddThemeKey( "S2_Cursor", "S2", Color3.fromRGB( 255, 0, 255 ) )
+ThemeUtil.AddThemeKey( "S2_CursorColor", "S2_Cursor", Color3.fromRGB( 255, 0, 255 ) )
 
-ThemeUtil.AddThemeKey( "S2_CursorBorder", "S2", ThemeUtil.BaseThemes.Light.Inverted_BackgroundColor )
+ThemeUtil.AddThemeKey( "S2_CursorTransparency", "S2_Cursor", 0 )
 
-ThemeUtil.AddThemeKey( "S2_CursorCenterSize", "S2", 2 )
+ThemeUtil.AddThemeKey( "S2_CursorBorder", "S2_Cursor", ThemeUtil.BaseThemes.Light.Inverted_BackgroundColor )
 
-ThemeUtil.AddThemeKey( "S2_CursorWidth", "S2", 2 )
+ThemeUtil.AddThemeKey( "S2_CursorBorderWidth", "S2_Cursor", 1 )
 
-ThemeUtil.AddThemeKey( "S2_CursorLength", "S2", 6 )
+ThemeUtil.AddThemeKey( "S2_CursorWidth", "S2_Cursor", 2 )
 
-ThemeUtil.AddThemeKey( "S2_CursorDistFromCenter", "S2", 3 )
+ThemeUtil.AddThemeKey( "S2_CursorHeight", "S2_Cursor", 6 )
 
-ThemeUtil.AddThemeKey( "S2_CursorCenterTransparency", "S2", 0.3 )
+ThemeUtil.AddThemeKey( "S2_CursorRotation", "S2_Cursor", 0 )
 
-ThemeUtil.AddThemeKey( "S2_CursorTransparency", "S2", 0 )
+ThemeUtil.AddThemeKey( "S2_CursorDistFromCenter", "S2_Cursor", 3 )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterColor", "S2_Cursor", Color3.fromRGB( 255, 0, 255 ) )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterTransparency", "S2_Cursor", 0.3 )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterBorder", "S2_Cursor", ThemeUtil.BaseThemes.Light.Inverted_BackgroundColor )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterBorderWidth", "S2_Cursor", 1 )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterBorderTransparency", "S2_Cursor", 0.3 )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterWidth", "S2_Cursor", 2 )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterHeight", "S2_Cursor", 2 )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterRotation", "S2_Cursor", 0 )
+
+ThemeUtil.AddThemeKey( "S2_CursorSwapWidthHeight", "S2_Cursor", false )
+
+ThemeUtil.AddThemeKey( "S2_CursorDynamicMovement", "S2_Cursor", true )
+
+ThemeUtil.AddThemeKey( "S2_CursorRotate", "S2_Cursor", true )
+
+ThemeUtil.AddThemeKey( "S2_CursorRotateReload", "S2_Cursor", true )
+
+ThemeUtil.AddThemeKey( "S2_CursorCenterRotateWith", "S2_Cursor", true )
+
+ThemeUtil.FinishedCategory( "S2_Cursor" )
+
+ThemeUtil.BindUpdate( { script.Parent.Center.Middle.Bottom, script.Parent.Center.Middle.Bottom.L1, script.Parent.Center.Middle.Bottom.L2, script.Parent.Center.Middle.Bottom.R1, script.Parent.Center.Middle.Bottom.R2, script.Parent.Center.Middle.BottomLeftDiag, script.Parent.Center.Middle.BottomRightDiag, script.Parent.Center.Middle.Bottom, script.Parent.Center.Middle.Bottom, script.Parent.Center.Middle.Bottom, script.Parent.Center.Middle.Bottom, script.Parent.Center.Middle.Left, script.Parent.Center.Middle.Right, script.Parent.Center.Middle.Top, script.Parent.Center.Middle.TopLeftDiag, script.Parent.Center.Middle.TopRightDiag }, { BorderColor3 = "S2_CursorBorder", BorderSizePixel = "S2_CursorBorderWidth" } )
 
 function UpdateSize( )
 	
-	local CenterSize, Width, Length = ThemeUtil.GetThemeFor( "S2_CursorCenterSize" ), ThemeUtil.GetThemeFor( "S2_CursorWidth" ), ThemeUtil.GetThemeFor( "S2_CursorLength" )
+	local CenterWidth, CenterHeight, Width, Height = ThemeUtil.GetThemeFor( "S2_CursorCenterWidth" ), ThemeUtil.GetThemeFor( "S2_CursorCenterHeight"), ThemeUtil.GetThemeFor( "S2_CursorWidth" ), ThemeUtil.GetThemeFor( "S2_CursorHeight" )
 	
-	script.Parent.Center.Size = UDim2.new( 0, CenterSize, 0, CenterSize )
+	if ThemeUtil.GetThemeFor( "S2_CursorSwapWidthHeight" ) then
+		
+		Width, Height = Height, Width
+		
+	end
 	
-	script.Parent.Center.Middle.Bottom.Size = UDim2.new( 0, Width, 0, Length )
+	script.Parent.Center.Size = UDim2.new( 0, CenterWidth, 0, CenterHeight )
 	
-	script.Parent.Center.Middle.BottomLeftDiag.Size = UDim2.new( 0, Length, 0, Width )
+	script.Parent.Center.Middle.Bottom.Size = UDim2.new( 0, Width, 0, Height )
 	
-	script.Parent.Center.Middle.BottomRightDiag.Size = UDim2.new( 0, Length, 0, Width )
+	script.Parent.Center.Middle.BottomLeftDiag.Size = UDim2.new( 0, Height, 0, Width )
 	
-	script.Parent.Center.Middle.Left.Size = UDim2.new( 0, Length, 0, Width )
+	script.Parent.Center.Middle.BottomRightDiag.Size = UDim2.new( 0, Height, 0, Width )
 	
-	script.Parent.Center.Middle.Right.Size = UDim2.new( 0, Length, 0, Width )
+	script.Parent.Center.Middle.Left.Size = UDim2.new( 0, Height, 0, Width )
 	
-	script.Parent.Center.Middle.Top.Size = UDim2.new( 0, Width, 0, Length )
+	script.Parent.Center.Middle.Right.Size = UDim2.new( 0, Height, 0, Width )
 	
-	script.Parent.Center.Middle.TopLeftDiag.Size = UDim2.new( 0, Length, 0, Width )
+	script.Parent.Center.Middle.Top.Size = UDim2.new( 0, Width, 0, Height )
 	
-	script.Parent.Center.Middle.TopRightDiag.Size = UDim2.new( 0, Length, 0, Width )
+	script.Parent.Center.Middle.TopLeftDiag.Size = UDim2.new( 0, Height, 0, Width )
+	
+	script.Parent.Center.Middle.TopRightDiag.Size = UDim2.new( 0, Height, 0, Width )
 	
 	script.Parent.Center.Middle.Bottom.L1.Position = UDim2.new( 0, -Width - 3, 0, 0 )
 	
@@ -86,19 +122,47 @@ function UpdatePos( _, Dist )
 	
 end
 
-ThemeUtil.BindUpdate( script.Parent.Center, { S2_CursorCenterSize = UpdateSize, S2_CursorWidth = UpdateSize, S2_CursorLength = UpdateSize, S2_CursorDistFromCenter = UpdatePos, BackgroundTransparency = "S2_CursorCenterTransparency", BorderColor3 = "S2_CursorBorder" } )
+ThemeUtil.BindUpdate( script.Parent.Center, { S2_CursorCenterWidth = UpdateSize, S2_CursorCenterHeight = UpdateSize, S2_CursorWidth = UpdateSize, S2_CursorHeight = UpdateSize, S2_CursorDistFromCenter = UpdatePos, S2_CursorSwapWidthHeight = UpdateSize, BackgroundTransparency = "S2_CursorCenterTransparency" } )
+
+ThemeUtil.BindUpdate( { script.Parent.Center.Top, script.Parent.Center.Bottom, script.Parent.Center.Left, script.Parent.Center.Right }, { BackgroundColor3 = "S2_CursorCenterBorder", BackgroundTransparency = "S2_CursorCenterBorderTransparency", S2_CursorCenterBorderWidth = function ( Obj, Width )
+	
+	if Obj == script.Parent.Center.Bottom or Obj == script.Parent.Center.Top then
+		
+		Obj.Size = UDim2.new( 1, 0, 0, Width )
+		
+	else
+		
+		Obj.Size = UDim2.new( 0, Width, 1, Width * 2 )
+		
+	end
+	
+end } )
 
 local Kids = script.Parent.Center.Middle:GetDescendants( )
 
-ThemeUtil.BindUpdate( Kids, { BorderColor3 = "S2_CursorBorder", BackgroundTransparency = "S2_CursorTransparency" } )
+ThemeUtil.BindUpdate( Kids, { BorderColor3 = "S2_CursorBorder" } )
 
-local Heartbeat 
+ThemeUtil.BindUpdate( { script.Parent.Center.Middle.Left, script.Parent.Center.Middle.Right, script.Parent.Center.Middle.Top }, { BackgroundTransparency = "S2_CursorTransparency" } )
 
-function RunHeartbeat( )
+local ForceWeapon = {
 	
-	Heartbeat = game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
+	Clip = 10,
+	
+	GunStats = {
 		
-		local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
+		ClipSize = 10
+		
+	}
+	
+}
+
+local LastWep
+
+function Core.RunCursorHeartbeat( )
+	
+	Core.CursorHeartbeat = game:GetService( "RunService" ).Heartbeat:Connect( function ( Total, Tick )
+		
+		local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] ) or Core.ForceShowCursor and ForceWeapon
 		
 		if ShowCursor ~= Core.ShowCursor then
 			
@@ -124,17 +188,31 @@ function RunHeartbeat( )
 		
 		if not Weapon or not Core.ShowCursor or _G.S20Config.CursorImage or Weapon.CursorImage then
 			
-			Heartbeat:Disconnect( )
+			Core.CursorHeartbeat:Disconnect( )
 			
-			Heartbeat = nil
+			Core.CursorHeartbeat = nil
+			
+			script.Parent.Center.Visible = false
+			
+			if not LastWep or _G.S20Config.CursorImage or LastWep.CursorImage then return end
+			
+			if LastWep.GunStats.ShowCursor ~= false then
+				
+				game:GetService( "UserInputService" ).MouseIconEnabled = true
+				
+			end
 			
 			return
 			
 		end
 		
+		LastWep = Weapon
+		
 		local Humanoid = Core.GetValidHumanoid( Core.LPlrsTarget[ 1 ] )
 		
 		local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) or Core.CheckTeamkill( Plr, Humanoid, Weapon.GunStats.AllowTeamKill, Weapon.GunStats.InvertTeamKill ) and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ThemeUtil.GetThemeFor( "Positive_Color3" )
+		
+		local CenterColor
 		
 		if Color == true then
 			
@@ -144,7 +222,9 @@ function RunHeartbeat( )
 				
 			else
 				
-				Color = ThemeUtil.GetThemeFor( "S2_Cursor" )
+				Color = ThemeUtil.GetThemeFor( "S2_CursorColor" )
+				
+				CenterColor = ThemeUtil.GetThemeFor( "S2_CursorCenterColor" )
 				
 			end
 			
@@ -156,21 +236,49 @@ function RunHeartbeat( )
 			
 		end
 		
-		script.Parent.Center.BackgroundColor3 = Color
+		script.Parent.Center.BackgroundColor3 = CenterColor or Color
 		
-		local FireMode = Core.GetFireMode( Weapon )
+		if ThemeUtil.GetThemeFor( "S2_CursorCenterBorder" ) == ( CenterColor or ThemeUtil.GetThemeFor( "S2_CursorColor" ) ) then
+			
+			script.Parent.Center.Top.BackgroundColor3 = CenterColor or Color
+			
+			script.Parent.Center.Bottom.BackgroundColor3 = CenterColor or Color
+			
+			script.Parent.Center.Left.BackgroundColor3 = CenterColor or Color
+			
+			script.Parent.Center.Right.BackgroundColor3 = CenterColor or Color
+			
+		end
+		
+		local FireMode = Weapon == ForceWeapon and Core.FireModes.Auto or Core.GetFireMode( Weapon )
 		
 		-- HANDLE COLOR AND ROTATION
 		
 		do local Perc = not Weapon.GunStats.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.GunStats.ReloadDelay + ( Weapon.GunStats.InitialReloadDelay or 0 ) + ( Weapon.GunStats.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.GunStats.ClipSize )
 		
-		if not _G.S20Config.DisableCursorRotation or Weapon.Reloading then
+		local Rot, MidRot = ThemeUtil.GetThemeFor( "S2_CursorCenterRotation" ), ThemeUtil.GetThemeFor( "S2_CursorRotation" )
+		
+		local RotateCenterWith, ReloadRot = ThemeUtil.GetThemeFor( "S2_CursorCenterRotateWith" ), ThemeUtil.GetThemeFor( "S2_CursorRotateReload" )
+		
+		script.Parent.Center.Rotation = Rot
+		
+		if ( not _G.S20Config.DisableCursorRotation and ThemeUtil.GetThemeFor( "S2_CursorRotate") and ( not Weapon.Reloading or ReloadRot ) ) or ( ReloadRot and Weapon.Reloading ) then
 			
-			script.Parent.Center.Rotation = Perc * 360
+			if RotateCenterWith then
+				
+				script.Parent.Center.Rotation = Rot + Perc * 360
+				
+				script.Parent.Center.Middle.Rotation = MidRot - Rot
+				
+			else
+				
+				script.Parent.Center.Middle.Rotation = MidRot - Rot + Perc * 360
+				
+			end
 			
 		else
 			
-			script.Parent.Center.Rotation = 0
+			script.Parent.Center.Middle.Rotation = MidRot - Rot
 			
 		end
 		
@@ -204,13 +312,15 @@ function RunHeartbeat( )
 		
 		-- HANDLE TRANSPARENCY
 		
-		do local Trans = math.min( math.max( 1 - ( ShowMode - tick( ) ), 0 ), 1 )
+		do local NormTrans = ThemeUtil.GetThemeFor( "S2_CursorTransparency" )
+		
+		local Trans = math.min( math.max( 1 - ( ShowMode - tick( ) ), NormTrans ), 1 )
 		
 		local AutoTrans = FireMode.Automatic and Trans or 1
 		
 		local BurstTrans = ( FireMode.Automatic or ( FireMode.Shots and FireMode.Shots > 1 ) ) and Trans or 1
 		
-		script.Parent.Center.Middle.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not FireMode.PreventFire and Core.ActualSprinting ) and Trans or ( FireMode.PreventFire or Core.ActualSprinting ) and 1 or 0
+		script.Parent.Center.Middle.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not FireMode.PreventFire and Core.ActualSprinting ) and Trans or ( FireMode.PreventFire or Core.ActualSprinting ) and 1 or NormTrans
 		
 		script.Parent.Center.Middle.Bottom.L1.BackgroundTransparency = BurstTrans
 		
@@ -226,10 +336,8 @@ function RunHeartbeat( )
 		
 		do script.Parent.Center.Position = UDim2.new( 0, Mouse.X, 0, Mouse.Y )
 		
-		local Offset = ( 25 / Weapon.GunStats.AccurateRange * 10 ) + ( Weapon.GunStats.AccurateRange - Core.GetAccuracy( Weapon ) )
+		local Offset = ThemeUtil.GetThemeFor( "S2_CursorDynamicMovement" ) and ( Weapon == ForceWeapon and 0 or ( 25 / Weapon.GunStats.AccurateRange * 10 ) + ( Weapon.GunStats.AccurateRange - Core.GetAccuracy( Weapon ) ) ) or 0
 		
-		
-	
 		script.Parent.Center.Middle.Bottom.Position = UDim2.new( 0, 0, 0, Offset + Dist )
 		
 		script.Parent.Center.Middle.Left.Position = UDim2.new( 0, -Offset - Dist, 0, 0 )
@@ -280,9 +388,9 @@ function WeaponSelected( Mod )
 		
 	end
 	
-	if not Heartbeat then
+	if not Core.CursorHeartbeat then
 		
-		RunHeartbeat( )
+		Core.RunCursorHeartbeat( )
 		
 	end
 	
@@ -297,22 +405,6 @@ if Weapon then
 end
  
 Core.WeaponSelected.Event:Connect( WeaponSelected )
- 
-Core.WeaponDeselected.Event:Connect( function ( Mod )
-	
-	local Weapon = Core.GetWeapon( Mod )
-	
-	if not Weapon or Weapon.User ~= Plr or _G.S20Config.CursorImage or Weapon.CursorImage then return end
-	
-	script.Parent.Center.Visible = false
-	
-	if Weapon.GunStats.ShowCursor ~= false then
-		
-		game:GetService( "UserInputService" ).MouseIconEnabled = true
-		
-	end
-	
-end )
 
 Core.Visuals.CursorHitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User, _, _, _, _, _, _, _, Humanoids )
 	
@@ -320,35 +412,27 @@ Core.Visuals.CursorHitIndicator = Core.SharedVisuals.Event:Connect( function ( _
 		
 		local Noise
 		
-		for a = 1, #Humanoids do
+		for _, Hum in ipairs( Humanoids ) do
 			
-			if Humanoids[ a ][ 1 ].Parent then
+			if Hum[ 1 ].Parent then
 				
-				if not CollectionService:HasTag( Humanoids[ a ][ 1 ], "s2_silent" ) then Noise = true break end
+				if not CollectionService:HasTag( Hum[ 1 ], "s2_silent" ) then Noise = true break end
 				
 			end
 			
 		end
 		
-		if not Noise then return end
-		
-		if Plr:FindFirstChild( "PlayerGui" ) then
+		if not Noise then
 			
-			local GunCursor = Plr.PlayerGui:FindFirstChild( "GunCursor" )
+			Core.ResetHitMarker = tick( ) + 0.2
 			
-			if GunCursor then
-		
-				Core.ResetHitMarker = tick( ) + 0.2
-				
-				GunCursor.Center.Middle.TopLeftDiag.Visible = true
-				
-				GunCursor.Center.Middle.TopRightDiag.Visible = true
-				
-				GunCursor.Center.Middle.BottomLeftDiag.Visible = true
-				
-				GunCursor.Center.Middle.BottomRightDiag.Visible = true
-				
-			end
+			script.Parent.Center.Middle.TopLeftDiag.Visible = true
+			
+			script.Parent.Center.Middle.TopRightDiag.Visible = true
+			
+			script.Parent.Center.Middle.BottomLeftDiag.Visible = true
+			
+			script.Parent.Center.Middle.BottomRightDiag.Visible = true
 			
 		end
 		

@@ -13,7 +13,7 @@ if not script:IsDescendantOf(game:GetService("ServerScriptService")) then
 end
 
 --Modules
-local GameAnalytics = require(ServerStorage.GameAnalytics)
+local GameAnalytics = require(ServerStorage:WaitForChild( "GameAnalytics" ))
 local Settings = require(ServerStorage.GameAnalytics.Settings)
 local Players = game:GetService("Players")
 

@@ -1,6 +1,6 @@
 Module = { }
 
-local SaveBind = game:GetService( "ReplicatedStorage" ):WaitForChild( "SaveBind" )
+local KeybindRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "KeybindRemote" )
 
 local ContextChanged = Instance.new( "BindableEvent" )
 
@@ -172,9 +172,15 @@ function Module.GetBinds( )
 	
 end
 
-local SavedBinds = game:GetService( "ReplicatedStorage" ):WaitForChild( "GetSavedBinds" ):InvokeServer( )
+local SavedBinds
 
-BindChanged:Fire( )
+KeybindRemote.OnClientEvent:Connect( function ( Binds )
+	
+	SavedBinds = Binds
+	
+	BindChanged:Fire( )
+	
+end )
 
 -- Name, Category, Callback, Key, PadKey, PadNum, ToggleState, CanToggle, OffOnDeath, NonRebindable, NoHandled
 function Module.AddBind( Bind )
@@ -187,7 +193,7 @@ function Module.AddBind( Bind )
 	
 	Bind.State = false
 	
-	if SavedBinds[ Bind.Name ] then
+	if SavedBinds and SavedBinds[ Bind.Name ] then
 		
 		if SavedBinds[ Bind.Name ][ "Key" ] ~= nil then Bind.Key = SavedBinds[ Bind.Name ][ "Key" ] end
 		
@@ -359,7 +365,7 @@ function Module.Defaults( Name )
 	
 	Bind.ToggleState = Bind.Defaults.ToggleState
 	
-	SaveBind:FireServer( Name )
+	KeybindRemote:FireServer( Name )
 	
 	BindChanged:Fire( Name )
 	
@@ -389,7 +395,7 @@ function Module.Rebind( Name, Type, TextObj )
 		
 		Module.SetToggleState( Name, not Binds[ Name ].ToggleState )
 		
-		SaveBind:FireServer( Name, "ToggleState", Binds[ Name ].ToggleState )
+		KeybindRemote:FireServer( Name, "ToggleState", Binds[ Name ].ToggleState )
 		
 		Module.WriteToObj( TextObj, Binds[ Name ].ToggleState )
 		
@@ -419,7 +425,7 @@ function Module.Rebind( Name, Type, TextObj )
 	
 	Binds[ Name ][ Type == Enum.UserInputType.Keyboard and "Key" or "PadKey" ] = Key
 	
-	SaveBind:FireServer( Name, Type == Enum.UserInputType.Keyboard and "Key" or "PadKey", Key )
+	KeybindRemote:FireServer( Name, Type == Enum.UserInputType.Keyboard and "Key" or "PadKey", Key )
 	
 	BindChanged:Fire( Name )
 	
