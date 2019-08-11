@@ -8,63 +8,55 @@ function Weld( Tool )
 	
 	if not Handle then return end
 	
-	local Parts = Tool:GetDescendants( )
-	
-	for a = 1, #Parts do
+	for _, Obj in ipairs( Tool:GetDescendants( ) ) do
 		
-		local Part = Parts[ a ]
-		
-		if Part:IsA( "BasePart" ) and Part.Parent == Tool then
+		if Obj:IsA( "BasePart" ) and Obj.Parent == Tool then
 			
-			Part.CustomPhysicalProperties = PhysicalProperties.new( 0, 0, 0, 0, 0 )
+			Obj.CustomPhysicalProperties = PhysicalProperties.new( 0, 0, 0, 0, 0 )
 			
-			Part.CanCollide = false
+			Obj.CanCollide = false
 			
-			Part.Anchored = false
+			Obj.Anchored = false
 			
-			if Part.Name ~= "Handle" then
+			if Obj.Name ~= "Handle" then
 				
 				local Weld = new( "Weld" )
 				
 				Weld.Part0 = Handle
 				
-				Weld.Part1 = Part
+				Weld.Part1 = Obj
 				
-				Weld.C1 = inverse( Part.CFrame ) * Handle.CFrame
+				Weld.C1 = inverse( Obj.CFrame ) * Handle.CFrame
 				
 				Weld.Parent = Handle
 				
 			end
 			
-		elseif Part:IsA( "Model" ) then
+		elseif Obj:IsA( "Model" ) then
 			
-			local SubParts = Part:GetChildren( )
+			local Main = Obj.PrimaryPart
 			
-			local Main = Part.PrimaryPart
-			
-			for b = 1, #SubParts do
+			for _, Inst in ipairs( Obj:GetChildren( ) ) do
 				
-				Part = SubParts[ b ]
-				
-				if Part:IsA( "BasePart" ) then
+				if Inst:IsA( "BasePart" ) then
 					
-					Part.CustomPhysicalProperties = PhysicalProperties.new( 0, 0, 0, 0, 0 )
+					Inst.CustomPhysicalProperties = PhysicalProperties.new( 0, 0, 0, 0, 0 )
 					
-					Part.CanCollide = false
+					Inst.CanCollide = false
 					
-					Part.Anchored = false
+					Inst.Anchored = false
 					
-					if Part.Name ~= "Handle" then
+					if Inst.Name ~= "Handle" then
 						
 						local Weld = new( "Weld" )
 						
-						Weld.Part1 = Part
+						Weld.Part1 = Inst
 						
-						if Part == Main then
+						if Inst == Main then
 							
 							Weld.Part0 = Handle
 							
-							Weld.C1 = inverse( Part.CFrame ) * Handle.CFrame
+							Weld.C1 = inverse( Inst.CFrame ) * Handle.CFrame
 							
 							Weld.Parent = Handle
 							
@@ -72,7 +64,7 @@ function Weld( Tool )
 							
 							Weld.Part0 = Main
 							
-							Weld.C1 = inverse( Part.CFrame ) * Main.CFrame
+							Weld.C1 = inverse( Inst.CFrame ) * Main.CFrame
 							
 							Weld.Parent = Main
 							
@@ -92,11 +84,9 @@ end
 
 plugin:CreateToolbar( "S2 Welder" ):CreateButton( "Weld", "Press me", "" ).Click:Connect( function ( )
 	
-	local Selection = game.Selection:Get( )
-	
-	for a = 1, #Selection do
+	for _, Obj in ipairs( game.Selection:Get( ) ) do
 		
-		Weld( Selection[ a ] )
+		Weld( Obj )
 		
 	end
 	
