@@ -104,6 +104,14 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 			
 		end
 		
+		if InteractObj:FindFirstChild( "Name" ) or InteractObj:FindFirstChild( "ExtraYSize" ) then
+			
+			Gui.Back.ImageRectOffset = Vector2.new( 936, 977.5 )
+			
+			Gui.Back.ImageRectSize = Vector2.new( 83, 41.5 )
+			
+		end
+		
 		ThemeUtil.BindUpdate( Gui.KeyBack.KeyText, { BackgroundColor3 = "Primary_BackgroundColor", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 		
 		ThemeUtil.BindUpdate( Gui.Back, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
@@ -172,7 +180,9 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	local Ratio = MaxXSize / ( MaxXSize + ExtraYSize * 2 )
 	
-	Gui.Back.Size = UDim2.new( 1, 0, Ratio, 0 )
+	Gui.Back.Position = UDim2.new( 0.5, 0, 0.5 + ( ( InteractObj:FindFirstChild( "Name" ) or InteractObj:FindFirstChild( "ExtraYSize" ) ) and ( Ratio / 4 ) or 0 ), 0 )
+	
+	Gui.Back.Size = UDim2.new( 1, 0, Ratio / ( ( InteractObj:FindFirstChild( "Name" ) or InteractObj:FindFirstChild( "ExtraYSize" ) ) and 2 or 1 ), 0 )
 	
 	Gui.Progress.Size = UDim2.new( 1, 0, Ratio, 0 )
 	
@@ -260,9 +270,19 @@ Interactables.MaximiseGui:Connect( function ( InteractObj, Gui )
 		
 		Gui.NameBack.Visible = true
 		
-		TweenService:Create( Gui.NameBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 0.5, 0 ) } ):Play( )
+		ThemeUtil.BindUpdate( Gui.NameBack, { BackgroundTransparency = "Primary_BackgroundTransparency" } )
+		
+		Gui.NameBack.BackgroundTransparency = 1
+		
+		TweenService:Create( Gui.NameBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 0.5, 0 ), BackgroundTransparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" ) } ):Play( )
 		
 	end
+	
+	ThemeUtil.BindUpdate( Gui.Back, { ImageTransparency = "Primary_BackgroundTransparency" } )
+	
+	Gui.Back.ImageTransparency = 1
+	
+	TweenService:Create( Gui.Back, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageTransparency = ThemeUtil.GetThemeFor( "Primary_BackgroundTransparency" ) } ):Play( )
 	
 	TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 0.85, 0, Ratio * 0.85, 0 ) } ):Play( )
 	
@@ -296,15 +316,19 @@ Interactables.MinimiseGui:Connect( function ( InteractObj, Gui, CooldownLeft )
 	
 	if Ratio ~= 1 then
 		
-		TweenService:Create( Gui.NameBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 0, 0 ) } ):Play( )
+		TweenService:Create( Gui.NameBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 0, 0 ), BackgroundTransparency = 1 } ):Play( )
 		
 	end
 	
 	local Tween = TweenService:Create( Gui.KeyBack, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, Ratio, 0 ) } )
 	
+	TweenService:Create( Gui.Back, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { ImageTransparency = 1 } ):Play( )
+	
 	Tween.Completed:Connect( function ( State )
 		
 		if State == Enum.PlaybackState.Completed and Gui and Gui.Name ~= "Destroying" then
+			
+			ThemeUtil.UnbindUpdate( { Gui.Back, Gui.NameBack }, { "ImageTransparency" } )
 			
 			Gui.Back.Visible = false
 			
