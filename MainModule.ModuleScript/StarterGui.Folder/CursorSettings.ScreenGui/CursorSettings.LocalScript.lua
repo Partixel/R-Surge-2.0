@@ -543,7 +543,7 @@ end
 
 ThemeUtil.BindUpdate( script.Parent.Frame.Settings, { BackgroundColor3 = "Selection_Color3", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 
-ThemeUtil.BindUpdate( script.Parent.Frame.Share, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
+ThemeUtil.BindUpdate( { script.Parent.Frame.Share, script.Parent.Frame.Preset }, { BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency" } )
 
 script.Parent.Frame.Settings.MouseButton1Click:Connect( function ( )
 	
@@ -617,6 +617,8 @@ script.Parent.Frame.Preset.MouseButton1Click:Connect( function ( )
 	
 end )
 
+local TextChanged
+
 script.Parent.Frame.Share.MouseButton1Click:Connect( function ( )
 	
 	if not ShareVisible then
@@ -643,7 +645,25 @@ script.Parent.Frame.Share.MouseButton1Click:Connect( function ( )
 		
 		if InvalidShare then
 			
-			script.Parent.Frame.Export.Code.Text = ExportSettings( )
+			local Settings = ExportSettings( )
+			
+			script.Parent.Frame.Export.Code.Text = Settings
+			
+			if TextChanged then
+				
+				TextChanged:Disconnect( )
+				
+			end
+			
+			script.Parent.Frame.Export.Code:GetPropertyChangedSignal( "Text" ):Connect( function ( )
+				
+				script.Parent.Frame.Export.Code.Text = Settings
+				
+				script.Parent.Frame.Export.Code.CursorPosition = #script.Parent.Frame.Export.Code.Text + 1
+				
+				script.Parent.Frame.Export.Code.SelectionStart = 1
+				
+			end )
 			
 			InvalidShare = nil
 			
@@ -653,13 +673,13 @@ script.Parent.Frame.Share.MouseButton1Click:Connect( function ( )
 	
 end )
 
---[[script.Parent.Frame.Export.Code.Focused:Connect( function ( )
+script.Parent.Frame.Export.Code.Focused:Connect( function ( )
 	
-	script.Parent.Frame.Export.Code.CursorPosition = #script.Parent.Frame.Export.Code.Text
+	script.Parent.Frame.Export.Code.CursorPosition = #script.Parent.Frame.Export.Code.Text + 1
 	
 	script.Parent.Frame.Export.Code.SelectionStart = 1
 	
-end )]]
+end )
 
 script.Parent.Frame.Import.Code.FocusLost:Connect( function ( )
 	
@@ -671,7 +691,9 @@ script.Parent.Frame.Import.Code.FocusLost:Connect( function ( )
 			
 			if type( b ) == "table" then
 				
-				Import[ a ] = Color3.fromRGB( b[ 1 ], b[ 2 ], b[ 3 ] )
+				b = Color3.fromRGB( b[ 1 ], b[ 2 ], b[ 3 ] )
+				
+				Import[ a ] = b
 				
 			end
 			
@@ -685,7 +707,11 @@ script.Parent.Frame.Import.Code.FocusLost:Connect( function ( )
 		
 		SaveCursor:FireServer( Import )
 		
-		script.Parent.Frame.Import.Code.Text = ""
+		script.Parent.Frame.Import.Code.Text = "Valid code"
+		
+	else
+		
+		Ran.Text = "Invalid code"
 		
 	end
 	
