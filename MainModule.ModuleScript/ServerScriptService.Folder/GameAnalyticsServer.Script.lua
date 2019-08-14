@@ -28,7 +28,7 @@ if not ReplicatedStorage:FindFirstChild("GameAnalyticsCommandCenter") then
 end
 
 --Modules
-local GameAnalytics = require(ServerStorage.GameAnalytics)
+local GameAnalytics = require(ServerStorage:WaitForChild("GameAnalytics"))
 local store = require(ServerStorage.GameAnalytics.Store)
 local state = require(ServerStorage.GameAnalytics.State)
 local LS = game:GetService("LogService")
