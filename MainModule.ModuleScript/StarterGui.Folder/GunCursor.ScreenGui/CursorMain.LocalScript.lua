@@ -126,7 +126,7 @@ ThemeUtil.BindUpdate( script.Parent.Center, { S2_CursorCenterWidth = UpdateSize,
 
 ThemeUtil.BindUpdate( { script.Parent.Center.Top, script.Parent.Center.Bottom, script.Parent.Center.Left, script.Parent.Center.Right }, { BackgroundColor3 = "S2_CursorCenterBorder", BackgroundTransparency = "S2_CursorCenterBorderTransparency", S2_CursorCenterBorderWidth = function ( Obj, Width )
 	
-	if Obj == script.Parent.Center.Bottom or Obj == script.Parent.Center.Top then
+	if Obj.Name == "Bottom" or Obj.Name == "Top" then
 		
 		Obj.Size = UDim2.new( 1, 0, 0, Width )
 		
@@ -195,6 +195,8 @@ function Core.RunCursorHeartbeat( )
 			script.Parent.Center.Visible = false
 			
 			if not LastWep or _G.S20Config.CursorImage or LastWep.CursorImage then return end
+			
+			if not LastWep.GunStats then print( LastWep, LastWep.Tool ) return end
 			
 			if LastWep.GunStats.ShowCursor ~= false then
 				
