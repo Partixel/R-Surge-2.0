@@ -1,8 +1,8 @@
 local Players = game:GetService( "Players" )
 
-local DataStore2 = require(1936396537)
+local DataStore2 = require( 1936396537 )
 
-DataStore2.Combine("PartixelsVeryCoolMasterKey", "Keybind1")
+DataStore2.Combine( "PartixelsVeryCoolMasterKey", "Keybind1" )
 
 local KeybindRemote = Instance.new( "RemoteEvent" )
 
