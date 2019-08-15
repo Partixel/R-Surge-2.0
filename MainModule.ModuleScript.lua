@@ -12,21 +12,21 @@ end
 
 local LoaderModule = require( game:GetService( "ServerStorage" ):FindFirstChild( "LoaderModule" ) and game:GetService( "ServerStorage" ).LoaderModule:FindFirstChild( "MainModule" ) or 03593768376 )( "S2", _G.S20Config )
 
+LoaderModule( script:WaitForChild( "ReplicatedStorage" ) )
+
+LoaderModule( script:WaitForChild( "ServerStorage" ) )
+
+LoaderModule( script:WaitForChild( "ServerScriptService" ) )
+
 LoaderModule( script:WaitForChild( "StarterPlayerScripts" ) )
 
 LoaderModule( script:WaitForChild( "StarterCharacterScripts" ) )
 
 LoaderModule( script:WaitForChild( "StarterGui" ) )
 
-LoaderModule( script:WaitForChild( "ServerScriptService" ) )
-
-LoaderModule( script:WaitForChild( "ReplicatedStorage" ) )
-
-LoaderModule( script:WaitForChild( "ServerStorage" ) )
-
-Config.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
-
 if SetupModel then
+	
+	Config.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 	
 	SetupModel:Destroy( )
 	
