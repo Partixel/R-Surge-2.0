@@ -164,7 +164,7 @@ script.Parent.Sparkles.MouseButton1Click:Connect( function ( )
 		
 		SparklesEnabled = not SparklesEnabled
 		
-		VIPEvent:FireServer( "SetSparkles", SparklesEnabled )
+		VIPEvent:FireServer( "SetSparkles", SparklesEnabled or nil )
 		
 		ThemeUtil.BindUpdate( script.Parent.Sparkles, { BackgroundColor3 = SparklesEnabled and "Selection_Color3" or "Primary_BackgroundColor" } )
 		
@@ -192,7 +192,7 @@ script.Parent.Neon.MouseButton1Click:Connect( function ( )
 		
 		NeonEnabled = not NeonEnabled
 		
-		VIPEvent:FireServer( "SetNeon", NeonEnabled and "Neon" or "" )
+		VIPEvent:FireServer( "SetNeon", NeonEnabled or nil )
 		
 		ThemeUtil.BindUpdate( script.Parent.Neon, { BackgroundColor3 = NeonEnabled and "Selection_Color3" or "Primary_BackgroundColor" } )
 		

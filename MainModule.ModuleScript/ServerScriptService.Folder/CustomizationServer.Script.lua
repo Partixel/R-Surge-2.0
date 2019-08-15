@@ -120,41 +120,7 @@ VIPFunc.OnServerInvoke = function ( Plr, Val )
 	
 	if Val == nil then
 		
-		local OwnNeon, OwnCol, OwnSparkles = PlayerOwnsAsset( Plr, 382753196 ), PlayerOwnsAsset( Plr, 382751732 ), PlayerOwnsAsset( Plr, 382816939 )
-		
-		if OwnSparkles then
-			
-			local Sparkles = Plr:FindFirstChild( "VIPSparkles" ) or Instance.new( "BoolValue" )
-			
-			Sparkles.Name = "VIPSparkles"
-			
-			Sparkles.Value = false
-			
-			Sparkles.Parent = Plr
-			
-		end
-		
-		if OwnCol then
-			
-			local Color = Plr:FindFirstChild( "VIPColor" ) or Instance.new( "BrickColorValue" )
-			
-			Color.Name = "VIPColor"
-			
-			Color.Value = Plr.TeamColor
-			
-			Color.Parent = Plr
-			
-			local CurWep = GetWep( Plr )
-			
-			if CurWep then
-				
-				ColorGun( CurWep, Plr )
-				
-			end
-			
-		end
-		
-		return OwnNeon, OwnCol, OwnSparkles
+		return PlayerOwnsAsset( Plr, 382753196 ), PlayerOwnsAsset( Plr, 382751732 ), PlayerOwnsAsset( Plr, 382816939 )
 		
 	elseif Val == "BuyCol" then
 		
@@ -228,7 +194,7 @@ VIPEvent.OnServerEvent:Connect( function ( Plr, Val, Chosen )
 		
 		Mat.Name = "VIPMaterial"
 		
-		Mat.Value = Chosen
+		Mat.Value = Chosen and "Neon" or ""
 		
 		Mat.Parent = S2Folder
 		
