@@ -2,7 +2,7 @@ local ChatModules = game.Chat:WaitForChild("ChatModules")
 local IS = game:GetService("InsertService")
 
 function InitialLoad()
-	script.EmojiList:Clone().Parent = game.StarterPlayer.StarterPlayerScripts.S2.EmojiChatClientController
+	script.EmojiList:Clone().Parent = game.StarterPlayer.StarterPlayerScripts:WaitForChild( "S2" ).EmojiChatClientController
 	script.EmojiList.Parent = ChatModules
 	script.EmojiReplace.Parent = ChatModules
 	print("Emoji Chat Suite v1.5.1 by FearMeIAmLag has loaded")
