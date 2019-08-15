@@ -300,6 +300,26 @@ if _G.S20Config.RankGroupId then
 	
 end
 
+if _G.S20Config.CreditsPerPayday and _G.S20Config.CreditsPerPayday ~= 0 and _G.S20Config.PaydayDelay and _G.S20Config.PaydayDelay > 0 then
+	
+	coroutine.wrap( function ( )
+		
+		while wait( _G.S20Config.PaydayDelay ) do
+			
+			for _, Plr in ipairs( Players:GetPlayers( ) ) do
+				
+				local Credits = _G.S20Config.ShowCredits and Plr:WaitForChild( "leaderstats" ):WaitForChild( "Credits" ) or Plr:WaitForChild( "Credits" )
+				
+				Credits.Value = Credits.Value + _G.S20Config.CreditsPerPayday
+				
+			end
+			
+		end
+		
+	end )( )
+	
+end
+
 local function PlayerAdded( Plr )
 	
 	local leaderstats = Instance.new( "IntValue" )
@@ -369,20 +389,6 @@ local function PlayerAdded( Plr )
 		DataStore2( "Credits", Plr ):BeforeSave( function ( )
 			
 			return Credits.Value
-			
-		end )
-		
-	end
-	
-	if _G.S20Config.CreditsPerPayday and _G.S20Config.CreditsPerPayday ~= 0 and _G.S20Config.PaydayDelay and _G.S20Config.PaydayDelay > 0 then
-		
-		spawn( function ( )
-			
-			while wait( _G.S20Config.PaydayDelay ) do
-				
-				Credits.Value = Credits.Value + _G.S20Config.CreditsPerPayday
-				
-			end
 			
 		end )
 		

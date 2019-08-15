@@ -1,6 +1,6 @@
 local Core = { }
 
-local RunService, Players, ContextActionService, CollectionService = game:GetService( "RunService" ), game:GetService( "Players" ), game:GetService( "ContextActionService" ), game:GetService( "CollectionService" )
+local RunService, Players, ContextActionService, CollectionService, ContentProvider = game:GetService( "RunService" ), game:GetService( "Players" ), game:GetService( "ContextActionService" ), game:GetService( "CollectionService" ), game:GetService( "ContentProvider" )
 
 while not _G.S20Config do wait( ) end
 
@@ -106,6 +106,62 @@ local function Stun( StatObj, GunStats, User, Hit, Dist, Type, WeaponName )
 
 end
 
+local function FireDamage( StatObj, GunStats, User, Hit, ResH, ResD )
+	
+	local Fire, Doused, Event2
+	
+	local Event1; Event1 = ResH.ChildAdded:Connect( function ( Obj )
+		
+		if Obj.Name == "InWater" then
+			
+			Doused = true
+			
+			Event1:Disconnect( )
+			
+		end
+		
+	end )
+	
+	if ResH:IsA( "Humanoid" ) then
+		
+		if ResH.RootPart then
+			
+			Fire = Instance.new( "Fire" , ResH.RootPart )
+			
+		end
+		
+		Event2 = ResH.Swimming:Connect( function( )
+			
+			Doused = true
+			
+		end )
+		
+	end
+	
+	local HitName = Hit.Name
+	
+	for i = 1, 20 do
+		
+		if Doused then
+			
+			break
+			
+		end
+		
+		Core.DamageObj( User, { { ResH, ResD, HitName } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Fire )
+		
+		wait( 0.3 )
+		
+	end
+	
+	if Fire then Fire:Destroy( ) end
+	
+	Event1:Disconnect( )
+	
+	if Event2 then Event2:Disconnect( ) end
+	
+end
+
 Core.BulletTypes = {
 
 	Kinetic = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
@@ -196,61 +252,7 @@ Core.BulletTypes = {
 			
 			if next( Damaged ) then
 				
-				spawn( function ( )
-						
-					local Fire, Doused, Event2
-					
-					local Event1; Event1 = ResH.ChildAdded:Connect( function ( Obj )
-						
-						if Obj.Name == "InWater" then
-							
-							Doused = true
-							
-							Event1:Disconnect( )
-							
-						end
-						
-					end )
-					
-					if ResH:IsA( "Humanoid" ) then
-						
-						if ResH.RootPart then
-							
-							Fire = Instance.new( "Fire" , ResH.RootPart )
-							
-						end
-						
-						Event2 = ResH.Swimming:Connect( function( )
-							
-							Doused = true
-							
-						end )
-						
-					end
-					
-					local HitName = Hit.Name
-					
-					for i = 1, 20 do
-						
-						if Doused then
-							
-							break
-							
-						end
-						
-						Core.DamageObj( User, { { ResH, ResD, HitName } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Fire )
-						
-						wait( 0.3 )
-						
-					end
-					
-					if Fire then Fire:Destroy( ) end
-					
-					Event1:Disconnect( )
-					
-					if Event2 then Event2:Disconnect( ) end
-					
-				end )
+				FireDamage( StatObj, GunStats, User, Hit, ResH, ResD )
 				
 				return Damaged
 				
@@ -401,7 +403,7 @@ function Core.GetGunStats( StatObj )
 		
 		if IsClient then
 			
-			spawn( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { StatMod } ) end )
+			coroutine.wrap( ContentProvider.PreloadAsync )( ContentProvider, { StatMod } )
 			
 		end
 
@@ -1334,7 +1336,7 @@ function Core.Fire( Weapon )
 
 end
 
---[[spawn( function ( )
+--[[coroutine.wrap( function ( )
 	
 	while wait( 1 ) do
 		
@@ -1352,7 +1354,7 @@ end
 		
 	end
 	
-end)]]
+end)( )]]
 
 Core.DamageType = {
 
@@ -1894,11 +1896,7 @@ if IsServer then
 			
 			for a, b in pairs( Core.KilledEvents ) do
 				
-				spawn( function ( )
-					
-					b( Killed, User, WeaponName, TypeName )
-					
-				end )
+				coroutine.wrap( b )( Killed, User, WeaponName, TypeName )
 				
 			end
 			
@@ -2212,7 +2210,7 @@ if IsClient then
 
 	end
 
-	spawn( function ( )
+	coroutine.wrap( function ( )
 
 		while true do
 
@@ -2228,7 +2226,7 @@ if IsClient then
 
 		end
 
-	end )
+	end )( )
 
 end
 
