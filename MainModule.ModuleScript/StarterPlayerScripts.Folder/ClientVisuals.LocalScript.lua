@@ -56,7 +56,7 @@ end
 
 Core.BulletArrived = Instance.new( "BindableEvent" )
 
-coroutine.wrap( game:GetService( "ContentProvider" ).PreloadAsync )( game:GetService( "ContentProvider" ), { script } )
+coroutine.wrap( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { script } ) end )
 
 local function AtPos( Position )
 	

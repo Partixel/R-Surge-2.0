@@ -391,6 +391,8 @@ else
 	
 end
 
+local LuaPreloadAsync = function ( ... ) ContentProvider:PreloadAsnyc( ... ) end
+
 function Core.GetGunStats( StatObj )
 
 	local StatMod = GunStatFolder:FindFirstChild( StatObj.Value, true )
@@ -403,7 +405,7 @@ function Core.GetGunStats( StatObj )
 		
 		if IsClient then
 			
-			coroutine.wrap( ContentProvider.PreloadAsync )( ContentProvider, { StatMod } )
+			coroutine.wrap( LuaPreloadAsync )( { StatMod } )
 			
 		end
 
