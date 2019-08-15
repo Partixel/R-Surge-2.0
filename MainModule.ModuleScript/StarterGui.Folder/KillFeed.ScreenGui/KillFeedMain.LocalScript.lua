@@ -1,4 +1,4 @@
-local Players, TweenService = game:GetService( "Players" ), game:GetService("TweenService" )
+local Players, TweenService, TextService = game:GetService( "Players" ), game:GetService("TweenService" ), game:GetService( "TextService" )
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
@@ -71,15 +71,22 @@ local function Scale( Feed )
 			HorizontalOffset = -Feed.Victim1.AbsoluteSize.X - 2
 			
 		end
-			
 		
 		if _G.S20Config.KillFeedVerticalAlign == "Bottom" then
 			
-			TweenService:Create( Feed, TweenInfo.new( 0 ), { Position = UDim2.new( HorizontalScale, HorizontalOffset, 0.175 - Feed.ActualPos.Value, 0  ) } ):Play( )
+			local Pos = UDim2.new( HorizontalScale, HorizontalOffset, 0.175 - Feed.ActualPos.Value, 0  )
+			
+			Feed.Position = Pos
+			
+			TweenService:Create( Feed, TweenInfo.new( 0 ), { Position = Pos } ):Play( )
 			
 		else
 			
-			TweenService:Create( Feed, TweenInfo.new( 0 ), { Position = UDim2.new( HorizontalScale, HorizontalOffset, Feed.ActualPos.Value, 0  ) } ):Play( )
+			local Pos = UDim2.new( HorizontalScale, HorizontalOffset, Feed.ActualPos.Value, 0  )
+			
+			Feed.Position = Pos
+			
+			TweenService:Create( Feed, TweenInfo.new( 0 ), { Position = Pos } ):Play( )
 			
 		end
 		
