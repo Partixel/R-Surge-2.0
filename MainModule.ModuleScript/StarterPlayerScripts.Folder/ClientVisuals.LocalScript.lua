@@ -352,7 +352,7 @@ Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatOb
 		
 	end
 	
-	if type( User ) == "userdata" and User:FindFirstChild( "S2Sparkles" ) and User.S2Sparkles.Value then
+	if type( User ) == "userdata" and User:FindFirstChild( "S2" ) and User.S2:FindFirstChild( "VIPSparkles" ) and User.S2.VIPSparkles.Value then
 		
 		if not Part:FindFirstChild( "Sparkles" ) then
 			
