@@ -574,7 +574,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 				
 			end
 			
-			RunService.RenderStepped:wait( )
+			RunService.Heartbeat:wait( )
 			
 		end
 		
@@ -620,7 +620,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		for a = 1, GunStats.BulletType.VisibleFrames or 3 do
 			
-			RunService.RenderStepped:wait( )
+			RunService.Heartbeat:wait( )
 			
 		end
 		
@@ -658,7 +658,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Parent = workspace.CurrentCamera
 		
-		RunService.RenderStepped:wait( )
+		RunService.RenderStepped:Wait( )
 		
 		local Arrived
 		
@@ -682,7 +682,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 			Bullet.CFrame = CF + CF.lookVector * ( Cur + CurSize / 2 )
 			
-			local Delta = RunService.RenderStepped:wait( )
+			local Delta = RunService.Heartbeat:wait( )
 			
 			Cur = Cur + ( Speed * Delta )
 			
