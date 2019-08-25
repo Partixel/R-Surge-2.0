@@ -750,11 +750,33 @@ end )
 
 local CurCC
 
+local Impacts = {}
+
+local ImpactNum = 0
+
 Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
 	
 	if not BulletType or BulletType.Name == "Kinectic" or BulletType.Name == "Laser" then
 		
 		if not Hit or not Hit.Parent then return end
+		
+		if ImpactNum > 150 then
+			
+			ImpactNum = ImpactNum - 1
+			
+			local Impact, Events = next( Impacts )
+			
+			Impact:Destroy( )
+			
+			Events[ 1 ]:Disconnect( )
+			
+			Events[ 2 ]:Disconnect( )
+			
+			Events[ 3 ]:Disconnect( )
+			
+			Impacts[ Impact ] = nil
+			
+		end
 		
 		local BulletHit = Instance.new( "CylinderHandleAdornment" )
 		
@@ -828,20 +850,6 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 			
 		end )
 		
-		Debris:AddItem( BulletHit, 120 )
-		
-		delay( 120, function ( )
-			
-			BulletHit:Destroy( )
-			
-			Event:Disconnect( )
-			
-			Event2:Disconnect( )
-			
-			Event3:Disconnect( )
-			
-		end )
-		
 		BulletHit2.Parent = workspace.CurrentCamera
 		
 		BulletHit.Parent = workspace.CurrentCamera
@@ -854,7 +862,29 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 			
 			BulletHit2.Radius = BulletHit2.Radius + 0.067
 			
-			RunService.RenderStepped:wait( )
+			RunService.Heartbeat:wait( )
+			
+		end
+		
+		Impacts[ BulletHit ] = { Event, Event2, Event3 }
+		
+		ImpactNum = ImpactNum + 1
+		
+		wait( 30 )
+		
+		if Impacts[ BulletHit ] then
+			
+			ImpactNum = ImpactNum - 1
+			
+			Impacts[ BulletHit ] = nil
+			
+			BulletHit:Destroy( )
+			
+			Event:Disconnect( )
+			
+			Event2:Disconnect( )
+			
+			Event3:Disconnect( )
 			
 		end
 		
