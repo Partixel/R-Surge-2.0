@@ -1,18 +1,12 @@
 Module = { }
 
-local KeybindRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "KeybindRemote" )
-
 local ContextChanged = Instance.new( "BindableEvent" )
 
 Module.ContextChanged = ContextChanged.Event
 
-local BindAdded = Instance.new( "BindableEvent" )
+Module.BindAdded = Instance.new( "BindableEvent" )
 
-Module.BindAdded = BindAdded.Event
-
-local BindChanged = Instance.new( "BindableEvent" )
-
-Module.BindChanged = BindChanged.Event
+Module.BindChanged = Instance.new( "BindableEvent" )
 
 local Binds = { }
 
@@ -172,16 +166,6 @@ function Module.GetBinds( )
 	
 end
 
-local SavedBinds
-
-KeybindRemote.OnClientEvent:Connect( function ( Binds )
-	
-	SavedBinds = Binds
-	
-	BindChanged:Fire( )
-	
-end )
-
 -- Name, Category, Callback, Key, PadKey, PadNum, ToggleState, CanToggle, OffOnDeath, NonRebindable, NoHandled
 function Module.AddBind( Bind )
 	
@@ -193,21 +177,21 @@ function Module.AddBind( Bind )
 	
 	Bind.State = false
 	
-	if SavedBinds and SavedBinds[ Bind.Name ] then
+	if Module.SavedBinds and Module.SavedBinds[ Bind.Name ] then
 		
-		if SavedBinds[ Bind.Name ][ "Key" ] ~= nil then Bind.Key = SavedBinds[ Bind.Name ][ "Key" ] end
+		if Module.SavedBinds[ Bind.Name ][ "Key" ] ~= nil then Bind.Key = Module.SavedBinds[ Bind.Name ][ "Key" ] end
 		
-		if SavedBinds[ Bind.Name ][ "PadKey" ] ~= nil then Bind.PadKey = SavedBinds[ Bind.Name ][ "PadKey" ] end
+		if Module.SavedBinds[ Bind.Name ][ "PadKey" ] ~= nil then Bind.PadKey = Module.SavedBinds[ Bind.Name ][ "PadKey" ] end
 		
-		if SavedBinds[ Bind.Name ][ "PadNum" ] ~= nil then Bind.PadNum = SavedBinds[ Bind.Name ][ "PadNum" ] end
+		if Module.SavedBinds[ Bind.Name ][ "PadNum" ] ~= nil then Bind.PadNum = Module.SavedBinds[ Bind.Name ][ "PadNum" ] end
 		
-		if SavedBinds[ Bind.Name ][ "ToggleState" ] ~= nil then Bind.ToggleState = SavedBinds[ Bind.Name ][ "ToggleState" ] end
+		if Module.SavedBinds[ Bind.Name ][ "ToggleState" ] ~= nil then Bind.ToggleState = Module.SavedBinds[ Bind.Name ][ "ToggleState" ] end
 		
 	end
 	
 	Binds[ Bind.Name ] = Bind
 	
-	BindAdded:Fire( Bind.Name, Bind )
+	Module.BindAdded:Fire( Bind.Name, Bind )
 	
 end
 
@@ -225,7 +209,7 @@ function Module.RemoveBind( Name )
 	
 	Binds[ Name ] = nil
 	
-	BindChanged:Fire( Name )
+	Module.BindChanged:Fire( Name )
 	
 end
 
@@ -243,7 +227,7 @@ function Module.SetToggleState( Name, Val )
 	
 	Binds[ Name ].ToggleState = Val
 	
-	BindChanged:Fire( Name )
+	Module.BindChanged:Fire( Name )
 	
 end
 
@@ -365,9 +349,7 @@ function Module.Defaults( Name )
 	
 	Bind.ToggleState = Bind.Defaults.ToggleState
 	
-	KeybindRemote:FireServer( Name )
-	
-	BindChanged:Fire( Name )
+	Module.BindChanged:Fire( Name, "Default" )
 	
 end
 
@@ -395,11 +377,9 @@ function Module.Rebind( Name, Type, TextObj )
 		
 		Module.SetToggleState( Name, not Binds[ Name ].ToggleState )
 		
-		KeybindRemote:FireServer( Name, "ToggleState", Binds[ Name ].ToggleState )
-		
 		Module.WriteToObj( TextObj, Binds[ Name ].ToggleState )
 		
-		BindChanged:Fire( Name )
+		Module.BindChanged:Fire( Name, "ToggleState", Binds[ Name ].ToggleState )
 		
 		return
 		
@@ -425,9 +405,7 @@ function Module.Rebind( Name, Type, TextObj )
 	
 	Binds[ Name ][ Type == Enum.UserInputType.Keyboard and "Key" or "PadKey" ] = Key
 	
-	KeybindRemote:FireServer( Name, Type == Enum.UserInputType.Keyboard and "Key" or "PadKey", Key )
-	
-	BindChanged:Fire( Name )
+	Module.BindChanged:Fire( Name, Type == Enum.UserInputType.Keyboard and "Key" or "PadKey", Key )
 	
 	Module.Rebinding = nil
 	

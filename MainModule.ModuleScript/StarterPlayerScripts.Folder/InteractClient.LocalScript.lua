@@ -100,7 +100,7 @@ KBU.ContextChanged:Connect( function ( )
 	
 end )
 
-KBU.BindChanged:Connect( function ( Name )
+KBU.BindChanged.Event:Connect( function ( Name )
 	
 	if not Name or Name == "Interact" then
 		

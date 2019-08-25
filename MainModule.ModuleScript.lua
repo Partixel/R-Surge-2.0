@@ -24,6 +24,8 @@ LoaderModule( script:WaitForChild( "StarterCharacterScripts" ) )
 
 LoaderModule( script:WaitForChild( "StarterGui" ) )
 
+LoaderModule( script:WaitForChild( "MenuModules" ), game:GetService( "ServerStorage" ):WaitForChild( "MenuModules" ) )
+
 if SetupModel then
 	
 	Config.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
@@ -33,6 +35,8 @@ if SetupModel then
 end
 
 local LuaRequire = function ( ... ) return require( ... ) end
+
+coroutine.wrap( LuaRequire )( game:GetService( "ServerStorage" ):FindFirstChild( "MenuLib" ) and game:GetService( "ServerStorage" ).MenuLib:FindFirstChild( "MainModule" ) or 3717582194 ) -- MenuLib
 
 if _G.S20Config.DebugEnabled ~= false then
 	
