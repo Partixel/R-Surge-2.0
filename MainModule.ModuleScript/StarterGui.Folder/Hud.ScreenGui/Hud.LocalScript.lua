@@ -228,11 +228,13 @@ end )
 
 Term.Visible = false
 
-if game.ReplicatedStorage:WaitForChild("RaidLib"):FindFirstChild( "HomeWinAmount" ) then
+if not game.ReplicatedStorage:WaitForChild("RaidLib", 5) then return end
+
+if game.ReplicatedStorage.RaidLib:FindFirstChild( "HomeWinAmount" ) then
 	
-	local HomeWinAmount = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "HomeWinAmount" )
+	local HomeWinAmount = game.ReplicatedStorage.RaidLib:WaitForChild( "HomeWinAmount" )
 	
-	local AwayWinAmount = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "AwayWinAmount" )
+	local AwayWinAmount = game.ReplicatedStorage.RaidLib:WaitForChild( "AwayWinAmount" )
 	
 	local WinPoints = 0
 	

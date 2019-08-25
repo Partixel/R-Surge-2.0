@@ -12,7 +12,7 @@ end
 local Minimum_Suggested_Denotation_Length = PredictiveLength
 game.Chat:WaitForChild("ChatModules")
 local EmojiList = require(game.Chat.ChatModules:WaitForChild("EmojiList"))
-local ChatSettings = require(game.Chat.ClientChatModules.ChatSettings)
+local ChatSettings = require(game.Chat:WaitForChild("ClientChatModules").ChatSettings)
 local Chat = game.Players.LocalPlayer.PlayerGui:WaitForChild("Chat")
 local BaseFrame = Chat.Frame.ChatBarParentFrame.Frame
 local TextBoxHolderFrame = BaseFrame.BoxFrame.Frame

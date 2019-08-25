@@ -424,7 +424,7 @@ Core.Visuals.CursorHitIndicator = Core.SharedVisuals.Event:Connect( function ( _
 			
 		end
 		
-		if not Noise then
+		if Noise then
 			
 			Core.ResetHitMarker = tick( ) + 0.2
 			

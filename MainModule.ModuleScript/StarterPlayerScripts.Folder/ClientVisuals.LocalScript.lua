@@ -263,18 +263,20 @@ Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User
 			end
 			
 		end
-		print(Hit, Type)
-		if not Noise then return end
 		
-		local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
-		
-		HitSound.Pitch = HitSound.Pitch * Type
-		
-		HitSound.Ended:Connect( function ( ) wait( ) HitSound:Destroy( ) end )
-		
-		HitSound.Parent = workspace.CurrentCamera
-		
-		HitSound:Play( )
+		if Noise then
+			
+			local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
+			
+			HitSound.Pitch = HitSound.Pitch * Type
+			
+			HitSound.Ended:Connect( function ( ) wait( ) HitSound:Destroy( ) end )
+			
+			HitSound.Parent = workspace.CurrentCamera
+			
+			HitSound:Play( )
+			
+		end
 		
 	end
 	

@@ -308,9 +308,13 @@ if _G.S20Config.CreditsPerPayday and _G.S20Config.CreditsPerPayday ~= 0 and _G.S
 			
 			for _, Plr in ipairs( Players:GetPlayers( ) ) do
 				
-				local Credits = _G.S20Config.ShowCredits and Plr:WaitForChild( "leaderstats" ):WaitForChild( "Credits" ) or Plr:WaitForChild( "Credits" )
+				local Credits = _G.S20Config.ShowCredits and ( Plr:FindFirstChild( "leaderstats" ) and Plr.leaderstats:FindFirstChild( "Credits" ) ) or Plr:FindFirstChild( "Credits" )
 				
-				Credits.Value = Credits.Value + _G.S20Config.CreditsPerPayday
+				if Credits then
+					
+					Credits.Value = Credits.Value + _G.S20Config.CreditsPerPayday
+					
+				end
 				
 			end
 			

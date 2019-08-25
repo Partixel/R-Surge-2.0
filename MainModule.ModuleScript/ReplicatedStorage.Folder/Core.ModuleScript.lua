@@ -391,7 +391,7 @@ else
 	
 end
 
-local LuaPreloadAsync = function ( ... ) ContentProvider:PreloadAsnyc( ... ) end
+local LuaPreloadAsync = function ( ... ) ContentProvider:PreloadAsync( ... ) end
 
 function Core.GetGunStats( StatObj )
 
@@ -480,17 +480,21 @@ Core.Selected = setmetatable( { }, { __mode = 'k' } )
 
 Core.WeaponTick = setmetatable( { }, { __mode = 'k' } )
 
-local SelectedHB
-
-function RunSelected( )
+function Core.RunSelected( )
 	
-	SelectedHB = RunService.Heartbeat:Connect( function ( Step )
+	Core.SelectedHB = RunService.Heartbeat:Connect( function ( Step )
 		
-		if not Core.Selected[ Players.LocalPlayer ] then SelectedHB:Disconnect( ) SelectedHB = nil end
+		if IsServer and not next( Core.Selected ) then Core.SelectedHB:Disconnect( ) Core.SelectedHB = nil end
 		
-		local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
-		
-		Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character } ) }
+		if IsClient then
+			
+			if not Core.Selected[ Players.LocalPlayer ] then Core.SelectedHB:Disconnect( ) Core.SelectedHB = nil end
+			
+			local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
+			
+			Core.LPlrsTarget = { Core.FindPartOnRayWithIgnoreFunction( Ray.new( UnitRay.Origin, UnitRay.Direction * 5000 ), Core.IgnoreFunction, { Players.LocalPlayer.Character } ) }
+			
+		end
 		
 		if next( Core.WeaponTick ) then
 			
@@ -628,9 +632,9 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
 	Core.Selected[ User ][ Weapon ] = tick( )
 	
-	if not SelectedHB then
+	if not Core.SelectedHB then
 		
-		RunSelected( )
+		Core.RunSelected( )
 		
 	end
 	
