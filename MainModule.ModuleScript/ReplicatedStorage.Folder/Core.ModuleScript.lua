@@ -584,17 +584,11 @@ function Core.RunSelected( )
 					
 					if not Needed then
 						
-						Remove[ #Remove + 1 ] = c
+						Core.WeaponTick[ c ] = nil
 						
 					end
 	
 				end
-				
-			end
-			
-			for a = 1, #Remove do
-				
-				Core.WeaponTick[ Remove[ a ] ] = nil
 				
 			end
 			
@@ -608,6 +602,8 @@ function Core.SetMouseDown( Weapon )
 	
 	Weapon.MouseDown = tick( )
 	
+	if Weapon.LastClick and Weapon.LastClick < tick( ) then Weapon.LastClick = nil end
+	
 	Core.WeaponTick[ Weapon ] = true
 	
 end
@@ -618,7 +614,7 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 
 	if not Weapon then return end
 
-	if Weapon.LastClick < tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 ) then
+	if not Weapon.LastClick or Weapon.LastClick < tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 ) then
 
 		Weapon.LastClick = tick( ) + ( Weapon.GunStats.SelectDelay or 0.2 )
 
@@ -785,8 +781,6 @@ function Core.Setup( StatObj )
 	Weapon.User = GunStats.User
 
 	Weapon.Events = { }
-
-	Weapon.LastClick = 0
 
 	Weapon.ShotRecoil = 0
 
@@ -975,6 +969,8 @@ function Core.Reload( Weapon )
 	if not Weapon.StatObj or not Weapon.GunStats.ClipSize or Weapon.GunStats.ReloadDelay < 0 or Weapon.GunStats.FireRate == 0 or Weapon.Reloading or next( Core.PreventReload ) or ( Weapon.StoredAmmo and Weapon.StoredAmmo == 0 ) then return end
 
 	if Weapon.GunStats.ClipSize > 0 and Weapon.Clip ~= Weapon.GunStats.ClipSize then
+		
+		Weapon.LastClick = nil
 
 		local ReloadTick = Weapon.MouseDown or tick( )
 
@@ -1136,7 +1132,7 @@ function Core.Fire( Weapon )
 
 	end
 
-	if FireMode.PreventFire or Weapon.LastClick >= tick( ) or Weapon.Reloading ~= nil then return end
+	if FireMode.PreventFire or ( Weapon.LastClick and Weapon.LastClick >= tick( ) ) or Weapon.Reloading ~= nil then return end
 
 	if Weapon.Clip == 0 then
 
@@ -1159,8 +1155,8 @@ function Core.Fire( Weapon )
 	end
 
 	local LastClick = 1 / Weapon.GunStats.FireRate
-
-	local Start = tick( )
+	
+	local Start = Weapon.LastClick or tick( )
 
 	local DelayBetweenShots = Weapon.GunStats.DelayBetweenShots or 0
 
@@ -1286,8 +1282,6 @@ function Core.Fire( Weapon )
 						
 					end
 					
-					--Weapon.Shotaaa = ( Weapon.Shotaaa or 0  ) + 1
-					
 				end
 
 			end
@@ -1341,28 +1335,22 @@ function Core.Fire( Weapon )
 		Weapon.ModeShots = 0
 
 	end
-
-end
-
---[[coroutine.wrap( function ( )
 	
-	while wait( 1 ) do
+	if Weapon.LastClick < tick( ) then
 		
-		for _, a in pairs( Core.Selected ) do
+		if Weapon.GunStats.WindupTime == nil or Weapon.GunStats.WindupTime == 0 then
 			
-			for c, _ in pairs( a ) do
-				
-				print( c.Shotaaa )
-				
-				c.Shotaaa = 0
-				
-			end
-		
+			Core.Fire( Weapon)
+	
+		elseif not Weapon.Reloading and  Weapon.Windup and Weapon.Windup >= Weapon.GunStats.WindupTime then
+			
+			Core.Fire( Weapon )
+			
 		end
 		
 	end
-	
-end)( )]]
+
+end
 
 Core.DamageType = {
 
