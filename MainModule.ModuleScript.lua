@@ -10,6 +10,8 @@ if SetupModel then
 	
 end
 
+require( game:GetService( "ServerStorage" ):FindFirstChild( "MenuLib" ) and game:GetService( "ServerStorage" ).MenuLib:FindFirstChild( "MainModule" ) or 3717582194 ) -- MenuLib
+
 local LoaderModule = require( game:GetService( "ServerStorage" ):FindFirstChild( "LoaderModule" ) and game:GetService( "ServerStorage" ).LoaderModule:FindFirstChild( "MainModule" ) or 03593768376 )( "S2", _G.S20Config )
 
 LoaderModule( script:WaitForChild( "ReplicatedStorage" ) )
