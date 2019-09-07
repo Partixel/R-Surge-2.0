@@ -46,10 +46,12 @@ Core.FireModes = {
 
 }
 
+local Heartbeat = RunService.Heartbeat
+
 local function hbwait(num)
 	local t=0
 	while t<num do
-		t = t + game["Run Service"].Heartbeat:wait( )
+		t = t + Heartbeat:wait( )
 	end
 	return t
 end
