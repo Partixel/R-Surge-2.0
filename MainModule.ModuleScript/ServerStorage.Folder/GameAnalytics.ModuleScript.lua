@@ -432,7 +432,7 @@ function ga:PlayerJoined(Player, teleportData)
 
     ga:startNewSession(Player, teleportData)
 
-    OnPlayerReadyEvent = OnPlayerReadyEvent or game:GetService("ReplicatedStorage"):WaitForChild("OnPlayerReadyEvent")
+    OnPlayerReadyEvent = OnPlayerReadyEvent or ReplicatedStorage:WaitForChild("OnPlayerReadyEvent")
     OnPlayerReadyEvent:Fire(Player)
 
     --Autosave

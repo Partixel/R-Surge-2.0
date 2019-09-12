@@ -53,7 +53,7 @@ local function populateConfigurations(player)
     end
 
     PlayerData.CommandCenterIsReady = true
-    GameAnalyticsCommandCenter = GameAnalyticsCommandCenter or game:GetService("ReplicatedStorage"):WaitForChild("GameAnalyticsCommandCenter")
+    GameAnalyticsCommandCenter = GameAnalyticsCommandCenter or game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("GameAnalyticsCommandCenter")
     GameAnalyticsCommandCenter:FireClient(player, PlayerData.Configurations)
 end
 
