@@ -52,7 +52,7 @@ KBU.AddBind( "Inspect", function ( Began, Died )
 		
 		local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 		
-		if _G.S20Config.AllowInspecting == false or not Weapon or Weapon.AllowInspecting == false then return false end
+		if Core.Config.AllowInspecting == false or not Weapon or Weapon.AllowInspecting == false then return false end
 		
 		PU.SetPose( "Inspecting", true )
 		

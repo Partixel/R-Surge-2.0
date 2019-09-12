@@ -8,7 +8,7 @@ Core.PreventCharacterRotation = { }
 
 Core.Visuals.CharacterRotation = Core.ClientVisuals.Event:Connect( function ( StatObj )
 	
-	if _G.S20Config.AllowCharacterRotation == false then return end
+	if Core.Config.AllowCharacterRotation == false then return end
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	

@@ -54,13 +54,13 @@ PU.Watch( "Crouching", "Crouch", function ( NPlr, State, Offset )
 				
 				WSMod.Name = "WalkSpeedModifier"
 				
-				WSMod.Value = _G.S20Config.CrouchSpeedMultiplier or 0.9
+				WSMod.Value = Core.Config.CrouchSpeedMultiplier or 0.9
 				
 				JPMod = Instance.new( "NumberValue" )
 				
 				JPMod.Name = "JumpPowerModifier"
 				
-				JPMod.Value = _G.S20Config.CrouchJumpPowerMultiplier or 0.6
+				JPMod.Value = Core.Config.CrouchJumpPowerMultiplier or 0.6
 				
 				WSMod.Parent = Hum
 				
@@ -154,7 +154,7 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 		
 		local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 		
-		if _G.S20Config.AllowCrouching == false then
+		if Core.Config.AllowCrouching == false then
 			
 			if not Weapon or Weapon.GunStats.PreventCrouch ~= false then return false end
 			
@@ -186,7 +186,7 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
 	if GunStats.PreventCrouch then KBU.SetToggle( "Crouch", false ) end
 	
-	if _G.S20Config.AllowCrouching == false and GunStats.PreventCrouch ~= false then
+	if Core.Config.AllowCrouching == false and GunStats.PreventCrouch ~= false then
 		
 		KBU.SetToggle( "Crouch", false )
 		
@@ -196,6 +196,6 @@ end )
 
 Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 	
-	if _G.S20Config.AllowCrouching == false then KBU.SetToggle( "Crouch", false ) end
+	if Core.Config.AllowCrouching == false then KBU.SetToggle( "Crouch", false ) end
 	
 end )

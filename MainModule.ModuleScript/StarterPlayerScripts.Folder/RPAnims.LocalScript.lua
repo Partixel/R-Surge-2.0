@@ -68,7 +68,7 @@ KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Began then
 		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowSalute == false or SDebounce or Surrendered ~= nil then return false end
+		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowSalute == false or SDebounce or Surrendered ~= nil then return false end
 		
 		SDebounce = true
 		
@@ -100,7 +100,7 @@ KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Beg
 	
 	if Began then
 		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowAtEase == false or ADebounce or Surrendered ~= nil then return false end
+		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowAtEase == false or ADebounce or Surrendered ~= nil then return false end
 		
 		ADebounce = true
 		
@@ -150,7 +150,7 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 	
 	if Began then
 		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or _G.S20Config.AllowSurrender == false then return false end
+		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowSurrender == false then return false end
 		
 		Surrendered = StarterGui:GetCoreGuiEnabled( Enum.CoreGuiType.Backpack )
 		

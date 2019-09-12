@@ -1,6 +1,4 @@
-while not _G.S20Config do wait( ) end
-
-local Config, Core = _G.S20Config, require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 Core.Visuals.ShotKnockback = Core.ServerVisuals.Event:Connect( function ( StatObj, _, Barrel, Hit, End )
 	
@@ -8,13 +6,13 @@ Core.Visuals.ShotKnockback = Core.ServerVisuals.Event:Connect( function ( StatOb
 	
 	local GunStats = Core.GetGunStats( StatObj )
 	
-	if Config.ShotKnockbackPercentage == 0 or GunStats.Knockback == 0 then return end
+	if Core.Config.ShotKnockbackPercentage == 0 or GunStats.Knockback == 0 then return end
 	
 	local Humanoid = Core.GetValidHumanoid( Hit )
 	
 	if not Humanoid and not GunStats.KnockAll then return end
 	
-	local Velocity = ( End - Barrel.Position ).Unit * math.abs( GunStats.Damage ) * ( ( GunStats.Range - ( End - Barrel.Position ).magnitude ) / GunStats.Range ) * Config.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 ) * ( GunStats.Knockback or 1 )
+	local Velocity = ( End - Barrel.Position ).Unit * math.abs( GunStats.Damage ) * ( ( GunStats.Range - ( End - Barrel.Position ).magnitude ) / GunStats.Range ) * Core.Config.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 ) * ( GunStats.Knockback or 1 )
 	
 	--Hit.Velocity = Hit.Velocity + Velocity
 	

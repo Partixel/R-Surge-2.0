@@ -1,14 +1,14 @@
 local ReplicatedStorage	= game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
+
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
 return function ( Main, ModFolder, VH_Events )
 	
-	while not _G.S20Config do wait( ) end
-	
 	local AtEase = ReplicatedStorage:FindFirstChild( "AtEase" ) or Instance.new( "BoolValue" )
 	
-	AtEase.Value = _G.S20Config.AllowAtEase ~= false
+	AtEase.Value = Core.Config.AllowAtEase ~= false
 	
 	AtEase.Name = "AtEase"
 	
@@ -16,7 +16,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local Sprint = ReplicatedStorage:FindFirstChild( "Sprint" ) or Instance.new( "BoolValue" )
 	
-	Sprint.Value = _G.S20Config.AllowSprinting ~= false
+	Sprint.Value = Core.Config.AllowSprinting ~= false
 	
 	Sprint.Name = "Sprint"
 	
@@ -24,7 +24,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local Crouch = ReplicatedStorage:FindFirstChild( "Crouch" ) or Instance.new( "BoolValue" )
 	
-	Crouch.Value =_G.S20Config.AllowCrouching ~= false
+	Crouch.Value =Core.Config.AllowCrouching ~= false
 	
 	Crouch.Name = "Crouch"
 	
@@ -32,7 +32,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local Salute = ReplicatedStorage:FindFirstChild( "Salute" ) or Instance.new( "BoolValue" )
 	
-	Salute.Value = _G.S20Config.AllowSalute ~= false
+	Salute.Value = Core.Config.AllowSalute ~= false
 	
 	Salute.Name = "Salute"
 	
@@ -40,7 +40,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local CharacterRotation = ReplicatedStorage:FindFirstChild( "CharacterRotation" ) or Instance.new( "BoolValue" )
 	
-	CharacterRotation.Value = _G.S20Config.AllowCharacterRotation ~= false
+	CharacterRotation.Value = Core.Config.AllowCharacterRotation ~= false
 	
 	CharacterRotation.Name = "CharacterRotation"
 	
@@ -48,7 +48,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local Surrender = ReplicatedStorage:FindFirstChild( "Surrender" ) or Instance.new( "BoolValue" )
 	
-	Surrender.Value = _G.S20Config.AllowSurrender ~= false
+	Surrender.Value = Core.Config.AllowSurrender ~= false
 	
 	Surrender.Name = "Surrender"
 	
@@ -56,7 +56,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local TeamKill = ReplicatedStorage:FindFirstChild( "TeamKill" ) or Instance.new( "BoolValue" )
 	
-	TeamKill.Value = _G.S20Config.AllowTeamKill == true
+	TeamKill.Value = Core.Config.AllowTeamKill == true
 	
 	TeamKill.Name = "TeamKill"
 	
@@ -100,7 +100,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowSprinting = Args[ 1 ]
+			Core.Config.AllowSprinting = Args[ 1 ]
 			
 			Sprint.Value = Args[ 1 ]
 			
@@ -124,7 +124,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowCrouching = Args[ 1 ]
+			Core.Config.AllowCrouching = Args[ 1 ]
 			
 			Crouch.Value = Args[ 1 ]
 			
@@ -148,7 +148,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowAtEase = Args[ 1 ]
+			Core.Config.AllowAtEase = Args[ 1 ]
 			
 			AtEase.Value = Args[ 1 ]
 			
@@ -172,7 +172,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowSalute = Args[ 1 ]
+			Core.Config.AllowSalute = Args[ 1 ]
 			
 			Salute.Value = Args[ 1 ]
 			
@@ -196,7 +196,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowCharacterRotation = Args[ 1 ]
+			Core.Config.AllowCharacterRotation = Args[ 1 ]
 			
 			CharacterRotation.Value = Args[ 1 ]
 			
@@ -220,7 +220,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowSurrender = Args[ 1 ]
+			Core.Config.AllowSurrender = Args[ 1 ]
 			
 			Surrender.Value = Args[ 1 ]
 			
@@ -244,7 +244,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			_G.S20Config.AllowTeamKill = Args[ 1 ]
+			Core.Config.AllowTeamKill = Args[ 1 ]
 			
 			TeamKill.Value = Args[ 1 ]
 			

@@ -118,7 +118,7 @@ PU.Watch( "Sprinting", "Sprint", function ( NPlr, State, Offset )
 				
 				WSMod.Name = "WalkSpeedModifier"
 				
-				WSMod.Value = _G.S20Config.SprintSpeedMultiplier or 1.35
+				WSMod.Value = Core.Config.SprintSpeedMultiplier or 1.35
 				
 				WSMod.Parent = Hum
 				
@@ -160,7 +160,7 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 			
 			local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 			
-			if _G.S20Config.AllowSprinting == false and ( not Weapon or Weapon.GunStats.PreventSprint ~= false ) then return false end
+			if Core.Config.AllowSprinting == false and ( not Weapon or Weapon.GunStats.PreventSprint ~= false ) then return false end
 			
 --			if Weapon and ( Weapon.GunStats.PreventSprint or Weapon.Reloading ) then return false end
 			
@@ -212,12 +212,12 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
 	if GunStats.PreventSprint then KBU.SetToggle( "Sprint", false ) end
 	
-	if _G.S20Config.AllowSprinting == false and GunStats.PreventSprint ~= false then KBU.SetToggle( "Sprint", false ) end
+	if Core.Config.AllowSprinting == false and GunStats.PreventSprint ~= false then KBU.SetToggle( "Sprint", false ) end
 	
 end )
 
 Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 	
-	if _G.S20Config.AllowSprinting == false then KBU.SetToggle( "Sprint", false ) end
+	if Core.Config.AllowSprinting == false then KBU.SetToggle( "Sprint", false ) end
 	
 end )

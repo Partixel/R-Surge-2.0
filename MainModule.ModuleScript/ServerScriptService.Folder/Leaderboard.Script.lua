@@ -12,7 +12,7 @@ RemoteKilled.Name = "RemoteKilled"
 
 RemoteKilled.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
-if _G.S20Config.CountTeam then
+if Core.Config.TeamCounts then
 	
 	local Teams = game:GetService( "Teams" )
 	
@@ -72,7 +72,7 @@ local function OnDeath( Damageable )
 		
 		RemoteKilled:FireAllClients( DeathInfo )
 		
-		if _G.S20Config.SupportLegacyKOs then
+		if Core.Config.SupportLegacyKOs then
 			
 			local Creator = Damageable:FindFirstChild( "creator" )
 			
@@ -82,11 +82,11 @@ local function OnDeath( Damageable )
 				
 				Creator.Value:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Creator.Value.leaderstats.KOs.Value + 1
 				
-				if _G.S20Config.CreditsPerKill then
+				if Core.Config.CreditsPerKill then
 					
 					local Credits = Creator.Value:FindFirstChild( "Credits", true )
 					
-					if Credits then Credits.Value = math.floor( Credits.Value + _G.S20Config.CreditsPerKill, 0 ) end
+					if Credits then Credits.Value = math.floor( Credits.Value + Core.Config.CreditsPerKill, 0 ) end
 					
 				end
 				
@@ -156,13 +156,13 @@ end
 
 Core.ObjDamaged.Event:Connect( function ( User, Damageable, Amount, PrevHealth )
 	
-	if typeof( User ) == "Instance" and ( _G.S20Config.CreditsPerKill or _G.S20Config.CreditsPerHeal ) and not CollectionService:HasTag( Damageable, "s2nokos" ) then
+	if typeof( User ) == "Instance" and ( Core.Config.CreditsPerDamage or Core.Config.CreditsPerHeal ) and not CollectionService:HasTag( Damageable, "s2nokos" ) then
 		
 		local Credits = User:FindFirstChild( "Credits", true )
 		
 		if Credits then
 			
-			Credits.Value = math.floor( Credits.Value + math.abs( Amount ) * ( ( Amount > 0 and _G.S20Config.CreditsPerDamage or _G.S20Config.CreditsPerHeal ) or 0 ), 0 )
+			Credits.Value = math.floor( Credits.Value + math.abs( Amount ) * ( Amount > 0 and ( Core.Config.CreditsPerDamage or 0 ) or ( Core.Config.CreditsPerHeal or 0 ) ), 0 )
 			
 		end
 		
@@ -218,7 +218,7 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 		
 	end
 	
-	if _G.S20Config.ShowAssists and Assister ~= DeathInfo.Killer then
+	if Core.Config.ShowAssists and Assister ~= DeathInfo.Killer then
 		
 		DeathInfo.Assister, DeathInfo.AssisterDamage = Assister, AssisterDamage
 		
@@ -232,11 +232,11 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 				
 				DeathInfo.Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = DeathInfo.Killer.leaderstats.KOs.Value + KOs
 				
-				if _G.S20Config.CreditsPerKill then
+				if Core.Config.CreditsPerKill then
 					
 					local Credits = DeathInfo.Killer:FindFirstChild( "Credits", true )
 					
-					if Credits then Credits.Value = math.floor( Credits.Value + KOs * _G.S20Config.CreditsPerKill, 0 ) end
+					if Credits then Credits.Value = math.floor( Credits.Value + KOs * Core.Config.CreditsPerKill, 0 ) end
 					
 				end
 				
@@ -250,11 +250,11 @@ Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName,
 				
 				DeathInfo.Assister:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = DeathInfo.Assister.leaderstats.Assists.Value + KOs
 				
-				if _G.S20Config.CreditsPerKill then
+				if Core.Config.CreditsPerKill then
 					
 					local Credits = DeathInfo.Assister:FindFirstChild( "Credits", true )
 					
-					if Credits then Credits.Value = math.floor( Credits.Value + KOs * ( _G.S20Config.CreditsPerAssist or _G.S20Config.CreditsPerKill / 2 ), 0 ) end
+					if Credits then Credits.Value = math.floor( Credits.Value + KOs * ( Core.Config.CreditsPerAssist or Core.Config.CreditsPerKill / 2 ), 0 ) end
 					
 				end
 				
@@ -272,11 +272,11 @@ end
 
 local Allies
 
-if _G.S20Config.RankGroupId then
+if Core.Config.RankGroupId then
 	
 	Allies = { }
 	
-	local Pages = GroupService:GetAlliesAsync( _G.S20Config.RankGroupId )
+	local Pages = GroupService:GetAlliesAsync( Core.Config.RankGroupId )
 	
 	while true do
 		
@@ -300,19 +300,19 @@ if _G.S20Config.RankGroupId then
 	
 end
 
-if _G.S20Config.CreditsPerPayday and _G.S20Config.CreditsPerPayday ~= 0 and _G.S20Config.PaydayDelay and _G.S20Config.PaydayDelay > 0 then
+if Core.Config.CreditsPerPayday and Core.Config.CreditsPerPayday ~= 0 and Core.Config.PaydayDelay and Core.Config.PaydayDelay > 0 then
 	
 	coroutine.wrap( function ( )
 		
-		while wait( _G.S20Config.PaydayDelay ) do
+		while wait( Core.Config.PaydayDelay ) do
 			
 			for _, Plr in ipairs( Players:GetPlayers( ) ) do
 				
-				local Credits = _G.S20Config.ShowCredits and ( Plr:FindFirstChild( "leaderstats" ) and Plr.leaderstats:FindFirstChild( "Credits" ) ) or Plr:FindFirstChild( "Credits" )
+				local Credits = Core.Config.ShowCredits and ( Plr:FindFirstChild( "leaderstats" ) and Plr.leaderstats:FindFirstChild( "Credits" ) ) or Plr:FindFirstChild( "Credits" )
 				
 				if Credits then
 					
-					Credits.Value = Credits.Value + _G.S20Config.CreditsPerPayday
+					Credits.Value = Credits.Value + Core.Config.CreditsPerPayday
 					
 				end
 				
@@ -338,17 +338,17 @@ local function PlayerAdded( Plr )
 	
 	local Assists = Instance.new( "IntValue" )
 	
-	Assists.Parent = _G.S20Config.ShowAssists and leaderstats or Plr
+	Assists.Parent = Core.Config.ShowAssists and leaderstats or Plr
 	
 	Assists.Name = "Assists"
 	
 	local WOs = Instance.new( "IntValue" )
 	
-	WOs.Parent = _G.S20Config.ShowWOs and leaderstats or Plr
+	WOs.Parent = Core.Config.ShowWOs and leaderstats or Plr
 	
 	WOs.Name = "WOs"
 	
-	if _G.S20Config.RankGroupId ~= nil then
+	if Core.Config.RankGroupId ~= nil then
 		
 		local Rank = Instance.new( "StringValue" )
 		
@@ -356,7 +356,7 @@ local function PlayerAdded( Plr )
 		
 		Rank.Name = "Rank"
 		
-		Rank.Value = Plr:GetRoleInGroup( _G.S20Config.RankGroupId )
+		Rank.Value = Plr:GetRoleInGroup( Core.Config.RankGroupId )
 		
 		if Rank.Value == "Guest" then
 			
@@ -382,13 +382,13 @@ local function PlayerAdded( Plr )
 	
 	local Credits = Instance.new( "IntValue" )
 	
-	Credits.Parent = _G.S20Config.ShowCredits and leaderstats or Plr
+	Credits.Parent = Core.Config.ShowCredits and leaderstats or Plr
 	
 	Credits.Name = "Credits"
 	
-	Credits.Value = _G.S20Config.SaveCredits and DataStore2( "Credits", Plr ):Get( ) or _G.S20Config.DefaultCredits or 0
+	Credits.Value = Core.Config.SaveCredits and DataStore2( "Credits", Plr ):Get( ) or Core.Config.DefaultCredits or 0
 	
-	if _G.S20Config.SaveCredits then
+	if Core.Config.SaveCredits then
 		
 		DataStore2( "Credits", Plr ):BeforeSave( function ( )
 			

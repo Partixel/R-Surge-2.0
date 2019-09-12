@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
-while not _G.S20Config do wait( ) end
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local PoseUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "PoseUtil" ) )
 
@@ -8,23 +8,23 @@ local KeybindUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChi
 	
 return function ( Main, ModFolder, VH_Events )
 	
-	_G.S20Config.AllowSprinting = ReplicatedStorage:WaitForChild( "Sprint" ).Value
+	Core.Config.AllowSprinting = ReplicatedStorage:WaitForChild( "Sprint" ).Value
 	
-	_G.S20Config.AllowCrouching = ReplicatedStorage:WaitForChild( "Crouch" ).Value
+	Core.Config.AllowCrouching = ReplicatedStorage:WaitForChild( "Crouch" ).Value
 	
-	_G.S20Config.AllowAtEase = ReplicatedStorage:WaitForChild( "AtEase" ).Value
+	Core.Config.AllowAtEase = ReplicatedStorage:WaitForChild( "AtEase" ).Value
 	
-	_G.S20Config.AllowSalute = ReplicatedStorage:WaitForChild( "Salute" ).Value
+	Core.Config.AllowSalute = ReplicatedStorage:WaitForChild( "Salute" ).Value
 	
-	_G.S20Config.AllowCharacterRotation = ReplicatedStorage:WaitForChild( "CharacterRotation" ).Value
+	Core.Config.AllowCharacterRotation = ReplicatedStorage:WaitForChild( "CharacterRotation" ).Value
 	
-	_G.S20Config.AllowSurrender = ReplicatedStorage:WaitForChild( "Surrender" ).Value
+	Core.Config.AllowSurrender = ReplicatedStorage:WaitForChild( "Surrender" ).Value
 	
-	_G.S20Config.AllowTeamKill = ReplicatedStorage:WaitForChild( "TeamKill" ).Value
+	Core.Config.AllowTeamKill = ReplicatedStorage:WaitForChild( "TeamKill" ).Value
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Sprint.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowSprinting = Value
+		Core.Config.AllowSprinting = Value
 		
 		if not Value then
 			
@@ -36,7 +36,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Crouch.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowCrouching = Value
+		Core.Config.AllowCrouching = Value
 		
 		if not Value then
 			
@@ -48,7 +48,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.AtEase.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowAtEase = Value
+		Core.Config.AllowAtEase = Value
 		
 		if not Value then
 			
@@ -60,7 +60,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Surrender.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowSurrender = Value
+		Core.Config.AllowSurrender = Value
 		
 		if not Value then
 			
@@ -72,19 +72,19 @@ return function ( Main, ModFolder, VH_Events )
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.TeamKill.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowTeamKill = Value
+		Core.Config.AllowTeamKill = Value
 		
 	end )
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.CharacterRotation.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowCharacterRotation = Value
+		Core.Config.AllowCharacterRotation = Value
 		
 	end )
 	
 	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Salute.Changed:Connect( function( Value )
 		
-		_G.S20Config.AllowSalute = Value
+		Core.Config.AllowSalute = Value
 		
 		if not Value then
 			
