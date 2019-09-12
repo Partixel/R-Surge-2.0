@@ -186,7 +186,7 @@ function Core.RunCursorHeartbeat( )
 			
 		end
 		
-		if not Weapon or not Core.ShowCursor or _G.S20Config.CursorImage or Weapon.CursorImage then
+		if not Weapon or not Core.ShowCursor or Core.Config.CursorImage or Weapon.CursorImage then
 			
 			Core.CursorHeartbeat:Disconnect( )
 			
@@ -194,7 +194,7 @@ function Core.RunCursorHeartbeat( )
 			
 			script.Parent.Center.Visible = false
 			
-			if not LastWep or _G.S20Config.CursorImage or LastWep.CursorImage then return end
+			if not LastWep or Core.Config.CursorImage or LastWep.CursorImage then return end
 			
 			if not LastWep.GunStats then print( LastWep, LastWep.Tool ) return end
 			
@@ -264,7 +264,7 @@ function Core.RunCursorHeartbeat( )
 		
 		script.Parent.Center.Rotation = Rot
 		
-		if ( not _G.S20Config.DisableCursorRotation and ThemeUtil.GetThemeFor( "S2_CursorRotate") and ( not Weapon.Reloading or ReloadRot ) ) or ( ReloadRot and Weapon.Reloading ) then
+		if ( not Core.Config.DisableCursorRotation and ThemeUtil.GetThemeFor( "S2_CursorRotate") and ( not Weapon.Reloading or ReloadRot ) ) or ( ReloadRot and Weapon.Reloading ) then
 			
 			if RotateCenterWith then
 				
@@ -378,7 +378,7 @@ function WeaponSelected( Mod )
 	
 	local Weapon = Core.GetWeapon( Mod )
 	
-	if not Weapon or Weapon.User ~= Plr or _G.S20Config.CursorImage or Weapon.CursorImage then return end
+	if not Weapon or Weapon.User ~= Plr or Core.Config.CursorImage or Weapon.CursorImage then return end
 	
 	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor then
 		
