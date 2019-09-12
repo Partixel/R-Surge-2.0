@@ -210,7 +210,7 @@ function state:startNewSession(player, teleportData)
     end
 
     if state:isEventSubmissionEnabled() then
-        --events:addSessionStartEvent(player.UserId, teleportData)
+        events:addSessionStartEvent(player.UserId, teleportData)
     end
 end
 
@@ -218,7 +218,7 @@ function state:endSession(playerId)
     if state.Initialized and state:isEventSubmissionEnabled() then
         logger:i("Ending session.")
         if state:isEnabled(playerId) and state:sessionIsStarted(playerId) then
-            --events:addSessionEndEvent(playerId)
+            events:addSessionEndEvent(playerId)
             store.PlayerCache[playerId] = nil
         end
     end

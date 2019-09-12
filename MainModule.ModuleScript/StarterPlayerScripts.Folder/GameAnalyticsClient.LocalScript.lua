@@ -4,11 +4,11 @@
 --Services
 local GS = game:GetService("GuiService")
 local UIS = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild( "S2" )
-local getPlatform = ReplicatedStorage:WaitForChild( "getPlatform" )
+local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild("S2")
+local Postie = require(ReplicatedStorage:WaitForChild("Postie"))
 
 --Functions
-function getPlatform.OnClientInvoke()
+local function getPlatform()
 
     if (GS:IsTenFootInterface()) then
         return "Console"
@@ -18,6 +18,14 @@ function getPlatform.OnClientInvoke()
         return "Desktop"
     end
 end
+
+--Filtering
+Postie.SetCallback("getPlatform", getPlatform);
+
+-- debug stuff
+--GameAnalyticsSendMessage.OnClientEvent:Connect(function(chatProperties)
+--    game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", chatProperties)
+--end)
 
 local ClientLog = ReplicatedStorage:WaitForChild( "ClientLog" )
 

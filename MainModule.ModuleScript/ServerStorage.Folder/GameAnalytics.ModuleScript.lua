@@ -17,8 +17,10 @@ local events = require(script.Events)
 local Players = game:GetService("Players")
 local MKT = game:GetService("MarketplaceService")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild( "S2" )
+local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild("S2")
+local Postie = require(ReplicatedStorage:WaitForChild("Postie"))
 local ProductCache = {}
+local OnPlayerReadyEvent
 
 
 -- local functions
@@ -166,6 +168,10 @@ function ga:endSession(playerId)
         end
         state:endSession(playerId)
     end)
+end
+
+function ga:filterForBusinessEvent(text)
+	return string.gsub(text, "[^A-Za-z0-9%s%-_%.%(%)!%?]", "")
 end
 
 function ga:addBusinessEvent(playerId, options)
@@ -400,12 +406,6 @@ function ga:getConfigurationsContentAsString(playerId)
     return state:getConfigurationsContentAsString(playerId)
 end
 
-local getPlatform = Instance.new( "RemoteFunction" )
-
-getPlatform.Name = "getPlatform"
-
-getPlatform.Parent = ReplicatedStorage
-
 function ga:PlayerJoined(Player, teleportData)
     if store.PlayerCache[Player.UserId] then
         return
@@ -415,7 +415,7 @@ function ga:PlayerJoined(Player, teleportData)
     local PlayerData = store:GetPlayerData(Player)
 
     local PlayerPlatform = "unknown"
-    local isSuccessful, platform = pcall( getPlatform.InvokeClient, getPlatform, Player )
+    local isSuccessful, platform = Postie.InvokeClient("getPlatform", Player, 5)
     if isSuccessful then
         PlayerPlatform = platform
     end
@@ -427,11 +427,13 @@ function ga:PlayerJoined(Player, teleportData)
 
     store.PlayerCache[Player.UserId] = PlayerData
 
-    PlayerData.Platform = (PlayerPlatform == "Console" and "uwp_console") or (PlayerPlatform == "Mobile" and "uwp_mobile") or (PlayerPlatform == "Desktop" and "uwp_desktop") or ("unknown")
+    PlayerData.Platform = (PlayerPlatform == "Console" and "uwp_console") or (PlayerPlatform == "Mobile" and "uwp_mobile") or (PlayerPlatform == "Desktop" and "uwp_desktop") or ("uwp_desktop")
     PlayerData.OS = PlayerData.Platform .. " 0.0.0"
 
     ga:startNewSession(Player, teleportData)
 
+    OnPlayerReadyEvent = OnPlayerReadyEvent or game:GetService("ReplicatedStorage"):WaitForChild("OnPlayerReadyEvent")
+    OnPlayerReadyEvent:Fire(Player)
 
     --Autosave
     spawn(function()
@@ -456,8 +458,16 @@ function ga:PlayerRemoved(Player)
     store:SavePlayerData(Player)
 
     local PlayerData = store.PlayerCache[Player.UserId]
-    if not PlayerData.PlayerTeleporting then
+    if PlayerData and not PlayerData.PlayerTeleporting then
         ga:endSession(Player.UserId)
+    end
+end
+
+function ga:isPlayerReady(playerId)
+    if store.PlayerCache[playerId] then
+        return true
+    else
+        return false
     end
 end
 
@@ -476,7 +486,7 @@ function ga:ProcessReceiptCallback(Info)
     ga:addBusinessEvent(Info.PlayerId, {
         amount = Info.CurrencySpent,
         itemType = "DeveloperProduct",
-        itemId = ProductInfo.Name
+        itemId = ga:filterForBusinessEvent(ProductInfo.Name)
     })
 end
 

@@ -13,7 +13,7 @@ if not script:IsDescendantOf(game:GetService("ServerScriptService")) then
 end
 
 --Modules
-local GameAnalytics = require(ServerStorage:WaitForChild( "GameAnalytics" ))
+local GameAnalytics = require(ServerStorage:WaitForChild("GameAnalytics"))
 local Settings = require(ServerStorage.GameAnalytics.Settings)
 local Players = game:GetService("Players")
 
@@ -47,9 +47,8 @@ GameAnalytics:initialize({
     gameKey = Settings.GameKey,
     secretKey = Settings.SecretKey
 })
---[[
+
 -- Fire for players already in game
 for _, Player in pairs(Players:GetPlayers()) do
     GameAnalytics:PlayerJoined(Player)
 end
-]]

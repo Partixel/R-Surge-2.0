@@ -4,7 +4,7 @@
 
 --]]
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild( "S2" )
+local ReplicatedStorage = game:GetService("ReplicatedStorage"):WaitForChild("S2")
 local ServerStorage = game:GetService("ServerStorage")
 
 --Validate
@@ -24,6 +24,13 @@ if not ReplicatedStorage:FindFirstChild("GameAnalyticsCommandCenter") then
     --Create
     local f = Instance.new("RemoteEvent")
     f.Name = "GameAnalyticsCommandCenter"
+    f.Parent = ReplicatedStorage
+end
+
+if not ReplicatedStorage:FindFirstChild("OnPlayerReadyEvent") then
+    --Create
+    local f = Instance.new("BindableEvent")
+    f.Name = "OnPlayerReadyEvent"
     f.Parent = ReplicatedStorage
 end
 
@@ -238,10 +245,10 @@ MKT.PromptGamePassPurchaseFinished:Connect(function(Player, ID, Purchased)
     GameAnalytics:addBusinessEvent(Player.UserId, {
         amount = GamepassInfo.PriceInRobux,
         itemType = "Gamepass",
-        itemId = GamepassInfo.Name
+        itemId = GameAnalytics:filterForBusinessEvent(GamepassInfo.Name)
     })
 end)
---[[
+
 -- Fire for players already in game
 for _, Player in pairs(Players:GetPlayers()) do
     GameAnalytics:PlayerJoined(Player)
@@ -261,4 +268,4 @@ end)
 -- Players leaving
 Players.PlayerRemoving:Connect(function(Player)
     GameAnalytics:PlayerRemoved(Player)
-end)]]
+end)
