@@ -126,7 +126,51 @@ local Presets = {
 		S2_CursorTransparency = 0
 		
 	},
+	[ "Peekay's Preset" ] = { 
 	
+		S2_CursorDistFromCenter = 15,
+	
+		S2_CursorBorderWidth = 0,
+	
+		S2_CursorSwapWidthHeight = true,
+	
+		S2_CursorCenterBorder = Color3.fromRGB( 46, 46, 46 ),
+	
+		S2_CursorCenterBorderTransparency = 1,
+	
+		S2_CursorCenterWidth = 2,
+	
+		S2_CursorBorder = Color3.fromRGB( 46, 46, 46 ),
+	
+		S2_CursorDynamicMovement = false,
+	
+		S2_CursorHeight = 10,
+	
+		S2_CursorCenterRotateWith = false,
+	
+		S2_CursorCenterRotation = 0,
+	
+		S2_CursorCenterBorderWidth = 0,
+	
+		S2_CursorColor = Color3.fromRGB( 255, 255, 0 ),
+	
+		S2_CursorCenterTransparency = 0,
+	
+		S2_CursorRotateReload = false,
+	
+		S2_CursorRotate = false,
+	
+		S2_CursorWidth = 2,
+	
+		S2_CursorRotation = 0,
+	
+		S2_CursorCenterHeight = 2,
+	
+		S2_CursorCenterColor = Color3.fromRGB( 255, 255, 0 ),
+	
+		S2_CursorTransparency = 0.2
+	
+	},	
 	[ "Box in box" ] = { 
 		
 		S2_CursorDistFromCenter = 5,
