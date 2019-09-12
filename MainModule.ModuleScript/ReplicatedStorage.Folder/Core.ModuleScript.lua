@@ -1775,7 +1775,13 @@ if IsServer then
 
 		User = User or Plr
 
-		if tick( ) - Time > 1 then warn( ( User.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
+		if tick( ) - Time > 1 then
+			
+			warn( User.Name .. " took too long to send shot packet, discarding! - "  .. ( tick( ) - Time ) )
+			
+			return
+			
+		end
 
 		local GunStats = Core.GetGunStats( StatObj )
 
@@ -1818,7 +1824,31 @@ if IsServer then
 					End = Offset
 					
 					Offset = nil
-								
+					
+				end
+				
+				if Hit then
+					
+					if math.abs( Offset.X ) > Hit.Size.X / 2 + 0.05 then
+						
+						warn( User.Name .. " may be hit box expanding - Part size X is " .. Hit.Size.X / 2 .. " they claimed to hit at " .. Offset.X )
+						
+						return
+						
+					elseif math.abs( Offset.Y ) > Hit.Size.Y / 2 + 0.05 then
+						
+						warn( User.Name .. " may be hit box expanding - Part size Y is " .. Hit.Size.Y / 2 .. " they claimed to hit at " .. Offset.Y )
+						
+						return
+						
+					elseif math.abs( Offset.Z ) > Hit.Size.Z / 2 + 0.05 then
+						
+						warn( User.Name .. " may be hit box expanding - Part size Z is " .. Hit.Size.Z / 2 .. " they claimed to hit at " .. Offset.Z )
+						
+						return
+						
+					end
+					
 				end
 				
 				local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
