@@ -1,16 +1,12 @@
-local Core = { }
+local Core = { Config = require( game:GetService("ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Config" ) ) or _G.S20Config }
 
-local RunService, Players, ContextActionService, CollectionService, ContentProvider = game:GetService( "RunService" ), game:GetService( "Players" ), game:GetService( "ContextActionService" ), game:GetService( "CollectionService" ), game:GetService( "ContentProvider" )
+local RunService, Players, ContextActionService, CollectionService = game:GetService( "RunService" ), game:GetService( "Players" ), game:GetService( "ContextActionService" ), game:GetService( "CollectionService" )
 
-while not _G.S20Config do wait( ) end
-
-local Config = _G.S20Config
+local IsServer = RunService:IsServer( )
 
 Core.ShotRemote = script:WaitForChild( "ShotRemote" )
 
 Core.ClientSync = script.ClientSync
-
-Core.DropHat = script.DropHat
 
 Core.WeaponSelected = Instance.new( "BindableEvent" )
 
@@ -34,17 +30,7 @@ Core.DamageableAdded = Instance.new( "BindableEvent" )
 
 Core.FiringEnded = Instance.new( "BindableEvent" )
 
-Core.FireModes = {
-
-	Auto = { Name = "Auto", Automatic = true },
-
-	Semi = { Name = "Semi" },
-
-	Burst = { Name = "Burst", Shots = 3 },
-
-	Safety = { Name = "Safety", PreventFire = true }
-
-}
+Core.Visuals = { }
 
 local Heartbeat = RunService.Heartbeat
 
@@ -365,12 +351,6 @@ for a = 1, #Descendants do
 	
 end
 
-Core.Visuals = { }
-
-local IsClient = RunService:IsClient( )
-
-local IsServer = RunService:IsServer( )
-
 local GunStatFolder
 
 if IsServer then
@@ -393,82 +373,11 @@ else
 	
 end
 
-local LuaPreloadAsync = function ( ... ) ContentProvider:PreloadAsync( ... ) end
-
 function Core.GetGunStats( StatObj )
-
-	local StatMod = GunStatFolder:FindFirstChild( StatObj.Value, true )
-
-	local Stats = require( StatMod )
-
-	if not Stats.Required then
-
-		Stats.Required = true
-		
-		if IsClient then
-			
-			coroutine.wrap( LuaPreloadAsync )( { StatMod } )
-			
-		end
-
-	end
-
-	return Stats
-
-end
-
-function Core.ToolAdded( Tool, Plr )
 	
-	local StatObj = Tool:FindFirstChild( "GunStat" )
-
-	if StatObj and not Core.Weapons[ StatObj ] then
-
-		if IsClient then
-
-			local Weapon = Core.Setup( StatObj )
-
-			Core.PlayerToUser( Weapon, Plr )
-
-		else
-
-			Core.Weapons[ StatObj ] = true
-
-			Tool.Equipped:Connect( function ( )
-				
-				Core.WeaponSelected:Fire( StatObj, Plr )
-
-			end )
-
-			Tool.Unequipped:Connect( function ( )
-				
-				Core.WeaponDeselected:Fire( StatObj, Plr )
-
-			end )
-
-		end
-
-	end
-
+	return require( GunStatFolder:FindFirstChild( StatObj.Value, true ) )
+	
 end
-
-function Core.Spawned( Plr )
-
-	local Children = Plr.Character:GetChildren( )
-
-	for a = 1, #Children do
-
-		Core.ToolAdded( Children[ a ], Plr )
-
-	end
-
-	Plr.Character.ChildAdded:Connect( function ( Tool )
-
-		Core.ToolAdded( Tool, Plr )
-
-	end )
-
-end
-
 
 Core.Weapons = setmetatable( { }, { __mode = 'k' } )
 
@@ -484,13 +393,31 @@ Core.WeaponTick = setmetatable( { }, { __mode = 'k' } )
 
 function Core.RunSelected( )
 	
-	Core.SelectedHB = RunService.Heartbeat:Connect( function ( Step )
+	Core.SelectedHB = Heartbeat:Connect( function ( Step )
 		
-		if IsServer and not next( Core.Selected ) then Core.SelectedHB:Disconnect( ) Core.SelectedHB = nil end
-		
-		if IsClient then
+		if IsServer then
 			
-			if not Core.Selected[ Players.LocalPlayer ] then Core.SelectedHB:Disconnect( ) Core.SelectedHB = nil end
+			if not next( Core.Selected ) then
+				
+				Core.SelectedHB:Disconnect( )
+				
+				Core.SelectedHB = nil
+				
+				return
+				
+			end
+			
+		else
+			
+			if not Core.Selected[ Players.LocalPlayer ] then
+				
+				Core.SelectedHB:Disconnect( )
+				
+				Core.SelectedHB = nil
+				
+				return
+				
+			end
 			
 			local UnitRay = Players.LocalPlayer:GetMouse( ).UnitRay
 			
@@ -574,7 +501,7 @@ function Core.RunSelected( )
 						
 						Needed = true
 						
-						if c.LastClick and ( c.LastClick + 0.15 <= tick( ) or c.Reloading ) then
+						if ( c.LastClick and c.LastClick + 0.15 <= tick( ) ) or c.Reloading then
 							
 							c.ShotRecoil = math.max( c.ShotRecoil - 1, 0 )
 							
@@ -788,9 +715,7 @@ function Core.Setup( StatObj )
 
 	Weapon.Clip = GunStats.StartingClip or GunStats.ClipSize
 
-	Weapon.StoredAmmo = GunStats.StartingStoredAmmo or GunStats.MaxStoredAmmo
-
-	if Weapon.StoredAmmo and Weapon.Clip then Weapon.StoredAmmo = Weapon.StoredAmmo - Weapon.Clip end
+	Weapon.StoredAmmo = ( GunStats.StartingStoredAmmo or GunStats.MaxStoredAmmo ) - ( Weapon.StoredAmmo and Weapon.Clip or 0 )
 
 	Weapon.CurBarrel = 1
 
@@ -842,6 +767,18 @@ function Core.SetWindup( Weapon, Value )
 
 end
 
+Core.FireModes = {
+
+	Auto = { Name = "Auto", Automatic = true },
+
+	Semi = { Name = "Semi" },
+
+	Burst = { Name = "Burst", Shots = 3 },
+
+	Safety = { Name = "Safety", PreventFire = true }
+
+}
+
 function Core.GetFireMode( Weapon )
 
 	local Mode = Weapon.GunStats.FireModes[ Weapon.CurFireMode ]
@@ -857,20 +794,6 @@ function Core.SetFireMode( Weapon, Value )
 	Weapon.CurFireMode = Value
 
 	Core.FireModeChanged:Fire( Weapon.StatObj, Value )
-
-end
-
-function Core.NextFireMode( Weapon )
-
-	if Weapon.CurFireMode + 1 > #Weapon.GunStats.FireModes then
-
-		Core.SetFireMode( Weapon, 1 )
-
-	else
-
-		Core.SetFireMode( Weapon, Weapon.CurFireMode + 1 )
-
-	end
 
 end
 
@@ -890,55 +813,27 @@ function Core.IgnoreFunction( Part )
 
 end
 
-if IsServer then
-	
-	-------------- TODO REMOVE THIS SMH
-	
-	for a, b in pairs( workspace:GetDescendants( ) ) do
-		
-		pcall( function ( )
-			
-			if b:IsA( "BasePart" ) and b.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( b.Parent ) and not Core.IgnoreFunction( b ) then
-				
-				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. b:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. b.Parent:GetFullName( ) )
-				
-			end
-			
-		end )
-		
-	end
-	
-	workspace.DescendantAdded:Connect( function ( Obj )
-		
-		pcall( function ( )
-			
-			if Obj:IsA( "BasePart" ) and Obj.Parent:IsA( "BasePart" ) and Core.IgnoreFunction( Obj.Parent ) and not Core.IgnoreFunction( Obj ) then
-				
-				warn( ( " :strap gnidneffO\nkrow stsil erongi tsacyar eht woh ot eud strap rehto nihtiw strap evah uoy fi kaerb lliw 2S" ):reverse( ) .. Obj:GetFullName( ) .. ( "\nedisni\n" ):reverse( ) .. Obj.Parent:GetFullName( ) )
-				
-			end
-			
-		end )
-		
-	end )
-	
-end
-
 function Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
 	
-	local Hit, Pos, Normal, Material = workspace:FindPartOnRayWithIgnoreList( R, Ignore, false, IgnoreWater == nil and true or IgnoreWater )
+	local UnitDirection = R.Unit.Direction
 	
-	if not Hit or not IgnoreFunction( Hit ) then
-
-		return Hit, Pos, Normal, Material
-
+	local Hit, Pos, Normal, Material
+	
+	while true do
+		
+		Hit, Pos, Normal, Material = workspace:FindPartOnRayWithIgnoreList( R, Ignore, false, IgnoreWater == nil and true or IgnoreWater )
+		
+		if not Hit or not IgnoreFunction( Hit ) then
+			
+			return Hit, Pos, Normal, Material
+			
+		end
+		
+		Ignore[ #Ignore + 1 ] = Hit
+		
+		R = Ray.new( Pos - UnitDirection, UnitDirection * ( R.Direction.magnitude - ( ( Pos - UnitDirection ) - R.Origin ).magnitude ) )
+		
 	end
-
-	Ignore[ #Ignore + 1 ] = Hit
-
-	R = Ray.new( Pos - R.Unit.Direction, R.Unit.Direction * ( R.Direction.magnitude - ( Pos - R.Origin ).magnitude ) )
-
-	return Core.FindPartOnRayWithIgnoreFunction( R, IgnoreFunction, Ignore, IgnoreWater )
 
 end
 
@@ -952,7 +847,7 @@ function Core.GetAccuracy( Weapon )
 
 		if Vel.magnitude > 0.1 then
 
-			ShotRecoil = ShotRecoil + ( Vel.magnitude / 4 * Config.MovementAccuracyPercentage )
+			ShotRecoil = ShotRecoil + ( Vel.magnitude / 4 * Core.Config.MovementAccuracyPercentage )
 
 		end
 
@@ -969,8 +864,6 @@ function Core.Reload( Weapon )
 	if not Weapon.StatObj or not Weapon.GunStats.ClipSize or Weapon.GunStats.ReloadDelay < 0 or Weapon.GunStats.FireRate == 0 or Weapon.Reloading or next( Core.PreventReload ) or ( Weapon.StoredAmmo and Weapon.StoredAmmo == 0 ) then return end
 
 	if Weapon.GunStats.ClipSize > 0 and Weapon.Clip ~= Weapon.GunStats.ClipSize then
-		
-		Weapon.LastClick = nil
 
 		local ReloadTick = Weapon.MouseDown or tick( )
 
@@ -1043,6 +936,8 @@ function Core.Reload( Weapon )
 			end
 
 		end
+		
+		if Weapon.LastClick and Weapon.LastClick < tick( ) then Weapon.LastClick = nil end
 
 		if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
 
@@ -1106,7 +1001,7 @@ function Core.CanFire( Weapon, Barrel )
 
 end
 
-function TableCopy( Table )
+local function TableCopy( Table )
 
 	local New = { }
 
@@ -1216,11 +1111,11 @@ function Core.Fire( Weapon )
 
 					if Target then
 
-						local Origin = not Weapon.GunStats.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild( "Head" ) and Weapon.User.Character.Head.Position or Barrel.Position
+						local Origin = not Weapon.GunStats.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild( "NewHead" ) and Weapon.User.Character.NewHead.Position or Barrel.Position
 						
 						Target = CFrame.new( Origin, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
 						
-                        Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Core.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range - Vector3.new( 0, Config.BulletDrop / 1000 * Weapon.GunStats.Range, 0 ) ), Core.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
+                        Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Origin, CFrame.new( Origin, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / Core.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.GunStats.Range ), Core.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
 						
 					else
 
@@ -1240,11 +1135,11 @@ function Core.Fire( Weapon )
 
 					Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.GunStats.Damage ) / 50, math.abs( Weapon.GunStats.Damage ) / 5 * ShotsPerClick )
 
-					local Offset = Hit and ( Hit.CFrame:pointToObjectSpace( End ) / Hit.Size ) or nil
+					local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
 					
 					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ).Func or Core.BulletTypes.Kinetic.Func )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
 
-					if IsClient then
+					if not IsServer then
 						
 						local FirstShot
 						
@@ -1256,11 +1151,7 @@ function Core.Fire( Weapon )
 
 						end
 						
-						if not IsServer then
-							
-							Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
-
-						end
+						Core.SharedVisuals:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
 
 					end
 					
@@ -1274,7 +1165,7 @@ function Core.Fire( Weapon )
 							
 							Core.HandleServer( nil, tick( ), Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.User, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
 							
-							else
+						else
 							
 							Core.ShotRemote:FireServer( tick( ) + _G.ServerOffset, Weapon.StatObj, Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Players.LocalPlayer ~= Weapon.User and Weapon.User or nil, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
 							
@@ -1372,13 +1263,11 @@ function Core.GetTeamInfo( Obj )
 
 	if type( Obj ) == "table" then
 
-		return Obj.TeamColor, Obj.Neutral
+		return Obj.TeamColor, Obj.Neutral, Obj.Character
 
-	end
+	elseif Obj:IsA( "Player" ) then
 
-	if Obj:IsA( "Player" ) then
-
-		return Obj.TeamColor, Obj.Neutral, Obj
+		return Obj.TeamColor, Obj.Neutral, Obj.Character
 
 	end
 
@@ -1386,57 +1275,67 @@ function Core.GetTeamInfo( Obj )
 
 	if PlrObj then
 
-		return PlrObj.TeamColor, PlrObj.Neutral, PlrObj
+		return PlrObj.TeamColor, PlrObj.Neutral, Obj.Parent
+
+	elseif Obj:FindFirstChild( "TeamColor" ) then
+
+		return Obj.TeamColor.Value, Obj:FindFirstChild( "Neutral" ) and Obj.Neutral.Value or false, Obj.Parent
+		
+	else
+		
+		return BrickColor.White( ), not Obj:FindFirstChild( "Neutral" ) and true or Obj.Neutral.Value, Obj.Parent
 
 	end
-
-	if Obj:FindFirstChild( "TeamColor" ) then
-
-		return Obj.TeamColor.Value, false
-
-	end
-
-	return BrickColor.White( ), true
 
 end
 
-local function ActualTeamKill( TC1, N1, TC2, N2 )
+local function ActualTeamKill( TC1, N1, Char1, TC2, N2, Char2 )
+	
+	if Char1 == Char2 then -- if self damaging, return AllowSelfDamage
+		
+		return Core.Config.AllowSelfDamage
 
-	if TC1 == TC2 or ( N1 and N2 ) then
-
-		return false
-
-	end
-
-	local CanKill = true
-
-	for a = 1, #Config.AllowTeamKillFor do
-
-		if Config.AllowTeamKillFor[ a ][ TC1.name ] and Config.AllowTeamKillFor[ a ][ TC2.name ] then
-
-			CanKill = false
-
+	elseif N1 and N2 then -- if both neutral, return AllowNeutralTeamKill
+		
+		return Core.Config.AllowNeutralTeamKill
+		
+	elseif ( N1 and not N2 ) or ( not N1 and N2 ) then -- if ones neutral, allow
+		
+		return true
+		
+	elseif TC1 == TC2 then -- if same team, prevent
+		
+		return
+		
+	else -- Check both aren't in the same team table
+		
+		for a = 1, #Core.Config.AllowTeamKillFor do
+	
+			if Core.Config.AllowTeamKillFor[ a ][ TC1.name ] and Core.Config.AllowTeamKillFor[ a ][ TC2.name ] then
+	
+				return
+	
+			end
+	
 		end
-
+		
+		return true
+		
 	end
-
-	return CanKill
 	
 end
 
 function Core.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
 	
-	local TC1, N1, PlrObj1 = Core.GetTeamInfo( P1 )
-
-	local TC2, N2, PlrObj2 = Core.GetTeamInfo( P2 )
-
-	if PlrObj1 and PlrObj2 and PlrObj1 == PlrObj2 then return Config.SelfDamage or false end
+	if ( AllowTeamKill == nil and Core.Config.AllowTeamKill ) or AllowTeamKill then return true end
 	
-	if ( AllowTeamKill == nil and Config.AllowTeamKill ) or AllowTeamKill then return true end
-
-	if Config.AllowNeutralTeamKill and ( N1 or N2 ) then return true end
-
-	if InvertTeamKill then return not ActualTeamKill( TC1, N1, TC2, N2 ) else return ActualTeamKill( TC1, N1, TC2, N2 ) end
+	local TC1, N1, Char1 = Core.GetTeamInfo( P1 )
+	
+	local TeamKill = ActualTeamKill( TC1, N1, Char1, Core.GetTeamInfo( P2 ) )
+	
+	if InvertTeamKill then TeamKill = not TeamKill end
+	
+	return TeamKill
 
 end
 
@@ -1476,17 +1375,13 @@ function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier
 
 	local hitName = Hit.Name:lower( )
 
-	if hitName == "head" or hitName == "uppertorso" or CollectionService:HasTag( Hit, "s2headdamage" ) then
+	if hitName:find( "head" ) or hitName == "uppertorso" or CollectionService:HasTag( Hit, "s2headdamage" ) then
 
-		Damage = Damage * Config.HeadDamageMultiplier
+		Damage = Damage * Core.Config.HeadDamageMultiplier
 
-	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or CollectionService:HasTag( Hit, "s2limbdamage" ) then
+	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or hitName:find( "hand" ) or hitName:find( "foot" ) or CollectionService:HasTag( Hit, "s2limbdamage" ) then
 
-		Damage = Damage * Config.LimbDamageMultiplier
-
-	elseif hitName:find( "hand" ) or hitName:find( "foot" ) or CollectionService:HasTag( Hit, "s2appendagedamage" ) then
-
-		Damage = Damage * Config.AppendageDamageMultiplier
+		Damage = Damage * Core.Config.LimbDamageMultiplier
 
 	end
 
@@ -1494,15 +1389,15 @@ function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier
 
 		if Distance > 1 then return false end
 		
-		if InvertDistanceModifier or ( InvertDistanceModifier ~= false and Config.InvertDistanceModifier ) then
+		if InvertDistanceModifier or ( InvertDistanceModifier ~= false and Core.Config.InvertDistanceModifier ) then
 			
-			Distance = ( 1 - Distance ) * ( DistanceModifier or Config.DistanceDamageMultiplier )
+			Distance = ( 1 - Distance ) * ( DistanceModifier or Core.Config.DistanceDamageMultiplier )
 			
 			Damage = Damage * Distance
 			
 		else
 			
-			Distance = Distance * ( DistanceModifier or Config.DistanceDamageMultiplier )
+			Distance = Distance * ( DistanceModifier or Core.Config.DistanceDamageMultiplier )
 			
 			Damage = Damage * ( 1 - Distance )
 			
@@ -1528,13 +1423,13 @@ function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier
 		
 	end
 	
-	if Config.Resistances and Config.Resistances[ Type ] then
+	if Core.Config.Resistances and Core.Config.Resistances[ Type ] then
 		
-		Resistance = Resistance * Config.Resistances[ Type ]
+		Resistance = Resistance * Core.Config.Resistances[ Type ]
 		
 	end
 
-	Damage = Damage * Resistance * ( Config.GlobalDamageMultiplier or 1 )
+	Damage = Damage * Resistance * ( Core.Config.GlobalDamageMultiplier or 1 )
 
 	if Damage == 0 or ( OrigDamage > 0 and Damage < 0 ) or ( OrigDamage < 0 and Damage > 0 ) then
 
@@ -1546,29 +1441,311 @@ function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier
 
 end
 
-if IsClient then
+local Died, ClntDmg, HandleKill
 
-	if Players.LocalPlayer.Character then
+if IsServer then
+	
+	Core.DamageInfos = setmetatable( { }, { __mode = "k" } )
 
-		Core.Spawned( Players.LocalPlayer )
+	Core.ObjDamaged = Instance.new( "BindableEvent" )
+	
+	Died = setmetatable( { }, { __mode = "k" } )
+
+	ClntDmg = Instance.new( "RemoteEvent" )
+	
+	Core.KilledEvents = { }
+	
+	local Kills = setmetatable( { }, { __mode = "k" } )
+	
+	function HandleKill( Killed, User, WeaponName, TypeName )
+		
+		if Kills[ User ] and Kills[ User ][ WeaponName .. TypeName ] then
+			
+			for Damageable, Hit in pairs( Killed ) do
+				
+				if not Kills[ User ][ WeaponName .. TypeName ][ Damageable ] then
+					
+					Kills[ User ][ WeaponName .. TypeName ][ Damageable ] = Hit
+					
+					Killed[ Damageable ] = nil
+					
+				end
+				
+			end
+			
+			if not next( Killed ) then return end
+			
+		else
+			
+			Kills[ User ] = Kills[ User ] or { }
+			
+			Kills[ User ][ WeaponName .. TypeName ] = Killed
+			
+			wait( 0.5 )
+			
+			Kills[ User ][ WeaponName .. TypeName ] = nil
+			
+		end
+		
+		for a, b in pairs( Core.KilledEvents ) do
+			
+			coroutine.wrap( b )( Killed, User, WeaponName, TypeName )
+			
+		end
+		
+	end
+
+	ClntDmg.Name = "ClientDamage"
+	
+	ClntDmg.OnServerEvent:Connect( function ( Plr, Time, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
+		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
+		
+		Core.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+		
+	end )
+
+	ClntDmg.Parent = script.Parent
+	
+end
+
+function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
+	
+	local Killed = { }
+	
+	local Damaged = { }
+	
+	for _, a in pairs( DamageInfos ) do
+		
+		local Damageable, Damage = a[ 1 ], a[ 2 ]
+		
+		if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
+			
+			local Amount, PrevHealth
+			
+			if Damageable:IsA( "Humanoid" ) then
+				
+				PrevHealth = Damageable.Health
+				
+				Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
+				
+				if IsServer then
+					
+					Damageable.Health = Damageable.Health - Amount
+					
+					if PrevHealth > 0 and Damageable.Health <= 0 then
+						
+						if Died[ Damageable ] then
+							
+							print( "S2 tried to kill a damageable that was already dead - ", Damageable:GetFullName( ), PrevHealth, Damageable.Health, Amount )
+							
+						else
+							
+							print( "S2 killed a damageable - ", Damageable:GetFullName( ), PrevHealth, Damageable.Health, Amount )
+							
+							Damageable.HealthChanged:Connect( function ( )
+								
+								Damageable.Health = 0
+								
+							end )
+							
+							Died[ Damageable ] = true
+							
+							Killed[ Damageable ] = a[ 3 ]
+							
+						end
+						
+					end
+	
+					if Damage > Damageable.MaxHealth - ( Damageable.MaxHealth / 20 ) then
+	
+						Damageable:AddCustomStatus( "Vital" )
+	
+					end
+					
+				end
+				
+			else
+				
+				PrevHealth = Damageable.Value
+				
+				Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
+				
+				if IsServer then
+					
+					Damageable.Value = Damageable.Value - Amount
+					
+					if PrevHealth > 0 and Damageable.Value <= 0 then
+						
+						if Died[ Damageable ] then
+							
+							print( "S2 tried to kill a damageable that was already dead - ", Damageable, PrevHealth, Damageable.Value, Amount )
+							
+						else
+							
+							print( "S2 killed a damageable - ", Damageable:GetFullName( ), PrevHealth, Damageable.Value, Amount )
+							
+							Damageable:GetPropertyChangedSignal( "Value" ):Connect( function ( )
+								
+								Damageable.Value = 0
+								
+							end )
+							
+							Died[ Damageable ] = true
+							
+							Killed[ Damageable ] = a[ 3 ]
+							
+						end
+						
+					end
+					
+				end
+
+			end
+			
+			if Damage ~= Amount and Damageable.Parent then
+				
+				if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
+					
+					DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, a[ 3 ] }
+					
+				elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
+					
+					DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, a[ 3 ] }
+					
+				end
+				
+			end
+			
+			if Amount ~= 0 then
+				
+				Damaged[ #Damaged + 1 ] = { Damageable, Amount }
+				
+				if IsServer then
+					
+					Core.DamageInfos[ Damageable ] = Core.DamageInfos[ Damageable ] or { }
+					
+					Core.DamageInfos[ Damageable ][ User ] = ( Core.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
+					
+					delay( 30, function ( )
+		
+						if Core.DamageInfos[ Damageable ] and Core.DamageInfos[ Damageable ][ User ] then
+							
+							Core.DamageInfos[ Damageable ][ User ] = Core.DamageInfos[ Damageable ][ User ] - Amount
+							
+							if Core.DamageInfos[ Damageable ][ User ] <= 0 then
+								
+								Core.DamageInfos[ Damageable ][ User ] = nil
+								
+								if not next( Core.DamageInfos[ Damageable ] ) then
+									
+									Core.DamageInfos[ Damageable ] = nil
+									
+								end
+								
+							end
+							
+						end
+		
+					end )
+		
+					if Players:GetPlayerFromCharacter( Damageable.Parent ) then
+		
+						ClntDmg:FireClient( Players:GetPlayerFromCharacter( Damageable.Parent ), User.Name, Amount )
+		
+					end
+		
+					if typeof( User ) == "Instance" and Damageable.Parent then
+		
+						ClntDmg:FireClient( User, Damageable.Parent.Name, Amount, true )
+		
+					end
+		
+					Core.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
+					
+				end
+				
+			end
+			
+		end
+
+	end
+	
+	if IsServer and next( Killed ) then
+		
+		coroutine.wrap( HandleKill )( Killed, User, WeaponName, TypeName )
+		
+	end
+	
+	return Damaged
+	
+end
+
+local 
+
+function ToolAdded( Tool, Plr )
+	
+	local StatObj = Tool:FindFirstChild( "GunStat" )
+
+	if StatObj and not Core.Weapons[ StatObj ] then
+
+		if IsServer then
+
+			Core.Weapons[ StatObj ] = true
+
+			Tool.Equipped:Connect( function ( )
+				
+				Core.WeaponSelected:Fire( StatObj, Plr )
+
+			end )
+
+			Tool.Unequipped:Connect( function ( )
+				
+				Core.WeaponDeselected:Fire( StatObj, Plr )
+
+			end )
+
+		else
+
+			local Weapon = Core.Setup( StatObj )
+
+			Core.PlayerToUser( Weapon, Plr )
+
+		end
 
 	end
 
-	Players.LocalPlayer.CharacterAdded:Connect( function ( )
+end
 
-		Core.Spawned( Players.LocalPlayer )
+local function Spawned( Plr )
+
+	local Children = Plr.Character:GetChildren( )
+
+	for a = 1, #Children do
+
+		ToolAdded( Children[ a ], Plr )
+
+	end
+
+	Plr.Character.ChildAdded:Connect( function ( Tool )
+
+		ToolAdded( Tool, Plr )
 
 	end )
 
-else
+end
+
+if IsServer then
+
+	Core.ServerVisuals = Instance.new( "BindableEvent" )
 	
 	local function HandlePlr( Plr )
 		
-		if Plr.Character then Core.Spawned( Plr ) end
+		if Plr.Character then Spawned( Plr ) end
 
 		Plr.CharacterAdded:Connect( function ( )
 
-			Core.Spawned( Plr )
+			Spawned( Plr )
 
 		end )
 		
@@ -1583,14 +1760,6 @@ else
 		HandlePlr( Plrs[ a ] )
 		
 	end
-
-end
-
-if IsServer then
-
-	Core.ServerVisuals = Instance.new( "BindableEvent" )
-
-	Core.ObjDamaged = Instance.new( "BindableEvent" )
 
 	Core.HandleServer = function ( Plr, Time, StatObj, ToNetwork, User, _Offset, _User, _BarrelNum )
 		
@@ -1659,14 +1828,6 @@ if IsServer then
 				if #ToNetwork > 1 then FirstShot = a == 1 end
 				
 				Core.ServerVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, #ToNetwork > 1 and a == 1 or nil, Humanoids, Time )
-				
-				if IsClient then
-		
-					Core.SharedVisuals:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, #ToNetwork > 1 and a == 1 or nil, Humanoids, Time )
-		
-					return
-		
-				end
 		
 				local BulRay = Ray.new( Barrel.Position, ( End - Barrel.Position ).Unit )
 				
@@ -1723,262 +1884,24 @@ if IsServer then
 		return tick( )
 
 	end
-
-	Core.DropHat.OnServerEvent:Connect( function ( Plr )
-
-		if Config.HatMode == 1 or not Plr.Character then return end
-
-		local Hats = Plr.Character:GetChildren( )
-
-		for a = 1, #Hats do
-
-			if Hats[ a ]:IsA( "Accessory" ) then
-
-				if Config.HatMode == 2 then
-
-					Hats[ a ]:Destroy( )
-
-				else
-
-					Hats[ a ].Parent = workspace
-
-					local Reset
-
-					local Event = Hats[ a ].AncestryChanged:Connect( function ( )
-
-						Reset = true
-
-					end )
-
-					delay( 5, function ( )
-
-						if not Reset then
-
-							Hats[ a ]:Destroy( )
-
-						end
-
-					end )
-
-				end
-
-			end
-
-		end
-
-	end )
 	
-	Core.KilledEvents = { }
-	
-	Core.DamageInfos = setmetatable( { }, { __mode = "k" } )
-
-	local ClntDmg = Instance.new( "RemoteEvent" )
-
-	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-		local Killed = { }
-		
-		local Damaged = { }
-		
-		for _, a in pairs( DamageInfos ) do
-			
-			local Damageable, Damage = a[ 1 ], a[ 2 ]
-			
-			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
-				
-				local Amount, PrevHealth
-				
-				if Damageable:IsA( "Humanoid" ) then
-					
-					PrevHealth = Damageable.Health
-					
-					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
-					
-					Damageable.Health = Damageable.Health - Amount
-					
-					if PrevHealth > 0 and Damageable.Health <= 0 then
-						
-						Killed[ Damageable ] = a[ 3 ]
-						
-					end
-	
-					if Damage > Damageable.MaxHealth - ( Damageable.MaxHealth / 20 ) then
-	
-						Damageable:AddCustomStatus( "Vital" )
-	
-					end
-					
-				else
-					
-					PrevHealth = Damageable.Value
-					
-					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
-					
-					Damageable.Value = Damageable.Value - Amount
-					
-					if PrevHealth > 0 and Damageable.Value <= 0 then
-						
-						Killed[ Damageable ] = a[ 3 ]
-						
-					end
-	
-				end
-				
-				if Damage ~= Amount and Damageable.Parent then
-					
-					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
-						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, a[ 3 ] }
-						
-					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
-						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, a[ 3 ] }
-						
-					end
-					
-				end
-				
-				if Amount ~= 0 then
-					
-					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
-					
-					Core.DamageInfos[ Damageable ] = Core.DamageInfos[ Damageable ] or { }
-					
-					Core.DamageInfos[ Damageable ][ User ] = ( Core.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
-					
-					delay( 30, function ( )
-		
-						if Core.DamageInfos[ Damageable ] and Core.DamageInfos[ Damageable ][ User ] then
-							
-							Core.DamageInfos[ Damageable ][ User ] = Core.DamageInfos[ Damageable ][ User ] - Amount
-							
-							if Core.DamageInfos[ Damageable ][ User ] <= 0 then
-								
-								Core.DamageInfos[ Damageable ][ User ] = nil
-								
-								if not next( Core.DamageInfos[ Damageable ] ) then
-									
-									Core.DamageInfos[ Damageable ] = nil
-									
-								end
-								
-							end
-							
-						end
-		
-					end )
-		
-					if Players:GetPlayerFromCharacter( Damageable.Parent ) then
-		
-						ClntDmg:FireClient( Players:GetPlayerFromCharacter( Damageable.Parent ), User.Name, Amount )
-		
-					end
-		
-					if typeof( User ) == "Instance" and Damageable.Parent then
-		
-						ClntDmg:FireClient( User, Damageable.Parent.Name, Amount, true )
-		
-					end
-		
-					Core.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
-					
-				end
-				
-			end
-	
-		end
-		
-		if next( Killed ) then
-			
-			for a, b in pairs( Core.KilledEvents ) do
-				
-				coroutine.wrap( b )( Killed, User, WeaponName, TypeName )
-				
-			end
-			
-		end
-		
-		return Damaged
-		
-	end
-
-	ClntDmg.Name = "ClientDamage"
-	
-	ClntDmg.OnServerEvent:Connect( function ( Plr, Time, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
-		
-		Core.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-	end )
-
-	ClntDmg.Parent = script.Parent
-	
-end
-
-if IsClient then
+else
 
 	Core.ClientVisuals = Instance.new( "BindableEvent" )
 
 	Core.SharedVisuals = Instance.new( "BindableEvent" )
 	
-	function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-		local Damaged = { }
-		
-		local a, b = next( DamageInfos )
-		
-		while a do
-			
-			local Damageable, Damage = b[ 1 ], b[ 2 ]
-			
-			if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
-				
-				local Amount, PrevHealth
-				
-				if Damageable:IsA( "Humanoid" ) then
-					
-					PrevHealth = Damageable.Health
-					
-					Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
-					
-				elseif Damageable:IsA( "DoubleConstrainedValue" ) then
-					
-					PrevHealth = Damageable.Value
-					
-					Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
-	
-				end
-				
-				if Damage ~= Amount and Damageable.Parent then
-					
-					if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
-						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, b[ 3 ] }
-						
-					elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
-						
-						DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, b[ 3 ] }
-						
-					end
-					
-				end
-				
-				if Amount ~= 0 then
-					
-					Damaged[ #Damaged + 1 ] = { Damageable, Amount }
-					
-				end
-				
-			end
-			
-			a, b = next( DamageInfos, a )
-	
-		end
-		
-		return Damaged
-		
+	if Players.LocalPlayer.Character then
+
+		Spawned( Players.LocalPlayer )
+
 	end
+
+	Players.LocalPlayer.CharacterAdded:Connect( function ( )
+
+		Spawned( Players.LocalPlayer )
+
+	end )
 
 	game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "ClientDamage" ).OnClientEvent:Connect( function ( Other, Amount, Killed )
 
@@ -2057,146 +1980,6 @@ if IsClient then
 		end
 
 	end )
-	
-	local Mouse = Players.LocalPlayer:GetMouse( )
-	
-	local PrevIcon
-	 
-	Core.WeaponSelected.Event:Connect( function ( Mod )
-		
-		local Weapon = Core.GetWeapon( Mod )
-		
-		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
-		
-		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
-			
-			PrevIcon = Mouse.Icon
-			
-			Mouse.Icon = Weapon.CursorImage or _G.S20Config.CursorImage
-			
-		end
-		
-	end )
-	 
-	Core.WeaponDeselected.Event:Connect( function ( Mod )
-		
-		local Weapon = Core.GetWeapon( Mod )
-		
-		if not Weapon or Weapon.User ~= Players.LocalPlayer then return end
-		
-		if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( _G.S20Config.CursorImage or Weapon.CursorImage ) then
-			
-			Mouse.Icon = PrevIcon
-			
-			PrevIcon = nil
-			
-		end
-		
-	end )
-
-	local KBU = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) )
-
-	KBU.AddBind{ Name = "Fire", Category = "Surge 2.0", Callback = function ( Began )
-		
-		local Weapons = Core.Selected[ Players.LocalPlayer ]
-		
-		if Weapons then
-			
-			for a, _ in pairs( Weapons ) do
-				
-				if not a.GunStats.ManualFire then
-					
-					if Began then
-						
-						Core.SetMouseDown( a )
-						
-					else
-						
-						a.MouseDown = nil
-						
-						Core.FiringEnded:Fire( a.StatObj )
-						
-						a.ModeShots = 0
-						
-					end
-					
-				end
-				
-			end
-			
-		end
-
-	end, Key = Enum.UserInputType.MouseButton1, PadKey = Enum.KeyCode.ButtonR2, NoHandled = true }
-
-	KBU.AddBind{ Name = "Reload", Category = "Surge 2.0", Callback = function ( Began )
-
-		if not Began then return end
-		
-		local Weapons = Core.Selected[ Players.LocalPlayer ]
-		
-		if Weapons then
-			
-			for a, _ in pairs( Weapons ) do
-				
-				if not a.GunStats.AllowManualReload then
-					
-					Core.Reload( a )
-					
-				end
-				
-			end
-			
-		end
-
-	end, Key = Enum.KeyCode.R, PadKey = Enum.KeyCode.ButtonB, NoHandled = true }
-
-	KBU.AddBind{ Name = "Next_fire_mode", Category = "Surge 2.0", Callback = function ( Began )
-
-		if not Began then return end
-		
-		local Weapons = Core.Selected[ Players.LocalPlayer ]
-		
-		if Weapons then
-			
-			for a, _ in pairs( Weapons ) do
-				
-				Core.NextFireMode( a )
-				
-			end
-			
-		end
-
-	end, Key = Enum.UserInputType.MouseButton3, PadKey = Enum.KeyCode.ButtonY, NoHandled = true }
-
-	KBU.AddBind{ Name = "Drop_hat", Category = "Surge 2.0", Callback = function ( Began )
-
-		if Config.HatMode == 1 then return end
-
-		if Players.LocalPlayer.Character then
-
-			local Found
-
-			local Hats = Players.LocalPlayer.Character:GetChildren( )
-
-			for a = 1, #Hats do
-
-				if Hats[ a ]:IsA( "Accessory" ) then
-
-					Found = true
-
-				end
-
-			end
-
-			if Found then
-
-				Core.DropHat:FireServer( )
-
-			end
-
-		end
-
-	end, Key = Enum.KeyCode.Equals, NoHandled = true }
 	
 	Core.LPlrsTarget = { }
 

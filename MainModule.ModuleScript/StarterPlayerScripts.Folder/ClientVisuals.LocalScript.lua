@@ -1,9 +1,5 @@
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
-while not _G.S20Config do wait( ) end
-
-Config = _G.S20Config
-
 local RunService, Debris, Plr, CollectionService = game:GetService( "RunService" ), game:GetService( "Debris" ), game:GetService( "Players" ).LocalPlayer, game:GetService( "CollectionService" )
 
 local TweenService = game:GetService( "TweenService" )
@@ -236,7 +232,7 @@ Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj
 		
 		local Hum = Plr.Character.Humanoid
 		
-		Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Config.ScreenRecoilPercentage * ( GunStats.Damage / 25 )
+		Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Core.Config.ScreenRecoilPercentage * ( GunStats.Damage / 25 )
 		
 		TweenService:Create( Hum, TweenInfo.new( 0.2 ), { CameraOffset = VZero } ):Play( )
 		
@@ -266,7 +262,7 @@ Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User
 		
 		if Noise then
 			
-			local HitSound = _G.S20Config.HitSound and _G.S20Config.HitSound:Clone() or script.HitSound:Clone( )
+			local HitSound = Core.Config.HitSound and Core.Config.HitSound:Clone() or script.HitSound:Clone( )
 			
 			HitSound.Pitch = HitSound.Pitch * Type
 			
@@ -630,11 +626,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	else
 		
-		local Size = GunStats.BulletSize or Config.BulletSize or 0.27
+		local Size = GunStats.BulletSize or Core.Config.BulletSize or 0.27
 		
-		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
+		local Speed = GunStats.BulletSpeed or Core.Config.BulletSpeed or 3200
 		
-		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 0 ) ), Speed / 60 )
+		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Core.Config.BulletLengthMod or 0 ) ), Speed / 60 )
 		
 		local CF = CFrame.new( Barrel.Position, End )
 		
@@ -648,11 +644,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Adornee = workspace.Terrain
 		
-		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
+		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Core.Config.BulletColor or User.TeamColor.Color
 		
 		Bullet.Color3 = Color3.new( Bullet.Color3.r * 3, Bullet.Color3.g * 3, Bullet.Color3.b * 3 )
 		
-		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.05
+		Bullet.Transparency = GunStats.BulletTransparency or Core.Config.BulletTransparency or 0.05
 		
 		Debris:AddItem( Bullet, 3 )
 		
@@ -690,60 +686,6 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet:Destroy( )
 		
-		--[[local Size = GunStats.BulletSize or Config.BulletSize or 0.2
-		
-		local Speed = GunStats.BulletSpeed or Config.BulletSpeed or 1600
-		
-		local Length = math.min( Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Config.BulletLengthMod or 0 ) ), Speed / 60 )
-		
-		local CF = CFrame.new( Barrel.Position, End )
-		
-		local Dist = ( Barrel.Position - End ).magnitude
-		
-		local Bullet = Instance.new( "BoxHandleAdornment" )
-		
-		Bullet.Name = "GunBullet"
-		
-		Bullet.Adornee = workspace.Terrain
-		
-		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Config.BulletColor or User.TeamColor.Color
-		
-		Bullet.Transparency = GunStats.BulletTransparency or Config.BulletTransparency or 0.3
-		
-		Bullet.Size = Vector3.new( Size, Size, math.min( Length, Dist ) )
-		
-		Bullet.CFrame = CF + CF.lookVector * Bullet.Size.Z / 2 + CF.lookVector
-		
-		Debris:AddItem( Bullet, 3 )
-		
-		Bullet.Parent = workspace.CurrentCamera
-		
-		RunService.Heartbeat:Wait( )
-			
-		local AlmostEndDist = math.max( Dist - Length, 0 )
-		
-		if AlmostEndDist > 0 then
-			
-			local AlmostEndCF = CF + CF.lookVector * Bullet.Size.Z / 2 + CF.lookVector * AlmostEndDist
-			
-			local Tween = TweenService:Create( Bullet, TweenInfo.new( ( AlmostEndDist / Dist ) * ( Dist / Speed ), Enum.EasingStyle.Linear ), { CFrame = AlmostEndCF } )
-			
-			Tween:Play( )
-			
-			Tween.Completed:Wait( )
-			
-		end
-		
-		Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
-		
-		local Tween = TweenService:Create( Bullet, TweenInfo.new( ( ( Dist - AlmostEndDist ) / Dist ) * ( Dist / Speed ), Enum.EasingStyle.Linear ), { CFrame = CF + CF.lookVector * Dist, Size = Vector3.new( Size, Size, 0 ) } )
-		
-		Tween:Play( )
-		
-		Tween.Completed:Wait( )
-		
-		Bullet:Destroy( )]]
-		
 	end
 	
 end )
@@ -764,15 +706,11 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 			
 			ImpactNum = ImpactNum - 1
 			
-			local Impact, Events = next( Impacts )
+			local Impact, Event = next( Impacts )
 			
 			Impact:Destroy( )
 			
-			Events[ 1 ]:Disconnect( )
-			
-			Events[ 2 ]:Disconnect( )
-			
-			Events[ 3 ]:Disconnect( )
+			Event:Disconnect( )
 			
 			Impacts[ Impact ] = nil
 			
@@ -794,25 +732,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		BulletHit.Color3 = Color3.new( 0.1 + ( Col.r / 5 ), 0.1 + ( Col.g / 5 ), 0.1 + ( Col.b / 5 ) )
 		
-		local ActualOffset = Offset * Hit.Size
-		
-		BulletHit.CFrame = CFrame.new( ActualOffset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( ActualOffset ) + Normal ) )
-		
-		local BulletHit2 = Instance.new( "CylinderHandleAdornment" )
-		
-		BulletHit2.Height = 0.01 + math.random( 1, 100 ) / 10000
-		
-		BulletHit2.Radius = 0.2
-		
-		BulletHit2.Name = "GunHit"
-		
-		BulletHit2.Transparency = Hit.Transparency + 0.6
-		
-		BulletHit2.Adornee = Hit
-		
-		BulletHit2.Color3 = Color3.new( 0.6, 0.6, 0.2 )
-		
-		BulletHit2.CFrame = BulletHit.CFrame
+		BulletHit.CFrame = CFrame.new( Offset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( Offset ) + Normal ) )
 		
 		local Humanoid = Core.GetValidHumanoid( Hit )
 		
@@ -822,13 +742,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 			
 		end
 		
-		local Event; Event = Hit:GetPropertyChangedSignal( "Transparency" ):Connect( function ( )
-			
-			BulletHit.Transparency = Hit.Transparency
-			
-		end )
-		
-		local Event2; Event2 = Hit.AncestryChanged:Connect( function ( )
+		local Event; Event = Hit.AncestryChanged:Connect( function ( )
 			
 			if not Hit:IsDescendantOf( workspace ) then
 				
@@ -842,31 +756,9 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 			
 		end )
 		
-		local Event3; Event3 = Hit:GetPropertyChangedSignal( "Size" ):Connect( function ( )
-			
-			local ActualOffset = Vector3.new( Offset.X * Hit.Size.X, Offset.Y * Hit.Size.Y, Offset.Z * Hit.Size.Z )
-			
-			BulletHit.CFrame = CFrame.new( ActualOffset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( ActualOffset ) + Normal ) )
-			
-		end )
-		
-		BulletHit2.Parent = workspace.CurrentCamera
-		
 		BulletHit.Parent = workspace.CurrentCamera
 		
-		for a = 1, 6 do
-			
-			if not BulletHit2.Parent then return end
-			
-			BulletHit2.Transparency = BulletHit2.Transparency + 0.067
-			
-			BulletHit2.Radius = BulletHit2.Radius + 0.067
-			
-			RunService.Heartbeat:wait( )
-			
-		end
-		
-		Impacts[ BulletHit ] = { Event, Event2, Event3 }
+		Impacts[ BulletHit ] = Event
 		
 		ImpactNum = ImpactNum + 1
 		
@@ -881,10 +773,6 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 			BulletHit:Destroy( )
 			
 			Event:Disconnect( )
-			
-			Event2:Disconnect( )
-			
-			Event3:Disconnect( )
 			
 		end
 		
@@ -986,156 +874,58 @@ Core.Visuals.BulletImpactSound = Core.BulletArrived.Event:Connect( function( Use
 	
 	if BulletType and BulletType ~= "Kinectic" then return end
 	
-	local HitSound = "BulletHitConcrete"
-	
-	local HitPos = Hit.CFrame:pointToWorldSpace( Offset * Hit.Size )
-	
 	local Humanoid = Core.GetValidHumanoid( Hit )
 	
-	if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) and Core.CheckTeamkill( User, Humanoid ) then
-		
-		HitSound = "BulletHitFlesh"
-		
-		coroutine.wrap( function ( )
-			
-			local BloodParticle = script.BloodParticle:Clone( )
-			
-			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
-			
-			BloodParticle.Parent = Par1
-			
-			wait( )
-			
-			BloodParticle:Emit( 10 )
-			
-			Debris:AddItem( Par1, 2 )
-			
-		end )( )
+	Offset = Hit.CFrame:pointToWorldSpace( Offset )
 	
-	elseif Material == Enum.Material.Metal or Material == Enum.Material.CorrodedMetal or Material == Enum.Material.DiamondPlate then
+	if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) and Core.CheckTeamkill( User, Humanoid ) then
+		 
+		local BloodParticle = script.BloodParticle:Clone( )
 		
-		HitSound = "BulletHitMetal"
+		local Par1 = AtPos( CFrame.new( Offset, Barrel.Position ) )
 		
-		coroutine.wrap( function ( )
-			
-			local HitParticle = script.HitParticle:Clone( )
-			
-			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
-			
-			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
-			
-			HitParticle.Color = ColorSequence.new( Col )
-			
-			HitParticle.Transparency = NumberSequence.new( Hit.Transparency, Hit.Transparency )
-			
-			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
-			
-			HitParticle.Parent = Par1 
-			
-			wait( )
-			
-			HitParticle:Emit( 20 )
-			
-			Debris:AddItem( Par1, 2 )
-			
-		end )( )
+		BloodParticle.Parent = Par1
 		
-	elseif Material == Enum.Material.Wood or Material == Enum.Material.WoodPlanks then
+		local ImpactSound = script[ "FleshImpact" ]:Clone( )
 		
-		HitSound = "BulletHitWood"
+		ImpactSound.Parent = Par1
 		
-		coroutine.wrap( function ( )
-			
-			local HitParticle = script.HitParticle:Clone( )
-			
-			HitParticle.LightEmission = 0.1
-			
-			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
-			
-			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
-			
-			HitParticle.Color = ColorSequence.new( Col )
-			
-			HitParticle.Transparency = NumberSequence.new( Hit.Transparency, Hit.Transparency )
-			
-			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
-			
-			HitParticle.Parent = Par1
-			
-			wait( )
-			
-			HitParticle:Emit( 20 )
-			
-			Debris:AddItem( Par1, 2 )
-			
-		end )( )
+		ImpactSound.Ended:Connect( function ( ) Par1:Destroy( ) end )
 		
-	elseif Material == Enum.Material.Grass or Material == Enum.Material.Ground or Material == Enum.Material.LeafyGrass then
+		ImpactSound:Play( )
 		
-		HitSound = "BulletHitGrass"
+		wait( )
 		
-		coroutine.wrap( function ( )
-			
-			local HitParticle = script.HitParticle:Clone( )
-			
-			HitParticle.LightEmission = 0.1 
-			
-			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
-			
-			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
-			
-			HitParticle.Color = ColorSequence.new( Col )
-			
-			HitParticle.Transparency = NumberSequence.new( 0, 0 )
-			
-			HitParticle.Size = NumberSequence.new( { NumberSequenceKeypoint.new( 0, 0.4, 0.2 ), NumberSequenceKeypoint.new( 0.279, 0.4, 0.0625 ), NumberSequenceKeypoint.new( 1, 0, 0 ) } )
-			
-			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
-			
-			HitParticle.Parent = Par1
-			
-			wait( )
-			
-			HitParticle:Emit( 20 )
-			
-			Debris:AddItem( Par1, 2 )
-			
-		end )( )
+		BloodParticle:Emit( 10 )
 		
-	elseif Material == Enum.Material.Glacier or Material == Enum.Material.Ice or Material == Enum.Material.Neon or Hit.Transparency > 0 then
+		Debris:AddItem( Par1, 2 )
+	
+	else
 		
-		HitSound = "BulletHitGlass"
+		local Par1 = AtPos( CFrame.new( Offset, Barrel.Position ) )
 		
-		coroutine.wrap( function ( )
-			
-			local HitParticle = script.HitParticle:Clone( )
-			
-			HitParticle.LightEmission = 0.1
-			
-			local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
-			
-			Col = Color3.new( Col.r - 15 / 255, Col.g - 15 / 255, Col.b - 15 / 255 )
-			
-			HitParticle.Color = ColorSequence.new( Col )
-			
-			HitParticle.Transparency = NumberSequence.new( 0.8, 0.8 )
-			
-			HitParticle.Size = NumberSequence.new( { NumberSequenceKeypoint.new( 0, 0.4, 0.2 ), NumberSequenceKeypoint.new( 0.279, 0.4, 0.0625 ), NumberSequenceKeypoint.new( 1, 0, 0 ) } )
-			
-			local Par1 = AtPos( CFrame.new( HitPos, Barrel.Position ) )
-			
-			HitParticle.Parent = Par1
-			
-			wait( )
-			
-			HitParticle:Emit( 20 )
-			
-			Debris:AddItem( Par1, 2 )
-			
-		end )( )
+		local HitParticle = script.HitParticle:Clone( )
+		
+		local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.Color
+		
+		HitParticle.Color = ColorSequence.new( Color3.new( Col.r - 0.059, Col.g - 0.059, Col.b - 0.059 ) )
+		
+		HitParticle.Transparency = NumberSequence.new( Hit.Transparency, Hit.Transparency )
+		
+		Debris:AddItem( Par1, 2 )
+		
+		HitParticle.Parent = Par1 
+		
+		HitParticle:Emit( 20 )
+		
+		local ImpactSound = script[ ( ( Material == Enum.Material.Metal or Material == Enum.Material.CorrodedMetal or Material == Enum.Material.DiamondPlate ) and "MetalImpact" ) or ( ( Material == Enum.Material.Wood or Material == Enum.Material.WoodPlanks ) and "WoodImpact" ) or ( ( Material == Enum.Material.Grass or Material == Enum.Material.Ground or Material == Enum.Material.LeafyGrass ) and "GrassImpact" ) or ( ( Material == Enum.Material.Glacier or Material == Enum.Material.Ice or Material == Enum.Material.Neon or Hit.Transparency > 0 ) and "GlassImpact" ) or "ConcreteImpact" ]:Clone( )
+		
+		ImpactSound.Parent = Par1
+		
+		ImpactSound.Ended:Connect( function ( ) Par1:Destroy( ) end )
+		
+		ImpactSound:Play( )
 		
 	end
-	
-	PlaySoundAtPos( CFrame.new( HitPos ), HitSound  )
 	
 end )

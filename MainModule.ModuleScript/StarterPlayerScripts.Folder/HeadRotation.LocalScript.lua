@@ -36,7 +36,7 @@ HeadRotRemote.OnClientEvent:Connect( function ( Rotations )
 		
 		if Neck then
 			
-			TweenService:Create( Neck, TweenInfo.new( 1/30, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
+			TweenService:Create( Neck, TweenInfo.new( 1/20, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
 			
 		end
 		
@@ -44,27 +44,23 @@ HeadRotRemote.OnClientEvent:Connect( function ( Rotations )
 	
 end )
 
-local Last, Current
-
 local Players = game:GetService( "Players" )
 
 game:GetService("RunService").Stepped:Connect( function ( )
 	
-	if Root and Neck then
+	if Root and Neck and workspace.CurrentCamera.CameraSubject and workspace.CurrentCamera.CameraSubject:IsA( "Humanoid" ) and workspace.CurrentCamera.CameraSubject.Parent == Plr.Character then
 		
-		if workspace.CurrentCamera.CameraSubject and workspace.CurrentCamera.CameraSubject:IsA( "Humanoid" ) and workspace.CurrentCamera.CameraSubject.Parent == Plr.Character then
+		local CameraDirection = Root.CFrame:toObjectSpace( workspace.CurrentCamera.CFrame ).lookVector.unit
+		
+		if R6 then
 			
-			local CameraDirection = Root.CFrame:toObjectSpace( workspace.CurrentCamera.CFrame ).lookVector.unit
-			
-			Current = CFrame.new(Neck.C0.p) * CFrame.Angles(0, -math.asin(CameraDirection.x), 0) * (R6 and CFrame.Angles(-math.pi/2 + math.asin(CameraDirection.y), 0, math.pi) or CFrame.Angles(math.asin(CameraDirection.y), 0, 0))
+			Neck.C0 = CFrame.new(Neck.C0.p) * CFrame.Angles(0, -math.asin(CameraDirection.x), 0) * CFrame.Angles(-math.pi/2 + math.asin(CameraDirection.y), 0, math.pi)
 			
 		else
 			
-			Current = R6 and CFrame.new(Neck.C0.p) * CFrame.Angles(-math.pi/2, 0, math.pi) or CFrame.new(Neck.C0.p)
+			Neck.C0 = CFrame.new(Neck.C0.p) * CFrame.Angles(math.asin(CameraDirection.y), -math.asin(CameraDirection.x), 0)
 			
 		end
-		
-		Neck.C0 = Current
 		
 	end
 	
@@ -86,13 +82,15 @@ game:GetService("RunService").Stepped:Connect( function ( )
 
 end )
 
-while wait( 1/30 ) do
+local Last
+
+while wait( 1/20 ) do
 	
-	if Last ~= Current then
+	if Neck and Last ~= Neck.C0 then
 		
-		HeadRotRemote:FireServer( Current )
+		HeadRotRemote:FireServer( Neck.C0 )
 		
-		Last = Current
+		Last = Neck.C0
 		
 	end
 	
