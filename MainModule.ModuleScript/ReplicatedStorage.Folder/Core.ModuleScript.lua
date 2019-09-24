@@ -715,7 +715,9 @@ function Core.Setup( StatObj )
 
 	Weapon.Clip = GunStats.StartingClip or GunStats.ClipSize
 
-	Weapon.StoredAmmo = ( GunStats.StartingStoredAmmo or GunStats.MaxStoredAmmo ) - ( Weapon.StoredAmmo and Weapon.Clip or 0 )
+	Weapon.StoredAmmo = GunStats.StartingStoredAmmo or GunStats.MaxStoredAmmo
+
+	if Weapon.StoredAmmo and Weapon.Clip then Weapon.StoredAmmo = Weapon.StoredAmmo - Weapon.Clip end
 
 	Weapon.CurBarrel = 1
 
