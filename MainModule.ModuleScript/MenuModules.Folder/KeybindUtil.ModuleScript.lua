@@ -3,7 +3,7 @@ return {
 	DefaultValue = {},
 	SendToClient = true,
 	AllowRemoteSet = true,
-	BeforeRemoteSet = function(Plr, DataStore, Name, Type, Val)
+	BeforeRemoteSet = function(Plr, DataStore, Remote, Name, Type, Val)
 		local Data = DataStore:Get({})
 		
 		if Type == nil then

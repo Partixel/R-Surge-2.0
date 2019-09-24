@@ -8,8 +8,6 @@ local White = Color3.fromRGB( 255, 0, 255 )
 
 local Last, LastC = 0, nil
 
-Core.ShowCursor = true
-
 local ShowMode = 0
 
 Mouse.Move:Connect( function ( )
@@ -186,7 +184,7 @@ function Core.RunCursorHeartbeat( )
 			
 		end
 		
-		if not Weapon or not Core.ShowCursor or Core.Config.CursorImage or Weapon.CursorImage then
+		if not Weapon or not Core.ShowCursor or ( not Core.ForceShowCursor and ( Core.Config.CursorImage or Weapon.CursorImage ) ) then
 			
 			Core.CursorHeartbeat:Disconnect( )
 			
@@ -194,15 +192,13 @@ function Core.RunCursorHeartbeat( )
 			
 			script.Parent.Center.Visible = false
 			
-			if not LastWep or Core.Config.CursorImage or LastWep.CursorImage then return end
+			--[[if not LastWep or ( LastWep ~= ForceWeapon and ( Core.Config.CursorImage or LastWep.CursorImage ) ) then return end
 			
-			if not LastWep.GunStats then print( LastWep, LastWep.Tool ) return end
-			
-			if LastWep.GunStats.ShowCursor ~= false then
+			if LastWep.GunStats.ShowCursor ~= false then]]
 				
 				game:GetService( "UserInputService" ).MouseIconEnabled = true
 				
-			end
+			--end
 			
 			return
 			

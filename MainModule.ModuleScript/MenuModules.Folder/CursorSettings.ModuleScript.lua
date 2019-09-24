@@ -2,7 +2,7 @@ return {
 	Key = "Cursor1",
 	SendToClient = true,
 	AllowRemoteSet = true,
-	BeforeRemoteSet = function(Plr, DataStore, Key, Val)
+	BeforeRemoteSet = function(Plr, DataStore, Remote, Key, Val)
 		if type( Key ) == "table" then
 			return next( Key ) and Key or nil
 		else
