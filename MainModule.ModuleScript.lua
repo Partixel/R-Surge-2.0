@@ -16,8 +16,6 @@ if SetupModel then
 	
 end
 
-LoaderModule( script:WaitForChild( "ServerStorage" ) )
-
 LoaderModule( script:WaitForChild( "ServerScriptService" ) )
 
 LoaderModule( script:WaitForChild( "StarterPlayerScripts" ) )
