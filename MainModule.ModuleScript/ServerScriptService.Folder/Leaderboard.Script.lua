@@ -2,7 +2,7 @@ local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" 
 
 local Players, GroupService, CollectionService = game:GetService( "Players" ), game:GetService( "GroupService" ), game:GetService( "CollectionService" )
 
-local DataStore2 = require( 1936396537 )
+local DataStore2 = require( 3913891878 )
 
 DataStore2.Combine( "PartixelsVeryCoolMasterKey", "Credits" )
 
