@@ -278,7 +278,7 @@ Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User
 	
 end )
 
-Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, End )
+local function FlyBy( StatObj, User, Barrel, _, End )
 	
 	if not Barrel or not StatObj or not StatObj.Parent then return end
 	
@@ -318,9 +318,18 @@ Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect( function ( StatObj, User,
 		
 	end
 	
-end )
+end
+Core.AddFeatureCallback("BulletFlyByNoise", function(Enabled)
+	if Enabled then
+		Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect(FlyBy)
+	elseif Core.Visuals.FlyBy then
+		Core.Visuals.FlyBy:Disconnect()
+		Core.Visuals.FlyBy = nil
+	end
+end)
+Core.SetFeatureEnabled("BulletFlyByNoise", true)
 
-Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
+Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
 	
 	if not Barrel or not StatObj or not StatObj.Parent then return end
 	
@@ -394,7 +403,7 @@ Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatOb
 			
 		end
 		
-	else
+	elseif Core.EnabledFeatures["GunBarrelEffects"] then
 		
 		if not Part:FindFirstChild( "FireParticle" ) then
 			
@@ -434,7 +443,8 @@ Core.Visuals.BarrelEffects = Core.SharedVisuals.Event:Connect( function ( StatOb
 		end
 	end
 	
-end )
+end)
+Core.SetFeatureEnabled("GunBarrelEffects", true)
 
 local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
@@ -702,7 +712,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		if not Hit or not Hit.Parent then return end
 		
-		if ImpactNum > 150 then
+		if ImpactNum >= (Core.MaxBulletImpacts or 150) then
 			
 			ImpactNum = ImpactNum - 1
 			
@@ -724,23 +734,29 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		BulletHit.Name = "GunHit"
 		
-		BulletHit.Transparency = Hit.Transparency
+		local Humanoid = Core.GetValidHumanoid( Hit )
+		
+		if Humanoid and Hit.Name == "NewHead" then
+			
+			Hit = Humanoid.Parent:FindFirstChild("Head") or Hit
+			
+		end
 		
 		BulletHit.Adornee = Hit
+		
+		BulletHit.Transparency = Hit.Transparency
 		
 		local Col = Hit == workspace.Terrain and workspace.Terrain:GetMaterialColor( Material ) or Hit.BrickColor
 		
 		BulletHit.Color3 = Color3.new( 0.1 + ( Col.r / 5 ), 0.1 + ( Col.g / 5 ), 0.1 + ( Col.b / 5 ) )
-		
-		BulletHit.CFrame = CFrame.new( Offset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( Offset ) + Normal ) )
-		
-		local Humanoid = Core.GetValidHumanoid( Hit )
 		
 		if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) then
 			
 			BulletHit.Color = BrickColor.Red( )
 			
 		end
+		
+		BulletHit.CFrame = CFrame.new( Offset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( Offset ) + Normal ) )
 		
 		local Event; Event = Hit.AncestryChanged:Connect( function ( )
 			
@@ -762,7 +778,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		ImpactNum = ImpactNum + 1
 		
-		wait( 30 )
+		wait( Core.BulletImpactDespawn or 60 )
 		
 		if Impacts[ BulletHit ] then
 			
@@ -878,7 +894,7 @@ Core.Visuals.BulletImpactSound = Core.BulletArrived.Event:Connect( function( Use
 	
 	Offset = Hit.CFrame:pointToWorldSpace( Offset )
 	
-	if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) and Core.CheckTeamkill( User, Humanoid ) then
+	if Humanoid and not CollectionService:HasTag( Humanoid, "s2_silent" ) then
 		 
 		local BloodParticle = script.BloodParticle:Clone( )
 		

@@ -1,10 +1,12 @@
-local Plr = game.Players.LocalPlayer
+local Players = game:GetService( "Players" )
+local Plr = Players.LocalPlayer
 
 local TweenService = game:GetService( "TweenService" )
 
-local Root, Neck, R6
+local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
-Plr.CharacterAdded:Connect( function ( Char )
+local Root, Neck, R6
+function HandleCharacter( Char )
 	
 	Root, Neck = Char:WaitForChild( "HumanoidRootPart" ), Char:FindFirstChild( "Neck", true )
 	
@@ -24,30 +26,25 @@ Plr.CharacterAdded:Connect( function ( Char )
 	
 	R6 = Char:FindFirstChildOfClass( "Humanoid" ).RigType == Enum.HumanoidRigType.R6
 	
-end )
+end
+
+HandleCharacter(Plr.Character or Plr.CharacterAdded:Wait())
+Plr.CharacterAdded:Connect(HandleCharacter)
 
 local HeadRotRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "HeadRot" )
 
-HeadRotRemote.OnClientEvent:Connect( function ( Rotations )
-	
-	for _, Rot in ipairs( Rotations ) do
-		
-		local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
-		
-		if Neck then
-			
-			TweenService:Create( Neck, TweenInfo.new( 1/20, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
-			
+HeadRotRemote.OnClientEvent:Connect(function(Rotations)
+	if Core.EnabledFeatures["HeadRotation"] then
+		for _, Rot in ipairs(Rotations) do
+			local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
+			if Neck then
+				TweenService:Create( Neck, TweenInfo.new( 1/20, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
+			end
 		end
-		
 	end
-	
-end )
+end)
 
-local Players = game:GetService( "Players" )
-
-game:GetService("RunService").Stepped:Connect( function ( )
-	
+function UpdateHead( )
 	if Root and Neck and workspace.CurrentCamera.CameraSubject and workspace.CurrentCamera.CameraSubject:IsA( "Humanoid" ) and workspace.CurrentCamera.CameraSubject.Parent == Plr.Character then
 		
 		local CameraDirection = Root.CFrame:toObjectSpace( workspace.CurrentCamera.CFrame ).lookVector.unit
@@ -80,7 +77,25 @@ game:GetService("RunService").Stepped:Connect( function ( )
 		
 	end
 
-end )
+end
+
+local Event
+Core.AddFeatureCallback("HeadRotation", function(Enabled)
+	if Enabled then
+		Event = game:GetService("RunService").Stepped:Connect(UpdateHead)
+	elseif Event then
+		Event:Disconnect()
+		Event = nil
+		
+		for _, Plr in ipairs(Players:GetPlayers()) do
+			local Neck = Plr.Character and Plr.Character:FindFirstChild( "Neck", true )
+			if Neck then
+				Neck.C0 = Neck.Parent.Name == "Torso" and CFrame.new(Neck.C0.p) * CFrame.Angles(-math.pi/2, 0, math.pi) or CFrame.new(Neck.C0.p)
+			end
+		end
+	end
+end)
+Core.SetFeatureEnabled("HeadRotation", true)
 
 local Last
 

@@ -32,6 +32,23 @@ Core.FiringEnded = Instance.new( "BindableEvent" )
 
 Core.Visuals = { }
 
+Core.ShowCursor = true
+
+Core.EnabledFeatures = {}
+Core.FeatureCallback = {}
+function Core.AddFeatureCallback(Feature, Callback)
+	Core.FeatureCallback[Feature] = Callback
+	Callback(Core.EnabledFeatures[Feature])
+end
+function Core.SetFeatureEnabled(Feature, Enabled)
+	if Core.EnabledFeatures[Feature] ~= Enabled then
+		Core.EnabledFeatures[Feature] = Enabled
+		if Core.FeatureCallback[Feature] then
+			Core.FeatureCallback[Feature](Enabled)
+		end
+	end
+end
+
 local Heartbeat = RunService.Heartbeat
 
 local function hbwait(num)
