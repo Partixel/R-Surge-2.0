@@ -8,6 +8,10 @@ function Weld( Tool )
 	
 	if not Handle then return end
 	
+	for _, Weld in ipairs( Handle:GetChildren( ) ) do
+		if Weld:IsA( "Weld" ) then Weld:Destroy( ) end
+	end
+	
 	for _, Obj in ipairs( Tool:GetDescendants( ) ) do
 		
 		if Obj:IsA( "BasePart" ) and Obj.Parent == Tool then
