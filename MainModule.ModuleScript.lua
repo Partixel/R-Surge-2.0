@@ -28,8 +28,6 @@ LoaderModule( script:WaitForChild( "MenuModules" ), game:GetService( "ServerStor
 
 local LuaRequire = function ( ... ) return require( ... ) end
 
-coroutine.wrap( LuaRequire )( game:GetService( "ServerStorage" ):FindFirstChild( "MenuLib" ) and game:GetService( "ServerStorage" ).MenuLib:FindFirstChild( "MainModule" ) or 3717582194 ) -- MenuLib
-
 if Config.DebugEnabled ~= false then
 	
 	coroutine.wrap( LuaRequire )( game:GetService( "ServerStorage" ):FindFirstChild( "DebugUtil" ) and game:GetService( "ServerStorage" ).DebugUtil:FindFirstChild( "MainModule" ) or 953754819 )
