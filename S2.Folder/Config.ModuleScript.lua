@@ -1,5 +1,4 @@
 return {
-	
 	--------[[ Damage Configs ]]--------
 	
 	SupportLegacyKOs = false, -- Default - false
@@ -95,10 +94,16 @@ return {
 	--------[[ Leaderboard Configs ]]--------
 	
 	--[[If true, wipeouts will be shown on the leaderboard]]
-	ShowWOs = true, -- Default - true
+	ShowWOs = false, -- Default - true
 	
 	--[[If true, assists will be shown on the leaderboard]]
-	ShowAssists = true, -- Default - true
+	ShowAssists = false, -- Default - true
+	
+	--[[If true, damage done will be shown on the leaderboard]]
+	ShowDamaged = true, -- Default - false
+	
+	--[[If true, healing done will be shown on the leaderboard]]
+	ShowHealed = true, -- Default - false
 	
 	--[[The GroupId used for the rank on the leaderboard ( If nil, no rank stat is created )]]
 	RankGroupId = nil, -- Default - nil
@@ -126,6 +131,5 @@ return {
 	
 	CreditsPerHeal = 0, -- Default - 0
 	
-	SetupVersion = "1.0.1", -- DO NOT CHANGE THIS
-	
+	SetupVersion = "1.1.0", -- DO NOT CHANGE THIS
 }
