@@ -148,9 +148,15 @@ end )
 
 Core.PreventSprint = { }
 
+local Debounce, Last
+
 KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then return end
+	
+	if Debounce then return Last end
+	
+	Last = Began
 	
 	if Began then
 		
@@ -174,11 +180,11 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 			
 			PU.SetPose( "Scoping", false )
 			
-			Core.PreventSprint[ "Debounce" ] = true
+			Debounce = true
 			
 			wait( )
 			
-			Core.PreventSprint[ "Debounce" ] = nil
+			Debounce = false
 			
 		end
 		
@@ -187,6 +193,12 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 		Core.PreventCrouch.Sprinting = nil
 		
 		PU.SetPose( "Sprinting", false )
+		
+		Debounce = true
+		
+		wait( )
+		
+		Debounce = false
 		
 	end
 	

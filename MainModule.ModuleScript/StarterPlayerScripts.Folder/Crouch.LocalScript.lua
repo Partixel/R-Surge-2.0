@@ -144,9 +144,15 @@ end )
 
 Core.PreventCrouch = { }
 
+local Debounce, Last
+
 KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
 	if Died then return end
+	
+	if Debounce then return Last end
+	
+	Last = Began
 	
 	if Began then
 		
@@ -164,15 +170,21 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 		
 		PU.SetPose( "Crouching", true )
 		
-		Core.PreventCrouch[ "Debounce" ] = true
+		Debounce = true
 		
 		wait( )
 		
-		Core.PreventCrouch[ "Debounce" ] = nil
+		Debounce = false
 		
 	else
 		
 		PU.SetPose( "Crouching", false )
+		
+		Debounce = true
+		
+		wait( )
+		
+		Debounce = false
 		
 	end
 	

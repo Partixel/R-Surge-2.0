@@ -58,7 +58,7 @@ Plr.CharacterAdded:Connect( Spawned )
 
 local Surrendered
 
-local SDebounce
+local SDebounce, SLast
 
 KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
@@ -66,11 +66,11 @@ KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if not Salute then return false end
 	
+	if SDebounce then return SLast end
+	
 	if Began then
 		
 		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowSalute == false or SDebounce or Surrendered ~= nil then return false end
-		
-		SDebounce = true
 		
 		KBU.SetToggle( "At_ease", false )
 		
@@ -78,19 +78,27 @@ KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Bega
 		
 		Salute:Play( )
 		
+		SDebounce = true
+		
 		wait( )
 		
-		SDebounce = nil
+		SDebounce = false
 		
 	else
 		
 		Salute:Stop( )
 		
+		SDebounce = true
+		
+		wait( )
+		
+		SDebounce = false
+		
 	end
 	
 end, Key = Enum.KeyCode.T, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true }
 
-local ADebounce
+local ADebounce, ALast
 
 KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Began, Died )
 	
@@ -98,11 +106,11 @@ KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Beg
 	
 	if not AtEase then return false end
 	
+	if ADebounce then return ALast end
+	
 	if Began then
 		
 		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowAtEase == false or ADebounce or Surrendered ~= nil then return false end
-		
-		ADebounce = true
 		
 		KBU.SetToggle( "Salute", false )
 		
@@ -110,11 +118,21 @@ KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Beg
 		
 		AtEase:Play( )
 		
-		ADebounce = nil
+		ADebounce = true
+		
+		wait( )
+		
+		ADebounce = false
 		
 	else
 		
 		AtEase:Stop( )
+		
+		ADebounce = true
+		
+		wait( )
+		
+		ADebounce = false
 		
 	end
 	
