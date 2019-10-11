@@ -1586,7 +1586,7 @@ if IsServer then
 				
 				if Hit then
 					
-					End = Hit.CFrame:PointToWorldSpace( Offset * Hit.Size )
+					End = Hit.CFrame:PointToWorldSpace( Offset )
 					
 				else
 					
@@ -1762,7 +1762,7 @@ else
 				
 				if Hit then
 					
-					End = Hit.CFrame:PointToWorldSpace( Offset * Hit.Size )
+					End = Hit.CFrame:PointToWorldSpace( Offset )
 					
 				else
 					
