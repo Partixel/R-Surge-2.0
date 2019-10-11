@@ -657,10 +657,10 @@ Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
 
 end )
 
-function Core.Destroy( Weapon )
-
+function Core.DestroyWeapon( Weapon )
+	
 	if not Weapon.StatObj then return end
-
+	
 	if Core.Selected[ Weapon.User ] and Core.Selected[ Weapon.User ][ Weapon ] then
 		
 		Core.WeaponDeselected:Fire( Weapon.StatObj, Weapon.User )
@@ -678,18 +678,22 @@ function Core.Destroy( Weapon )
 		Weapon.Events[ a ] = nil
 
 	end
-
-	if Weapon.StatObj.Parent then
-
-		Weapon.StatObj.Parent:Destroy( )
-
-	end
+	
+	local StatObj = Weapon.StatObj
 
 	for a, b in pairs( Weapon ) do
 
 		Weapon[ a ] = nil
 
 	end
+
+	if StatObj.Parent then
+
+		StatObj.Parent:Destroy( )
+
+	end
+	
+	StatObj:Destroy( )
 
 	Weapon = nil
 
@@ -731,7 +735,19 @@ function Core.Setup( StatObj )
 
 	Weapon.User = GunStats.User
 
-	Weapon.Events = { }
+	Weapon.Events = {
+		
+		StatObj.AncestryChanged:Connect( function ( )
+			
+			if not StatObj:IsDescendantOf( game ) then
+				
+				Core.DestroyWeapon( Weapon )
+				
+			end
+			
+		end )
+	
+	}
 
 	Weapon.ShotRecoil = 0
 
