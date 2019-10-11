@@ -787,7 +787,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		BulletHit.Name = "GunHit"
 		
-		local Humanoid = Core.GetValidHumanoid( Hit )
+		local Humanoid = Core.GetValidDamageable( Hit )
 		
 		if Humanoid and Hit.Name == "NewHead" then
 			
@@ -871,7 +871,7 @@ Core.Visuals.BulletImpactSound = Core.BulletArrived.Event:Connect( function( Use
 	
 	if BulletType and BulletType ~= "Kinectic" then return end
 	
-	local Humanoid = Core.GetValidHumanoid( Hit )
+	local Humanoid = Core.GetValidDamageable( Hit )
 	
 	Offset = Hit.CFrame:pointToWorldSpace( Offset )
 	

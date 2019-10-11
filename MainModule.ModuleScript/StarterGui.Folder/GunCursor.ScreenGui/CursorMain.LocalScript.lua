@@ -206,7 +206,7 @@ function Core.RunCursorHeartbeat( )
 		
 		LastWep = Weapon
 		
-		local Humanoid = Core.GetValidHumanoid( Core.LPlrsTarget[ 1 ] )
+		local Humanoid = Core.GetValidDamageable( Core.LPlrsTarget[ 1 ] )
 		
 		local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) or Core.CheckTeamkill( Plr, Humanoid, Weapon.GunStats.AllowTeamKill, Weapon.GunStats.InvertTeamKill ) and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ThemeUtil.GetThemeFor( "Positive_Color3" )
 		

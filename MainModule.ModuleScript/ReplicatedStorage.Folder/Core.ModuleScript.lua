@@ -851,7 +851,7 @@ end
 
 function Core.IgnoreFunction( Part )
 	
-    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Core.GetValidHumanoid( Part ) == nil and Part.CanCollide == false ) ) or false
+    return not CollectionService:HasTag( Part, "nopen" ) and ( not Part or not Part.Parent or CollectionService:HasTag( Part, "forcepen" ) or Part.Parent:IsA( "Accoutrement" ) or Part.Transparency >= 1 or ( Core.GetValidDamageable( Part ) == nil and Part.CanCollide == false ) ) or false
 
 end
 
@@ -1381,26 +1381,30 @@ function Core.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
 
 end
 
-function Core.GetValidHumanoid( Obj )
-
-	if not Obj or not Obj:IsDescendantOf( game ) then return end
-
-	local Hum = Obj:FindFirstChild( "Health" ) or Obj.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent:FindFirstChild( "Health" ) or Obj.Parent.Parent:FindFirstChildOfClass( "Humanoid" ) or Obj.Parent.Parent:FindFirstChild( "Health" )
-	
-	if Hum and ( ( Hum:IsA( "Humanoid" ) and Hum.Health > 0 ) or ( not Hum:IsA( "Humanoid" ) and Hum.Value > 0 ) ) then
-		
-		local Health = Hum:FindFirstChild( "Health" )
-		
-		while Health and Health.Value > 0 do
-			
-			Hum, Health = Health, Health:FindFirstChild( "Health" )
-			
-		end
-		
-		return Hum
-	
+function Core.GetTopDamageable(Damageable)
+	while Damageable.Parent:IsA("Humanoid") or Damageable.Parent.Name == "Health" do
+		Damageable = Damageable.Parent
 	end
+	
+	return Damageable
+end
 
+function Core.GetBottomDamageable(Damageable)
+	local Health = Damageable:FindFirstChild("Health")
+	while Health and Health.Value > 0 do
+		Damageable, Health = Health, Health:FindFirstChild("Health")
+	end
+	return Damageable
+end
+
+function Core.GetValidDamageable(Obj, Top)
+	if Obj and Obj:IsDescendantOf(game) then
+		local Damageable = Obj:FindFirstChild("Health") or Obj.Parent:FindFirstChildOfClass("Humanoid") or Obj.Parent:FindFirstChild("Health") or Obj.Parent.Parent:FindFirstChildOfClass("Humanoid") or Obj.Parent.Parent:FindFirstChild("Health")
+		
+		if Damageable and ((Damageable:IsA("Humanoid") and Damageable.Health > 0) or (Damageable:IsA("DoubleConstrainedValue") and Damageable.Value > 0)) then
+			return Damageable
+		end
+	end
 end
 
 function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill, InvertDistanceModifier )

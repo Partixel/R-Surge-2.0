@@ -8,7 +8,7 @@ Core.Visuals.ShotKnockback = Core.ServerVisuals.Event:Connect( function ( StatOb
 	
 	if Core.Config.ShotKnockbackPercentage == 0 or GunStats.Knockback == 0 then return end
 	
-	local Humanoid = Core.GetValidHumanoid( Hit )
+	local Humanoid = Core.GetValidDamageable( Hit )
 	
 	if not Humanoid and not GunStats.KnockAll then return end
 	
