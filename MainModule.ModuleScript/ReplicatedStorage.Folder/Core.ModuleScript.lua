@@ -34,17 +34,24 @@ Core.Visuals = { }
 
 Core.ShowCursor = true
 
-Core.EnabledFeatures = {}
-Core.FeatureCallback = {}
-function Core.AddFeatureCallback(Feature, Callback)
-	Core.FeatureCallback[Feature] = Callback
-	Callback(Core.EnabledFeatures[Feature])
-end
-function Core.SetFeatureEnabled(Feature, Enabled)
-	if Core.EnabledFeatures[Feature] ~= Enabled then
-		Core.EnabledFeatures[Feature] = Enabled
-		if Core.FeatureCallback[Feature] then
-			Core.FeatureCallback[Feature](Enabled)
+do
+	Core.EnabledFeatures = {}
+	local FeatureCallbacks = {}
+	
+	function Core.SetFeatureCallback(Feature, Callback)
+		FeatureCallbacks[Feature] = Callback
+		if Callback then
+			Callback(Core.EnabledFeatures[Feature])
+		end
+	end
+	
+	function Core.SetFeatureEnabled(Feature, Enabled, Default)
+		if Default and Core.EnabledFeatures[Feature] ~= nil then return end
+		if Core.EnabledFeatures[Feature] ~= Enabled then
+			Core.EnabledFeatures[Feature] = Enabled
+			if FeatureCallbacks[Feature] then
+				FeatureCallbacks[Feature](Enabled)
+			end
 		end
 	end
 end

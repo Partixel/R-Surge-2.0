@@ -6,6 +6,8 @@ local TweenService = game:GetService( "TweenService" )
 
 local Used = setmetatable( { }, { __mode = 'k' } )
 
+local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
+
 local function GetVisualBarrel( Barrel, DontCreate )
 	
 	local Part = Used[ Barrel ]
@@ -319,7 +321,7 @@ local function FlyBy( StatObj, User, Barrel, _, End )
 	end
 	
 end
-Core.AddFeatureCallback("BulletFlyByNoise", function(Enabled)
+Core.SetFeatureCallback("BulletFlyByNoise", function(Enabled)
 	if Enabled then
 		Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect(FlyBy)
 	elseif Core.Visuals.FlyBy then
@@ -327,7 +329,21 @@ Core.AddFeatureCallback("BulletFlyByNoise", function(Enabled)
 		Core.Visuals.FlyBy = nil
 	end
 end)
-Core.SetFeatureEnabled("BulletFlyByNoise", true)
+Core.SetFeatureEnabled("BulletFlyByNoise", true, true)
+
+Menu.Settings[#Menu.Settings + 1] ={Name = "BulletFlyByNoise", Text = "Bullet Fly By Noise", Default = true, Update = function(Options, Val)
+	Core.SetFeatureEnabled("BulletFlyByNoise", Val)
+end}
+
+if Menu.SavedSettings and Menu.SavedSettings["BulletFlyByNoise"] == nil then
+	Menu.SavedSettings["BulletFlyByNoise"] = true
+end
+
+coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["BulletFlyByNoise"])
+
+if Menu.Tabs[1].Invalidate then
+	Menu.Tabs[1]:Invalidate()
+end
 
 Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
 	
@@ -444,7 +460,20 @@ Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, U
 	end
 	
 end)
-Core.SetFeatureEnabled("GunBarrelEffects", true)
+Core.SetFeatureEnabled("GunBarrelEffects", true, true)
+Menu.Settings[#Menu.Settings + 1] = {Name = "GunBarrelEffects", Text = "Gun Shot Particles", Default = true, Update = function(Options, Val)
+	Core.SetFeatureEnabled("GunBarrelEffects", Val)
+end}
+
+if Menu.SavedSettings and Menu.SavedSettings["GunBarrelEffects"] == nil then
+	Menu.SavedSettings["GunBarrelEffects"] = true
+end
+
+coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["GunBarrelEffects"])
+
+if Menu.Tabs[1].Invalidate then
+	Menu.Tabs[1]:Invalidate()
+end
 
 local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
@@ -700,11 +729,35 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 	
 end )
 
-local CurCC
-
 local Impacts = {}
 
 local ImpactNum = 0
+
+local MaxBulletImpacts, BulletImpactDespawn = 150, 60
+
+Menu.Settings[#Menu.Settings + 1] = {Name = "MaxBulletImpacts", Text = "Max Bullet Impacts", Default = MaxBulletImpacts, Min = 1, Update = function(Options, Val)
+	MaxBulletImpacts = Val
+end}
+
+if Menu.SavedSettings and Menu.SavedSettings["MaxBulletImpacts"] == nil then
+	Menu.SavedSettings["MaxBulletImpacts"] = MaxBulletImpacts
+end
+
+coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["MaxBulletImpacts"])
+
+Menu.Settings[#Menu.Settings + 1] = {Name = "BulletImpactDespawn", Text = "Bullet Impact Despawn Time", Default = BulletImpactDespawn, Min = 1, Update = function(Options, Val)
+	BulletImpactDespawn = Val
+end}
+
+if Menu.SavedSettings and Menu.SavedSettings["BulletImpactDespawn"] == nil then
+	Menu.SavedSettings["BulletImpactDespawn"] = BulletImpactDespawn
+end
+
+coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["BulletImpactDespawn"])
+
+if Menu.Tabs[1].Invalidate then
+	Menu.Tabs[1]:Invalidate()
+end
 
 Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
 	
@@ -712,7 +765,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		if not Hit or not Hit.Parent then return end
 		
-		if ImpactNum >= (Core.MaxBulletImpacts or 150) then
+		if ImpactNum >= MaxBulletImpacts then
 			
 			ImpactNum = ImpactNum - 1
 			
@@ -778,7 +831,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 		
 		ImpactNum = ImpactNum + 1
 		
-		wait( Core.BulletImpactDespawn or 60 )
+		wait( BulletImpactDespawn )
 		
 		if Impacts[ BulletHit ] then
 			

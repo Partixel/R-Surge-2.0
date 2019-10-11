@@ -6,8 +6,8 @@ return {
 	AllowRemoteSet = true,
 	BeforeRemoteSet = function(Plr, DataStore, Remote, Setting, Value)
 		local Data = DataStore:Get({})
-		
-		Data[Setting] = Value or false
-		return Data
+		print(Value)
+		Data[Setting] = Value
+		return next(Data) and Data or nil
 	end,
 }

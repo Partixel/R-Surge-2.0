@@ -80,7 +80,7 @@ function UpdateHead( )
 end
 
 local Event
-Core.AddFeatureCallback("HeadRotation", function(Enabled)
+Core.SetFeatureCallback("HeadRotation", function(Enabled)
 	if Enabled then
 		Event = game:GetService("RunService").Stepped:Connect(UpdateHead)
 	elseif Event then
@@ -95,7 +95,22 @@ Core.AddFeatureCallback("HeadRotation", function(Enabled)
 		end
 	end
 end)
-Core.SetFeatureEnabled("HeadRotation", true)
+Core.SetFeatureEnabled("HeadRotation", true, true)
+
+local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
+Menu.Settings[#Menu.Settings + 1] = {Name = "HeadRotation", Text = "Head Rotation", Default = true, Update = function(Options, Val)
+	Core.SetFeatureEnabled("HeadRotation", Val)
+end}
+
+if Menu.SavedSettings and Menu.SavedSettings["HeadRotation"] == nil then
+	Menu.SavedSettings["HeadRotation"] = true
+end
+
+coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["HeadRotation"])
+
+if Menu.Tabs[1].Invalidate then
+	Menu.Tabs[1]:Invalidate()
+end
 
 local Last
 
