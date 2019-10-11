@@ -66,285 +66,191 @@ local function hbwait(num)
 	return t
 end
 
-local function FakeExplosion( Properties, OnHit )
-
-	local Explosion = Instance.new( "Explosion" )
-
-	for a, b in pairs( Properties ) do
-
-		Explosion[ a ] = b
-
+local function FakeExplosion(Properties, OnHit)
+	local Explosion = Instance.new("Explosion")
+	Explosion.Visible = false
+	for a, b in pairs(Properties) do
+		Explosion[a] = b
 	end
 
 	Explosion.DestroyJointRadiusPercent = 0
-
-	Explosion.Hit:Connect( OnHit )
-
-	Explosion.Visible = false
-
-	Explosion.Parent = workspace
-
-	wait( )
-
+	Explosion.Hit:Connect(OnHit)
+	Explosion.Parent = Properties.Parent or workspace
+	wait()
 end
 
-local function Stun( StatObj, GunStats, User, Hit, Dist, Type, WeaponName )
+function Core.StartStun(StatObj, GunStats, User, Hit, Damageable)
+	if Damageable:IsA("Humanoid") then
+		Damageable.PlatformStand = true
+		if Damageable.RootPart then Damageable.RootPart.RotVelocity = Vector3.new(10, 0, 0) end
 
-	local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, Type, Dist, GunStats.DistanceModifier, GunStats.AllowTeamKill, WeaponName, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
-
-	if ResH and ResH and ResH:IsA( "Humanoid" ) then
-
-		ResH.PlatformStand = true
-
-		if ResH.RootPart then ResH.RootPart.RotVelocity = Vector3.new( 10, 0, 0 ) end
-
-		coroutine.wrap( function ( )
-
+		coroutine.wrap(function()
 			for a = 1, 60 do
-
 				wait( 0.1 )
-
-				if ResH.RootPart then ResH.RootPart.RotVelocity = Vector3.new( 0, math.random( -5, 5 ), 0 ) end
-
+				
+				if Damageable.RootPart then
+					Damageable.RootPart.RotVelocity = Vector3.new(0, math.random(-5, 5), 0)
+				end
 			end
 
-			if ResH then ResH.PlatformStand = false end
-
-		end )( )
-
+			Damageable.PlatformStand = false
+		end)()
 	end
-
-	return ResH, ResD
-
 end
 
-local function FireDamage( StatObj, GunStats, User, Hit, ResH, ResD )
+function Core.StartFireDamage(StatObj, GunStats, User, Hit, Damageable)
+	local Doused
+	local Fire = Instance.new("Fire" , Hit)
 	
-	local Fire, Doused, Event2
-	
-	local Event1; Event1 = ResH.ChildAdded:Connect( function ( Obj )
-		
+	local Event1 = Damageable.ChildAdded:Connect(function(Obj)
 		if Obj.Name == "InWater" then
-			
 			Doused = true
-			
-			Event1:Disconnect( )
-			
 		end
-		
-	end )
+	end)
 	
-	if ResH:IsA( "Humanoid" ) then
-		
-		if ResH.RootPart then
-			
-			Fire = Instance.new( "Fire" , ResH.RootPart )
-			
-		end
-		
-		Event2 = ResH.Swimming:Connect( function( )
-			
-			Doused = true
-			
-		end )
-		
-	end
-	
-	local HitName = Hit.Name
+	local Event2 = Damageable:IsA("Humanoid") and Damageable.Swimming:Connect(function()
+		Doused = true
+	end)
 	
 	for i = 1, 20 do
-		
 		if Doused then
-			
 			break
-			
 		end
 		
-		Core.DamageObj( User, { { ResH, ResD, HitName } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Fire )
+		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, GunStats.BulletType.DamageType or Core.DamageType.Fire, 0)
+		if not Damageable then break end
 		
-		wait( 0.3 )
-		
+		wait(0.3)
 	end
 	
-	if Fire then Fire:Destroy( ) end
+	Fire:Destroy()
+	Event1:Disconnect()
 	
-	Event1:Disconnect( )
+	if Event2 then Event2:Disconnect() end
+end
+
+function Core.DoExplosion(User, WeaponStat, Position, Options)
+	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetGunStats(WeaponStat)
+	local DamageType = Options.DamageType or Core.DamageType.Explosive
+	local Type = type(Options.Type) == "function" and Options.Type or Options.Type == "Stun" and Core.BulletTypes or Options.Type == "Fire" and Core.StartFireDamage
 	
-	if Event2 then Event2:Disconnect( ) end
+	local Damageables = {}
 	
+	local BlastRadius, JointRadius = Options.BlastRadius, Options.DestroyJointRadiusPercent or 1
+	FakeExplosion({Position = Position, Visible = Options.Visible, Parent = Options.Parent, BlastRadius = BlastRadius, BlastPressure = Options.BlastPressure, ExplosionType = Options.ExplosionType}, function(Part, Dist)
+		Dist = Dist / BlastRadius
+		local Damageable = Core.GetValidDamageable(Part)
+		if Damageable then
+			if Core.CanDamage(User, Damageable, Part, WeaponStat, Dist) then
+				local Damage = Core.CalculateDamageFor(Part, WeaponStat, Dist)
+				if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
+					Damageables[Damageable] = {Part, Dist, Damage}
+				end
+			end
+		elseif IsServer and Dist <= JointRadius then
+			-----------------------------------------------------------------check for both parts in range of joints
+			Part:BreakJoints()
+			--[[Part.CFrame = Part.CFrame + Vector3.new( 0, 0.01, 0 )-----------------------REMOVE THIS ONCE https://devforum.roblox.com/t/pgs-changing-velocity-of-a-part-doesnt-wake-it/73708 IS FIXED PLAES FASE GSDFG DS GHSE EGFD SSGDF GSFDGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+			Part.Velocity = Part.Velocity + ( CFrame.new( Explosion.Position, Part.Position ).lookVector * Distance * Explosive * 30 )]]
+		end
+	end)
+
+	if next(Damageables) then
+		local EstimatedDamageables = {}
+		for Damageable, Info in pairs(Damageables) do
+			if IsServer then
+				Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], WeaponStat, DamageType, Info[2], Info[3])
+				if Type then
+					Type(WeaponStat, WeaponStats, User, Info[1], Damageable)
+				end
+			end
+			EstimatedDamageables[#EstimatedDamageables + 1] = {Damageable, Info[3]}
+		end
+		
+		return EstimatedDamageables
+	end
 end
 
 Core.BulletTypes = {
-
-	Kinetic = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
-		
-		local DamageType = GunStats.BulletType and GunStats.BulletType.DamageType or Core.DamageType.Kinetic
-	
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, DamageType, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
-	
-		if ResH then
-			
-			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, StatObj.Value, DamageType )
-	
+	Kinetic = function(StatObj, GunStats, User, Hit, Barrel, End)
+		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, GunStats.BulletType and GunStats.BulletType.DamageType or Core.DamageType.Kinetic, ( Barrel.Position - End ).magnitude / GunStats.Range)
+		if Damageable then
+			return {{Damageable, Damage}}
 		end
-
-	end },
-
-	Lightning = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
-
-		if ( not Hit ) then return end
-
-		local Material, Occupancy = workspace.Terrain:ReadVoxels( Region3.new( End - Vector3.new( 2, 2, 2 ), End + Vector3.new( 2, 2, 2 ) ):ExpandToGrid( 4 ), 4 )
-
-		local Humanoids = { }
-
-		if( Material[ 1 ][ 1 ][ 1 ] == Enum.Material.Water ) then
-
-			local Radius = GunStats.BulletType.Radius or 15
-
-			local Type = type( GunStats.BulletType.Type ) == "function" and GunStats.BulletType.Type or GunStats.BulletType.Type == "Stun" and Stun
-
-			FakeExplosion( { Position = End, BlastRadius = Radius, BlastPressure = 0, ExplosionType = Enum.ExplosionType.NoCraters }, function ( Part, Dist )
-
-				if Core.IgnoreFunction( Part ) then return end
-
-				local ResH, ResD
+	end,
+	Lightning = function(StatObj, GunStats, User, Hit, Barrel, End)
+		if Hit then
+			local DamageType = GunStats.BulletType.DamageType or Core.DamageType.Electricity
+			local Type = type( GunStats.BulletType.Type ) == "function" and GunStats.BulletType.Type or GunStats.BulletType.Type == "Stun" and Core.BulletTypes or GunStats.BulletType.Type == "Fire" and Core.StartFireDamage
+			local Dist = ( Barrel.Position - End ).magnitude / GunStats.Range
+			
+			local Damageables = {}
 				
-				if Type then
-					
-					ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / Radius, GunStats.BulletType.DamageType or Core.DamageType.Electricity, StatObj.Value )
-					
-				else
-					
-					ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( End - Part.Position ).magnitude / Radius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
-					
+			local Material, Occupancy = workspace.Terrain:ReadVoxels(Region3.new(End - Vector3.new(2, 2, 2), End + Vector3.new(2, 2, 2)):ExpandToGrid(4), 4)
+			if Material[1][1][1] == Enum.Material.Water then
+				local Radius = GunStats.BulletType.Radius or 15
+				
+				FakeExplosion({Position = End, BlastRadius = Radius, BlastPressure = 0, ExplosionType = Enum.ExplosionType.NoCraters}, function(Part, ExpDist)
+					ExpDist = Dist + ExpDist / Radius * 0.75
+					local Damageable = Core.GetValidDamageable(Part)
+					if Damageable and Damageable:GetState() == Enum.HumanoidStateType.Swimming and Core.CanDamage(User, Damageable, Part, StatObj, Dist) then
+						local Damage = Core.CalculateDamageFor(Hit, StatObj, Dist)
+						if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
+							Damageables[Damageable] = {Part, Dist, Damage}
+						end
+					end
+				end)
+			end
+			
+			local Damageable = Core.GetValidDamageable(Hit)
+			if Damageable and Core.CanDamage(User, Damageable, Hit, StatObj, Dist) then
+				local Damage = Core.CalculateDamageFor(Hit, StatObj, Dist)
+				if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
+					Damageables[Damageable] = {Hit, Dist, Damage}
 				end
-
-				if ResH and ResH:GetState( ) == Enum.HumanoidStateType.Swimming and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
-
-					Humanoids[ ResH ] = { ResD, Part.Name }
-
+			end
+			
+			if next(Damageables) then
+				local EstimatedDamageables = {}
+				for Damageable, Info in pairs(Damageables) do
+					if IsServer then
+						Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], StatObj, DamageType, Info[2], Info[3])
+						if Type then
+							Type(StatObj, GunStats, User, Hit, Damageable)
+						end
+					end
+					EstimatedDamageables[#EstimatedDamageables + 1] = {Damageable, Info[3]}
 				end
-
-			end )
-
-		end
-
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
-
-		if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
-			
-			Humanoids[ ResH ] = { ResD, Hit.Name }
-			
-		end
-
-		if next( Humanoids ) then
-			
-			local Hums = { }
-			
-			for a, b in pairs( Humanoids ) do
 				
-				Hums[ #Hums + 1 ] = { a, b[ 1 ], b[ 2 ] }
-				
+				return EstimatedDamageables
 			end
-
-			return Core.DamageObj( User, Hums, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
-
 		end
-
-	end },
-
-	Fire = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
-		
-		local ResH, ResD = Core.GetDamage( User, Hit, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
-		
-		if ResH then
-			
-			local Damaged = Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Fire )
-			
-			if next( Damaged ) then
-				
-				FireDamage( StatObj, GunStats, User, Hit, ResH, ResD )
-				
-				return Damaged
-				
+	end,
+	Fire = function(StatObj, GunStats, User, Hit, Barrel, End)
+		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, GunStats.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / GunStats.Range)
+		if Damageable then
+			if IsServer then
+				Core.StartFireDamage(StatObj, GunStats, User, Hit, Damageable)
 			end
 			
+			return {{Damageable, Damage}}
 		end
-
-	end },
-
-	Stun = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
-
-		local ResH, ResD = Stun( StatObj, GunStats, User, Hit, ( Barrel.Position - End ).magnitude / GunStats.Range, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
-
-		if ResH then
-
-			return Core.DamageObj( User, { { ResH, ResD, Hit.Name } }, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Electricity )
-
+	end,
+	Stun = function(StatObj, GunStats, User, Hit, Barrel, End)
+		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, GunStats.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / GunStats.Range)
+		if Damageable then
+			if IsServer then
+				Core.StartStun(StatObj, GunStats, User, Hit, Damageable)
+			end
+			
+			return {{Damageable, Damage}}
 		end
-
-	end },
-
-	Explosive = { Func = function ( StatObj, GunStats, User, Hit, Barrel, End )
-
-		if not Hit and GunStats.BulletType.ExplodeOnHit then return end
-
-		local BlastRadius = GunStats.BulletType.BlastRadius
-
-		local JointRadius = GunStats.BulletType.DestroyJointRadiusPercent or 1
-
-		local Type = type( GunStats.BulletType.Type ) == "function" and GunStats.BulletType.Type or GunStats.BulletType.Type == "Stun" and Stun
-
-		local Humanoids = { }
-
-		FakeExplosion( { Position = End, BlastRadius = BlastRadius, BlastPressure = GunStats.BulletType.BlastPressure, ExplosionType = GunStats.BulletType.ExplosionType }, function ( Part, Dist )
-
-			if Core.IgnoreFunction( Part ) or not Part.Parent or Part.Parent:IsA( "Tool" ) then return end
-
-			local ResH, ResD
-			
-			if Type then
-				
-				ResH, ResD = Type( StatObj, GunStats, User, Part, ( End - Part.Position ).magnitude / BlastRadius, GunStats.BulletType.DamageType or Core.DamageType.Explosive, StatObj.Value )
-				
-			else
-				
-				ResH, ResD = Core.GetDamage( User, Part, GunStats.Damage, GunStats.BulletType.DamageType or Core.DamageType.Explosive, ( End - Part.Position ).magnitude / BlastRadius, GunStats.DistanceModifier, GunStats.AllowTeamKill, StatObj.Value, GunStats.InvertTeamKill, GunStats.InvertDistanceModifier )
-				
-			end
-
-			if ResH and ResD > ( ( Humanoids[ ResH ] or { } )[ 1 ] or 0 ) then
-
-				Humanoids[ ResH ] = { ResD, Part.Name }
-
-				return
-
-			elseif ResH == nil and Dist / BlastRadius <= JointRadius then
-
-				-----------------------------------------------------------------check for both parts in range of joints
-				Part:BreakJoints( )
-
-			end
-
-		end )
-
-		if next( Humanoids ) then
-			
-			local Hums = { }
-			
-			for a, b in pairs( Humanoids ) do
-				
-				Hums[ #Hums + 1 ] = { a, b[ 1 ], b[ 2 ] }
-				
-			end
-
-			return Core.DamageObj( User, Hums, StatObj.Value, GunStats.BulletType.DamageType or Core.DamageType.Explosive )
-
+	end,
+	Explosive = function(StatObj, GunStats, User, Hit, Barrel, End)
+		if Hit or not GunStats.BulletType.ExplodeOnHit then
+			return Core.DoExplosion(User, StatObj, End, GunStats.BulletType)
 		end
-
-	end }
-
+	end
 }
 
 Core.Damageables = setmetatable( { }, { __mode = "k" } )
@@ -1179,7 +1085,7 @@ function Core.Fire( Weapon )
 
 					local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
 					
-					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ).Func or Core.BulletTypes.Kinetic.Func )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
+					local Humanoids = ( Core.GetBulletType( Weapon.GunStats ) or Core.BulletTypes.Kinetic )( Weapon.StatObj, Weapon.GunStats, Weapon.User, Hit, Barrel, End )
 
 					if not IsServer then
 						
@@ -1407,329 +1313,146 @@ function Core.GetValidDamageable(Obj, Top)
 	end
 end
 
-function Core.GetDamage( User, Hit, OrigDamage, Type, Distance, DistanceModifier, IgnoreTeam, WeaponName, InvertTeamKill, InvertDistanceModifier )
+function Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance)
+	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetGunStats(WeaponStat)
+	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(Attacker, Damageable, WeaponStats.AllowTeamKill, WeaponStats.InvertTeamKill ) and (not Distance or Distance < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
+end
 
-	local Humanoid = Core.GetValidHumanoid( Hit )
-
-	if not Humanoid then return end
-
-	if Core.IgnoreFunction( Hit ) then return false end
-
-	if not Core.CheckTeamkill( User, Humanoid, IgnoreTeam, InvertTeamKill ) then return false end
+function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
+	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetGunStats(WeaponStat)
+	local Damage = WeaponStats.Damage
 	
-	local Damage = OrigDamage
-
-	local hitName = Hit.Name:lower( )
-
-	if hitName:find( "head" ) or hitName == "uppertorso" or CollectionService:HasTag( Hit, "s2headdamage" ) then
-
+	local HitName = Hit.Name:lower()
+	if HitName:find("head") or HitName == "uppertorso" or CollectionService:HasTag(Hit, "s2headdamage") then
 		Damage = Damage * Core.Config.HeadDamageMultiplier
-
-	elseif hitName:find( "leg" ) or hitName:find( "arm" ) or hitName:find( "hand" ) or hitName:find( "foot" ) or CollectionService:HasTag( Hit, "s2limbdamage" ) then
-
+	elseif HitName:find("leg") or HitName:find("arm") or HitName:find("hand") or HitName:find("foot") or CollectionService:HasTag(Hit, "s2limbdamage") then
 		Damage = Damage * Core.Config.LimbDamageMultiplier
-
 	end
 
 	if Distance then
-
-		if Distance > 1 then return false end
-		
-		if InvertDistanceModifier or ( InvertDistanceModifier ~= false and Core.Config.InvertDistanceModifier ) then
-			
-			Distance = ( 1 - Distance ) * ( DistanceModifier or Core.Config.DistanceDamageMultiplier )
-			
-			Damage = Damage * Distance
-			
+		if WeaponStats.InvertDistanceModifier or (WeaponStats.InvertDistanceModifier ~= false and Core.Config.InvertDistanceModifier) then
+			Damage = Damage * (1 - Distance) * (WeaponStats.DistanceModifier or Core.Config.DistanceDamageMultiplier)
 		else
-			
-			Distance = Distance * ( DistanceModifier or Core.Config.DistanceDamageMultiplier )
-			
-			Damage = Damage * ( 1 - Distance )
-			
+			Damage = Damage * (1 - Distance * (WeaponStats.DistanceModifier or Core.Config.DistanceDamageMultiplier))
 		end
-
-	end
-
-	local Resistance = 1
-	
-	if Humanoid:FindFirstChild( "Resistances" ) then
-		
-		local Resistances = Humanoid.Resistances:GetChildren( )
-		
-		for a = 1, #Resistances do
-			
-			if Resistances[ a ].Name == WeaponName or Resistances[ a ].Name == Type or Resistances[ a ].Name == "All" then
-				
-				Resistance = Resistance * Resistances[ a ].Value
-				
-			end
-			
-		end
-		
 	end
 	
-	if Core.Config.Resistances and Core.Config.Resistances[ Type ] then
-		
-		Resistance = Resistance * Core.Config.Resistances[ Type ]
-		
-	end
-
-	Damage = Damage * Resistance * ( Core.Config.GlobalDamageMultiplier or 1 )
-
-	if Damage == 0 or ( OrigDamage > 0 and Damage < 0 ) or ( OrigDamage < 0 and Damage > 0 ) then
-
-		return false
-
-	end
-
-	return Humanoid, Damage
-
+	return Damage
 end
-
-local Died, ClntDmg, HandleKill
 
 if IsServer then
+	local ClientDamage = Instance.new( "RemoteEvent" )
+	ClientDamage.Name = "ClientDamage"
+	ClientDamage.OnServerEvent:Connect(function(Attacker, Time, Hit, WeaponStat, DamageType, Distance)
+		if tick() - Time > 1 then
+			warn(Attacker.Name .. " took too long to send shot packet, discarding! - " .. (tick( ) - Time))
+		else
+			Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance)
+		end
+	end)
 	
-	Core.DamageInfos = setmetatable( { }, { __mode = "k" } )
-
+	ClientDamage.Parent = script.Parent
+	--Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits{Damageable, Damage}
 	Core.ObjDamaged = Instance.new( "BindableEvent" )
 	
-	Died = setmetatable( { }, { __mode = "k" } )
-
-	ClntDmg = Instance.new( "RemoteEvent" )
+	Core.DamageInfos = setmetatable( { }, { __mode = "k" } )
 	
-	Core.KilledEvents = { }
-	
-	local Kills = setmetatable( { }, { __mode = "k" } )
-	
-	function HandleKill( Killed, User, WeaponName, TypeName )
+	function Core.ApplyDamage(Attacker, Damageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, RemainingDamage, DamageSplits)
+		local Damage = Dmg * (RemainingDamage or 1)
 		
-		if Kills[ User ] and Kills[ User ][ WeaponName .. TypeName ] then
-			
-			for Damageable, Hit in pairs( Killed ) do
-				
-				if not Kills[ User ][ WeaponName .. TypeName ][ Damageable ] then
-					
-					Kills[ User ][ WeaponName .. TypeName ][ Damageable ] = Hit
-					
-					Killed[ Damageable ] = nil
-					
+		local Resistance = 1
+		if Damageable:FindFirstChild("Resistances") then
+			for _, ResistanceObj in ipairs(Damageable.Resistances:GetChildren()) do
+				if ResistanceObj.Name == WeaponStat.Value or ResistanceObj.Name == DamageType or ResistanceObj.Name == "All" then
+					Resistance = Resistance * ResistanceObj.Value
 				end
-				
 			end
-			
-			if not next( Killed ) then return end
-			
+		end
+		if Core.Config.Resistances and Core.Config.Resistances[DamageType] then
+			Resistance = Resistance * Core.Config.Resistances[DamageType]
+		end
+		Damage = Damage * Resistance * ( Core.Config.GlobalDamageMultiplier or 1 )
+		
+		if Damage == 0 then return end
+		
+		local Prop, MaxProp
+		if Damageable:IsA( "Humanoid" ) then
+			Prop, MaxProp = "Health", "MaxHealth"
 		else
-			
-			Kills[ User ] = Kills[ User ] or { }
-			
-			Kills[ User ][ WeaponName .. TypeName ] = Killed
-			
-			wait( 0.5 )
-			
-			Kills[ User ][ WeaponName .. TypeName ] = nil
-			
+			Prop, MaxProp = "Value", "MaxValue"
 		end
 		
-		for a, b in pairs( Core.KilledEvents ) do
+		if Damage < 0 and Damageable[Prop] == Damageable[MaxProp] then
+			Damage = 0
+		else
+			Damage = Damage > 0 and (Damageable[Prop] > Damage and Damage or Damageable[Prop]) or (Damageable[Prop] - Damage < Damageable[MaxProp] and Damage or Damageable[Prop] - Damageable[MaxProp])
 			
-			coroutine.wrap( b )( Killed, User, WeaponName, TypeName )
-			
-		end
-		
-	end
-
-	ClntDmg.Name = "ClientDamage"
-	
-	ClntDmg.OnServerEvent:Connect( function ( Plr, Time, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-		if tick( ) - Time > 1 then warn( ( Plr.Name .. " took too long to send shot packet, discarding! - %f" ):format( tick( ) - Time ) ) return end
-		
-		Core.DamageObj( Plr, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-		
-	end )
-
-	ClntDmg.Parent = script.Parent
-	
-end
-
-function Core.DamageObj( User, DamageInfos, WeaponName, TypeName, IgnoreSpecial )
-	
-	local Killed = { }
-	
-	local Damaged = { }
-	
-	for _, a in pairs( DamageInfos ) do
-		
-		local Damageable, Damage = a[ 1 ], a[ 2 ]
-		
-		if Damageable.Parent and not Damageable.Parent:FindFirstChildOfClass( "ForceField" ) and Damage ~= 0 then
-			
-			local Amount, PrevHealth
-			
-			if Damageable:IsA( "Humanoid" ) then
-				
-				PrevHealth = Damageable.Health
-				
-				Amount = Damage > 0 and ( Damageable.Health > Damage and Damage or Damageable.Health ) or ( Damageable.Health - Damage < Damageable.MaxHealth and Damage or Damageable.Health - Damageable.MaxHealth )
-				
-				if IsServer then
-					
-					Damageable.Health = Damageable.Health - Amount
-					
-					if PrevHealth > 0 and Damageable.Health <= 0 then
-						
-						if Died[ Damageable ] then
-							
-							print( "S2 tried to kill a damageable that was already dead - ", Damageable:GetFullName( ), PrevHealth, Damageable.Health, Amount )
-							
-						else
-							
-							print( "S2 killed a damageable - ", Damageable:GetFullName( ), PrevHealth, Damageable.Health, Amount )
-							
-							Damageable.HealthChanged:Connect( function ( )
-								
-								Damageable.Health = 0
-								
-							end )
-							
-							Died[ Damageable ] = true
-							
-							Killed[ Damageable ] = a[ 3 ]
-							
-						end
-						
-					end
-	
-					if Damage > Damageable.MaxHealth - ( Damageable.MaxHealth / 20 ) then
-	
-						Damageable:AddCustomStatus( "Vital" )
-	
-					end
-					
+			Damageable[Prop] = Damageable[Prop] - Damage
+			if Damageable[Prop] <= 0 then
+				if Damageable:IsA("Humanoid") then
+					Damageable.HealthChanged:Connect(function()
+						Damageable.Health = 0
+					end)
+				else
+					Damageable:GetPropertyChangedSignal("Value"):Connect(function()
+						Damageable.Value = 0
+					end)
 				end
+			end
+		end
+		
+		if Damage > (Damageable[MaxProp] - (Damageable[MaxProp] / 20)) then
+			CollectionService:AddTag(Damageable, "VitalDamage")
+		end
+		
+		local First = not DamageSplits
+		DamageSplits = DamageSplits or {}
+		if Damage ~= 0 then
+			DamageSplits[#DamageSplits + 1] = {Damageable, Damage}
+		end
+		
+		if Damage ~= Dmg * (RemainingDamage or 1) then
+			if Damage > 0 then
+				local NextDamageable = Damageable.Parent
 				
+				if not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") and (NextDamageable:IsA("Humanoid") or NextDamageable.Name == "Health") then
+					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
+				end
 			else
+				local NextDamageable = Damageable:FindFirstChild("Health")
 				
-				PrevHealth = Damageable.Value
-				
-				Amount = Damage > 0 and ( Damageable.Value > Damage and Damage or Damageable.Value ) or ( Damageable.Value - Damage < Damageable.MaxValue and Damage or Damageable.Value - Damageable.MaxValue )
-				
-				if IsServer then
-					
-					Damageable.Value = Damageable.Value - Amount
-					
-					if PrevHealth > 0 and Damageable.Value <= 0 then
-						
-						if Died[ Damageable ] then
-							
-							print( "S2 tried to kill a damageable that was already dead - ", Damageable, PrevHealth, Damageable.Value, Amount )
-							
-						else
-							
-							print( "S2 killed a damageable - ", Damageable:GetFullName( ), PrevHealth, Damageable.Value, Amount )
-							
-							Damageable:GetPropertyChangedSignal( "Value" ):Connect( function ( )
-								
-								Damageable.Value = 0
-								
-							end )
-							
-							Died[ Damageable ] = true
-							
-							Killed[ Damageable ] = a[ 3 ]
-							
-						end
-						
-					end
-					
+				if NextDamageable and NextDamageable.Value > 0 and not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") then
+					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
 				end
-
 			end
-			
-			if Damage ~= Amount and Damageable.Parent then
-				
-				if Damage > 0 and ( ( Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Health > 0 ) or ( Damageable.Parent.Name == "Health" and not Damageable.Parent:IsA( "Humanoid" ) and Damageable.Parent.Value > 0 ) ) and not CollectionService:HasTag( Damageable, "s2noupwardsdamage" ) then
-					
-					DamageInfos[ #DamageInfos + 1 ] = { Damageable.Parent, Damage - Amount, a[ 3 ] }
-					
-				elseif Damage < 0 and Damageable:FindFirstChild( "Health" ) and not Damageable:FindFirstChild( "Health" ):IsA( "Humanoid" ) and ( not CollectionService:HasTag( Damageable, "s2recursivehealfromdeath" ) or Damageable:FindFirstChild( "Health" ).Value > 0 ) and not CollectionService:HasTag( Damageable:FindFirstChild( "Health" ), "s2norecursivedamage" ) then
-					
-					DamageInfos[ #DamageInfos + 1 ] = { Damageable:FindFirstChild( "Health" ), Damage - Amount, a[ 3 ] }
-					
-				end
-				
-			end
-			
-			if Amount ~= 0 then
-				
-				Damaged[ #Damaged + 1 ] = { Damageable, Amount }
-				
-				if IsServer then
-					
-					Core.DamageInfos[ Damageable ] = Core.DamageInfos[ Damageable ] or { }
-					
-					Core.DamageInfos[ Damageable ][ User ] = ( Core.DamageInfos[ Damageable ][ User ] or 0 ) + Amount
-					
-					delay( 30, function ( )
-		
-						if Core.DamageInfos[ Damageable ] and Core.DamageInfos[ Damageable ][ User ] then
-							
-							Core.DamageInfos[ Damageable ][ User ] = Core.DamageInfos[ Damageable ][ User ] - Amount
-							
-							if Core.DamageInfos[ Damageable ][ User ] <= 0 then
-								
-								Core.DamageInfos[ Damageable ][ User ] = nil
-								
-								if not next( Core.DamageInfos[ Damageable ] ) then
-									
-									Core.DamageInfos[ Damageable ] = nil
-									
-								end
-								
-							end
-							
-						end
-		
-					end )
-		
-					if Players:GetPlayerFromCharacter( Damageable.Parent ) then
-		
-						ClntDmg:FireClient( Players:GetPlayerFromCharacter( Damageable.Parent ), User.Name, Amount )
-		
-					end
-		
-					if typeof( User ) == "Instance" and Damageable.Parent then
-		
-						ClntDmg:FireClient( User, Damageable.Parent.Name, Amount, true )
-		
-					end
-		
-					Core.ObjDamaged:Fire( User, Damageable, Amount, PrevHealth )
-					
-				end
-				
-			end
-			
 		end
-
-	end
-	
-	if IsServer and next( Killed ) then
 		
-		coroutine.wrap( HandleKill )( Killed, User, WeaponName, TypeName )
-		
+		if First and next(DamageSplits) then
+			if Players:GetPlayerFromCharacter(Damageable.Parent) then
+				ClientDamage:FireClient(Players:GetPlayerFromCharacter(Core.GetTopDamageable(Damageable).Parent), DamageSplits, Attacker.Name)
+			end
+			
+			if typeof(Attacker) == "Instance" then
+				ClientDamage:FireClient(Attacker, DamageSplits)
+			end
+			
+			Core.ObjDamaged:Fire(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits)
+		end
 	end
-	
-	return Damaged
-	
+end
+-- returns Damageable if one is found, on server will also do damage
+function Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance)
+	local Damageable = Core.GetValidDamageable(Hit)
+	if Damageable and Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance) then
+		local Damage = Core.CalculateDamageFor(Hit, WeaponStat, Distance)
+		if IsServer then
+			Core.ApplyDamage(Attacker, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Hit, WeaponStat, DamageType, Distance, Damage)
+		end
+		return Damageable, Damage
+	end
 end
 
-local 
-
-function ToolAdded( Tool, Plr )
+local function ToolAdded( Tool, Plr )
 	
 	local StatObj = Tool:FindFirstChild( "GunStat" )
 
@@ -1897,7 +1620,7 @@ if IsServer then
 					
 				end
 				
-				local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
+				local Humanoids = ( Core.GetBulletType( GunStats ) or Core.BulletTypes.Kinetic )( StatObj, GunStats, User, Hit, Barrel, End )
 				
 				local FirstShot
 				
@@ -1978,20 +1701,26 @@ else
 		Spawned( Players.LocalPlayer )
 
 	end )
-
-	game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "ClientDamage" ).OnClientEvent:Connect( function ( Other, Amount, Killed )
-
-		if Killed then
-
-			print( "Damaged " .. Other .. " for " .. Amount )
-
+	
+	game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("ClientDamage").OnClientEvent:Connect(function(DamageSplits, Attacker)
+		if Attacker then
+			local TotalDamage, Split = 0, ""
+			for i, DamageSplit in ipairs(DamageSplits) do
+				TotalDamage = TotalDamage + DamageSplit[2]
+				Split = Split .. DamageSplit[1].Name .. ":" .. (math.floor(math.abs(DamageSplit[2]) * 100 + 0.5) / 100) .. (i == #DamageSplits and "" or ", ")
+			end
+			
+			print("You took " .. (math.floor(math.abs(TotalDamage) * 100 + 0.5) / 100) .. (TotalDamage > 0 and " damage" or " healing") .. " from " .. Attacker .. " (" .. Split .. ")")
 		else
-
-			print( Amount .. " damage taken from " .. Other )
-
+			local TotalDamage, Split = 0, ""
+			for i, DamageSplit in ipairs(DamageSplits) do
+				TotalDamage = TotalDamage + DamageSplit[2]
+				Split = Split .. DamageSplit[1].Name .. ":" .. (math.floor(math.abs(DamageSplit[2]) * 100 + 0.5) / 100) .. (i == #DamageSplits and "" or ", ")
+			end
+			
+			print("You did " .. (math.floor(math.abs(TotalDamage) * 100 + 0.5) / 100) .. (TotalDamage > 0 and " damage" or " healing") .. " to " .. Core.GetTopDamageable(DamageSplits[1][1]).Parent.Name .. " (" .. Split .. ")")
 		end
-
-	end )
+	end)
 	
 	Core.ShotRemote.OnClientEvent:Connect( function ( Time, StatObj, User, ToNetwork, _Normal, _Offset, _BarrelNum )
 		
@@ -2043,7 +1772,7 @@ else
 								
 				end
 				
-				local Humanoids = ( Core.GetBulletType( GunStats ).Func or Core.BulletTypes.Kinetic.Func )( StatObj, GunStats, User, Hit, Barrel, End )
+				local Humanoids = ( Core.GetBulletType( GunStats ) or Core.BulletTypes.Kinetic )( StatObj, GunStats, User, Hit, Barrel, End )
 				
 				local FirstShot
 				

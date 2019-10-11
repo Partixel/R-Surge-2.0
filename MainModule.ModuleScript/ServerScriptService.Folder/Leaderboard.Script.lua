@@ -52,6 +52,8 @@ if Core.Config.TeamCounts then
 	
 end
 
+local Kills = setmetatable( { }, { __mode = "k" } )
+
 local function OnDeath( Damageable )
 	
 	local Victim = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent )
@@ -64,33 +66,165 @@ local function OnDeath( Damageable )
 		
 	end
 	
-	if not Core.DamageInfos[ Damageable ] and not CollectionService:HasTag( Damageable, "s2nofeed" ) then
+	if not CollectionService:HasTag( Damageable, "s2nofeed" ) then
 		
-		local DeathInfo = { VictimInfos = { { Damageable = Damageable, User = Victim or  { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ) } } }
-		
-		script.Killed:Fire( DeathInfo )
-		
-		RemoteKilled:FireAllClients( DeathInfo )
-		
-		if Core.Config.SupportLegacyKOs then
+		if not Core.DamageInfos[ Damageable ] or not Core.DamageInfos[ Damageable ].LastDamageInfo then
 			
-			local Creator = Damageable:FindFirstChild( "creator" )
+			local DeathInfo = { VictimInfos = { { Damageable = Damageable, User = Victim or  { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ) } } }
 			
-			if Creator and Creator.Value then
+			script.Killed:Fire( DeathInfo )
+			
+			RemoteKilled:FireAllClients( DeathInfo )
+			
+			if Core.Config.SupportLegacyKOs then
 				
-				warn( Damageable.Parent.Name .. " has died to non-S2 damage, please update to using S2s damage system" )
+				local Creator = Damageable:FindFirstChild( "creator" )
 				
-				Creator.Value:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Creator.Value.leaderstats.KOs.Value + 1
-				
-				if Core.Config.CreditsPerKill then
+				if Creator and Creator.Value then
 					
-					local Credits = Creator.Value:FindFirstChild( "Credits", true )
+					warn( Damageable.Parent.Name .. " has died to non-S2 damage, please update to using S2s damage system" )
 					
-					if Credits then Credits.Value = math.floor( Credits.Value + Core.Config.CreditsPerKill, 0 ) end
+					Creator.Value:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Creator.Value.leaderstats.KOs.Value + 1
+					
+					if Core.Config.CreditsPerKill then
+						
+						local Credits = Creator.Value:FindFirstChild( "Credits", true )
+						
+						if Credits then Credits.Value = math.floor( Credits.Value + Core.Config.CreditsPerKill, 0 ) end
+						
+					end
 					
 				end
 				
 			end
+			
+		else
+			
+			local Killer, WeaponName, TypeName = Core.DamageInfos[ Damageable ].LastDamageInfo[1], Core.DamageInfos[ Damageable ].LastDamageInfo[3].Value, Core.DamageInfos[ Damageable ].LastDamageInfo[4]
+			
+			if Kills[ Killer ] and Kills[ Killer ][ WeaponName .. TypeName ] and not Kills[ Killer ][ WeaponName .. TypeName ][ Damageable ] then
+				
+				Kills[ Killer ][ WeaponName .. TypeName ][ Damageable ] = Core.DamageInfos[ Damageable ].LastDamageInfo[2]
+				
+				return
+				
+			end
+			
+			local Killed = { [ Damageable ] = Core.DamageInfos[ Damageable ].LastDamageInfo[2] }
+			
+			Kills[ Killer ] = Kills[ Killer ] or { }
+			
+			Kills[ Killer ][ WeaponName .. TypeName ] = Killed
+			
+			wait( 0.5 )
+			
+			Kills[ Killer ][ WeaponName .. TypeName ] = nil
+			
+			if not next( Kills[ Killer ] ) then
+				
+				Kills[ Killer ] = nil
+				
+			end
+			
+			local DeathInfo = { VictimInfos = { }, TotalDamage = 0, With = WeaponName, Type = TypeName, Killer = Killer }
+			
+			local KOs = 0
+			
+			local Assisters = { }
+			
+			for Damageable, Hit in pairs( Killed ) do
+				
+				if Damageable.Parent then
+					
+					if not CollectionService:HasTag( Damageable, "s2nokos" ) then KOs = KOs + 1 end
+					
+					DeathInfo.VictimInfos[ #DeathInfo.VictimInfos + 1 ] = { Damageable = Damageable, User = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent ) or { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit }
+					
+					if Core.DamageInfos[ Damageable ] then
+						
+						for a, b in pairs( Core.DamageInfos[ Damageable ] ) do
+							
+							if a ~= "LastDamageInfo" then
+								
+								Assisters[ a ] = ( Assisters[ a ] or 0 ) + b
+								
+							end
+							
+						end
+						
+					end
+					
+				end
+				
+			end
+			
+			DeathInfo.KillerDamage = Assisters[ Killer ]
+			
+			local Assister, AssisterDamage
+			
+			for a, b in pairs( Assisters ) do
+				
+				DeathInfo.TotalDamage = DeathInfo.TotalDamage + b
+				
+				if not AssisterDamage or b > AssisterDamage then
+					
+					Assister = a
+					
+					AssisterDamage = b
+					
+			    end
+				
+			end
+			
+			if Core.Config.ShowAssists and Assister ~= DeathInfo.Killer then
+				
+				DeathInfo.Assister, DeathInfo.AssisterDamage = Assister, AssisterDamage
+				
+			end
+			
+			if KOs ~= 0 then
+				
+				if DeathInfo.Killer then
+					
+					if typeof( DeathInfo.Killer ) == "Instance" then
+						
+						DeathInfo.Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = DeathInfo.Killer.leaderstats.KOs.Value + KOs
+						
+						if Core.Config.CreditsPerKill then
+							
+							local Credits = DeathInfo.Killer:FindFirstChild( "Credits", true )
+							
+							if Credits then Credits.Value = math.floor( Credits.Value + KOs * Core.Config.CreditsPerKill, 0 ) end
+							
+						end
+						
+					end
+					
+				end
+				
+				if DeathInfo.Assister then
+					
+					if typeof( DeathInfo.Assister ) == "Instance" then
+						
+						DeathInfo.Assister:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = DeathInfo.Assister.leaderstats.Assists.Value + KOs
+						
+						if Core.Config.CreditsPerKill then
+							
+							local Credits = DeathInfo.Assister:FindFirstChild( "Credits", true )
+							
+							if Credits then Credits.Value = math.floor( Credits.Value + KOs * ( Core.Config.CreditsPerAssist or Core.Config.CreditsPerKill / 2 ), 0 ) end
+							
+						end
+						
+					end
+					
+				end
+				
+			end
+			
+			script.Killed:Fire( DeathInfo )
+			
+			RemoteKilled:FireAllClients( DeathInfo )
 			
 		end
 		
@@ -154,121 +288,50 @@ for a, b in pairs( Core.Damageables ) do
 	
 end
 
-Core.ObjDamaged.Event:Connect( function ( User, Damageable, Amount, PrevHealth )
-	
-	if typeof( User ) == "Instance" and ( Core.Config.CreditsPerDamage or Core.Config.CreditsPerHeal ) and not CollectionService:HasTag( Damageable, "s2nokos" ) then
-		
-		local Credits = User:FindFirstChild( "Credits", true )
-		
-		if Credits then
-			
-			Credits.Value = math.floor( Credits.Value + math.abs( Amount ) * ( Amount > 0 and ( Core.Config.CreditsPerDamage or 0 ) or ( Core.Config.CreditsPerHeal or 0 ) ), 0 )
-			
+Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits)
+	local TotalDamage = 0
+	for _, DamageSplit in ipairs(DamageSplits) do
+		if not CollectionService:HasTag(DamageSplit[1], "s2nokos") then
+			TotalDamage = TotalDamage + DamageSplit[2]
 		end
-		
 	end
 	
-end )
-
-Core.KilledEvents[ "Leaderboard" ] = function ( Damageables, Killer, WeaponName, TypeName )
-	
-	local DeathInfo = { VictimInfos = { }, TotalDamage = 0, With = WeaponName, Type = TypeName, Killer = Killer }
-	
-	local KOs = 0
-	
-	local Assisters = { }
-	
-	for Damageable, Hit in pairs( Damageables ) do
+	if typeof(Attacker) == "Instance" and Attacker:FindFirstChild("leaderstats") then
+		local Stat = TotalDamage > 0 and Attacker.leaderstats:FindFirstChild("Damaged") or Attacker.leaderstats:FindFirstChild("Healed")
+		if Stat then
+			Stat.Value = Stat.Value + math.floor(TotalDamage * 100 + 0.5) / 100 * (TotalDamage > 0 and 1 or -1)
+		end
 		
-		if Damageable.Parent then
-			
-			if not CollectionService:HasTag( Damageable, "s2nokos" ) then KOs = KOs + 1 end
-			
-			DeathInfo.VictimInfos[ #DeathInfo.VictimInfos + 1 ] = { Damageable = Damageable, User = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent ) or { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit }
-			
-			if Core.DamageInfos[ Damageable ] then
-				
-				for a, b in pairs( Core.DamageInfos[ Damageable ] ) do
-					
-					Assisters[ a ] = ( Assisters[ a ] or 0 ) + b
-					
-				end
-				
+		if (Core.Config.CreditsPerDamage and TotalDamage > 0) or (Core.Config.CreditsPerHeal and TotalDamage < 0) then
+			local Credits = Attacker:FindFirstChild("Credits", true)
+			if Credits then
+				Credits.Value = math.floor(Credits.Value + math.abs(TotalDamage) * (TotalDamage > 0 and Core.Config.CreditsPerDamage or Core.Config.CreditsPerHeal), 0)
 			end
-			
 		end
-		
 	end
 	
-	DeathInfo.KillerDamage = Assisters[ Killer ]
-	
-	local Assister, AssisterDamage
-	
-	for a, b in pairs( Assisters ) do
-		
-		DeathInfo.TotalDamage = DeathInfo.TotalDamage + b
-		
-		if not AssisterDamage or b > AssisterDamage then
+	if TotalDamage > 0 then
+		for _, DamageSplit in ipairs(DamageSplits) do
+			Core.DamageInfos[DamageSplit[1]] = Core.DamageInfos[DamageSplit[1]] or {}
+Core.DamageInfos[DamageSplit[1]][Attacker] = (Core.DamageInfos[DamageSplit[1]][Attacker] or 0) + DamageSplit[2]
+			Core.DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplit}
 			
-			Assister = a
-			
-			AssisterDamage = b
-			
-	    end
-		
-	end
+			wait(30)
 	
-	if Core.Config.ShowAssists and Assister ~= DeathInfo.Killer then
-		
-		DeathInfo.Assister, DeathInfo.AssisterDamage = Assister, AssisterDamage
-		
-	end
-	
-	if KOs ~= 0 then
-		
-		if DeathInfo.Killer then
-			
-			if typeof( DeathInfo.Killer ) == "Instance" then
+			if Core.DamageInfos[DamageSplit[1]] and Core.DamageInfos[DamageSplit[1]][Attacker] then
+				Core.DamageInfos[DamageSplit[1]][Attacker] = Core.DamageInfos[DamageSplit[1]][Attacker] - DamageSplit[2]
 				
-				DeathInfo.Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = DeathInfo.Killer.leaderstats.KOs.Value + KOs
-				
-				if Core.Config.CreditsPerKill then
+				if Core.DamageInfos[DamageSplit[1]][Attacker] <= 0 then
+					Core.DamageInfos[DamageSplit[1]][Attacker] = nil
 					
-					local Credits = DeathInfo.Killer:FindFirstChild( "Credits", true )
-					
-					if Credits then Credits.Value = math.floor( Credits.Value + KOs * Core.Config.CreditsPerKill, 0 ) end
-					
+					if not next(Core.DamageInfos[DamageSplit[1]]) then
+						Core.DamageInfos[DamageSplit[1]] = nil
+					end
 				end
-				
 			end
-			
 		end
-		
-		if DeathInfo.Assister then
-			
-			if typeof( DeathInfo.Assister ) == "Instance" then
-				
-				DeathInfo.Assister:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = DeathInfo.Assister.leaderstats.Assists.Value + KOs
-				
-				if Core.Config.CreditsPerKill then
-					
-					local Credits = DeathInfo.Assister:FindFirstChild( "Credits", true )
-					
-					if Credits then Credits.Value = math.floor( Credits.Value + KOs * ( Core.Config.CreditsPerAssist or Core.Config.CreditsPerKill / 2 ), 0 ) end
-					
-				end
-				
-			end
-			
-		end
-		
 	end
-	
-	script.Killed:Fire( DeathInfo )
-	
-	RemoteKilled:FireAllClients( DeathInfo )
-		
-end
+end)
 
 local Allies
 
@@ -350,9 +413,7 @@ local function PlayerAdded( Plr )
 	
 	if Core.Config.RankGroupId ~= nil then
 		
-		local Rank = Instance.new( "StringValue" )
-		
-		Rank.Parent = leaderstats
+		local Rank = Instance.new( "StringValue", leaderstats )
 		
 		Rank.Name = "Rank"
 		
@@ -382,8 +443,6 @@ local function PlayerAdded( Plr )
 	
 	local Credits = Instance.new( "IntValue" )
 	
-	Credits.Parent = Core.Config.ShowCredits and leaderstats or Plr
-	
 	Credits.Name = "Credits"
 	
 	Credits.Value = Core.Config.SaveCredits and DataStore2( "Credits", Plr ):Get( ) or Core.Config.DefaultCredits or 0
@@ -395,6 +454,24 @@ local function PlayerAdded( Plr )
 			return Credits.Value
 			
 		end )
+		
+	end
+	
+	Credits.Parent = Core.Config.ShowCredits and leaderstats or Plr
+	
+	if Core.Config.ShowDamaged then
+		
+		local Damage = Instance.new( "NumberValue", leaderstats )
+		
+		Damage.Name = "Damaged"
+		
+	end
+	
+	if Core.Config.ShowHealed then
+		
+		local Damage = Instance.new( "NumberValue", leaderstats )
+		
+		Damage.Name = "Healed"
 		
 	end
 	
