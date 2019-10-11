@@ -68,7 +68,7 @@ NoAntiWall -- Whether or not to check if the gun is shooting through a wall ( Us
 					 the players character, e.g. with turrets ), defaults to false
 HitSound -- The sound to be played when hitting a humanoid, defaults to "rbxassetid://161164363"
 LongReloadSound -- If true, plays the reload sound once instead of for each ammo added, defaults to false
-MouseIcon -- The icon to use for the mouse, can be left as nil if using the S2 gun cursor
+MouseIcon -- The icon to use for the mouse, can be left as nil if using the S2.0 gun cursor
 Knockback -- The knockback multiplier, can be left as nil
 DistanceModifier -- How much the distance from the barrel will affect the damage of the bullet, can be left as nil
 						
