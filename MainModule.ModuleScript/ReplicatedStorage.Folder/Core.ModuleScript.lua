@@ -61,7 +61,7 @@ local Heartbeat = RunService.Heartbeat
 local function hbwait(num)
 	local t=0
 	while t<num do
-		t = t + Heartbeat:wait( )
+		t = t + Heartbeat:Wait()
 	end
 	return t
 end
