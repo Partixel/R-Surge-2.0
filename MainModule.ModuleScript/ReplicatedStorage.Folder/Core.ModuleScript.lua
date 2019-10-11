@@ -1598,21 +1598,25 @@ if IsServer then
 				
 				if Hit then
 					
+					local Axis
+					
 					if math.abs( Offset.X ) > Hit.Size.X / 2 + 0.05 then
 						
-						warn( User.Name .. " may be hit box expanding - Part size X is " .. Hit.Size.X / 2 .. " they claimed to hit at " .. Offset.X )
-						
-						return
+						Axis = "X"
 						
 					elseif math.abs( Offset.Y ) > Hit.Size.Y / 2 + 0.05 then
 						
-						warn( User.Name .. " may be hit box expanding - Part size Y is " .. Hit.Size.Y / 2 .. " they claimed to hit at " .. Offset.Y )
-						
-						return
+						Axis = "Y"
 						
 					elseif math.abs( Offset.Z ) > Hit.Size.Z / 2 + 0.05 then
 						
-						warn( User.Name .. " may be hit box expanding - Part size Z is " .. Hit.Size.Z / 2 .. " they claimed to hit at " .. Offset.Z )
+						Axis = "Z"
+						
+					end
+					
+					if Axis then
+						
+						warn( User.Name .. " may be hit box expanding - " .. Hit.Name .. " size " .. Axis .. " is " .. Hit.Size[ Axis ] / 2 .. " they claimed to hit at " .. Offset[ Axis ] )
 						
 						return
 						
