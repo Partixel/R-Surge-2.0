@@ -192,13 +192,7 @@ function Core.RunCursorHeartbeat( )
 			
 			script.Parent.Center.Visible = false
 			
-			--[[if not LastWep or ( LastWep ~= ForceWeapon and ( Core.Config.CursorImage or LastWep.CursorImage ) ) then return end
-			
-			if LastWep.GunStats.ShowCursor ~= false then]]
-				
-				game:GetService( "UserInputService" ).MouseIconEnabled = true
-				
-			--end
+			game:GetService( "UserInputService" ).MouseIconEnabled = true
 			
 			return
 			
@@ -252,7 +246,7 @@ function Core.RunCursorHeartbeat( )
 		
 		-- HANDLE COLOR AND ROTATION
 		
-		do local Perc = not Weapon.GunStats.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.GunStats.ReloadDelay + ( Weapon.GunStats.InitialReloadDelay or 0 ) + ( Weapon.GunStats.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.GunStats.ClipSize )
+		local Perc = not Weapon.GunStats.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.GunStats.ReloadDelay + ( Weapon.GunStats.InitialReloadDelay or 0 ) + ( Weapon.GunStats.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.GunStats.ClipSize )
 		
 		local Rot, MidRot = ThemeUtil.GetThemeFor( "S2_CursorCenterRotation" ), ThemeUtil.GetThemeFor( "S2_CursorRotation" )
 		
@@ -290,27 +284,27 @@ function Core.RunCursorHeartbeat( )
 		
 		script.Parent.Center.Middle.Bottom.R1.BackgroundColor3 = AmmoCol
 		
-		script.Parent.Center.Middle.Bottom.R2.BackgroundColor3 = AmmoCol end
+		script.Parent.Center.Middle.Bottom.R2.BackgroundColor3 = AmmoCol
 		
 		-- HANDLE WINDUP COLOUR
 		
-		do local PercW = 0.5 * ( Weapon.GunStats.WindupTime == 0 and 0 or ( Weapon.GunStats.WindupTime and math.min( 1 - ( Weapon.Windup or 0 ) / Weapon.GunStats.WindupTime, 1 ) or 0 ) )
+		local PercW = 0.5 * ( Weapon.GunStats.WindupTime == 0 and 0 or ( Weapon.GunStats.WindupTime and math.min( 1 - ( Weapon.Windup or 0 ) / Weapon.GunStats.WindupTime, 1 ) or 0 ) )
 		
 		local ColW = Color3.new( Color.r - PercW, Color.g - PercW, Color.b - PercW )
 		
 		script.Parent.Center.Middle.Left.BackgroundColor3 = ColW
 		
-		script.Parent.Center.Middle.Right.BackgroundColor3 = ColW end
+		script.Parent.Center.Middle.Right.BackgroundColor3 = ColW 
 		
 		-- HANDLE HEALTH COLOUR
 			
-		do local PercH = 0.8 * ( Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and math.min( 1 - Plr.Character.Humanoid.Health / Plr.Character.Humanoid.MaxHealth, 1 ) or 0 )
+		local PercH = 0.8 * ( Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and math.min( 1 - Plr.Character.Humanoid.Health / Plr.Character.Humanoid.MaxHealth, 1 ) or 0 )
 		
-		script.Parent.Center.Middle.Top.BackgroundColor3 = Color3.new( Color.r, Color.g - PercH, Color.b - PercH ) end
+		script.Parent.Center.Middle.Top.BackgroundColor3 = Color3.new( Color.r, Color.g - PercH, Color.b - PercH )
 		
 		-- HANDLE TRANSPARENCY
 		
-		do local NormTrans = ThemeUtil.GetThemeFor( "S2_CursorTransparency" )
+		local NormTrans = ThemeUtil.GetThemeFor( "S2_CursorTransparency" )
 		
 		local Trans = math.min( math.max( 1 - ( ShowMode - tick( ) ), NormTrans ), 1 )
 		
@@ -326,13 +320,13 @@ function Core.RunCursorHeartbeat( )
 		
 		script.Parent.Center.Middle.Bottom.R2.BackgroundTransparency = AutoTrans
 		
-		script.Parent.Center.Middle.Bottom.L2.BackgroundTransparency = AutoTrans end
+		script.Parent.Center.Middle.Bottom.L2.BackgroundTransparency = AutoTrans
 		
 		-- HANDLE POSITION
 		
 		local Dist = ThemeUtil.GetThemeFor( "S2_CursorDistFromCenter" )
 		
-		do script.Parent.Center.Position = UDim2.new( 0, Mouse.X, 0, Mouse.Y )
+		script.Parent.Center.Position = UDim2.new( 0, Mouse.X, 0, Mouse.Y )
 		
 		local Offset = ThemeUtil.GetThemeFor( "S2_CursorDynamicMovement" ) and ( Weapon == ForceWeapon and 0 or ( 25 / Weapon.GunStats.AccurateRange * 10 ) + ( Weapon.GunStats.AccurateRange - Core.GetAccuracy( Weapon ) ) ) or 0
 		
@@ -342,7 +336,7 @@ function Core.RunCursorHeartbeat( )
 		
 		script.Parent.Center.Middle.Right.Position = UDim2.new( 0, Offset + Dist, 0, 0 )
 		
-		script.Parent.Center.Middle.Top.Position = UDim2.new( 0, 0, 0, -Offset - Dist ) end
+		script.Parent.Center.Middle.Top.Position = UDim2.new( 0, 0, 0, -Offset - Dist )
 		
 		-- HANDLE HIT VISIBILITY
 		
