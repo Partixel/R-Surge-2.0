@@ -4,11 +4,13 @@ HeadRotRemote.Name = "HeadRot"
 
 local Mode = { __mode = "k" }
 
-local Rotations = setmetatable( { }, Mode )
+local Discluded, Rotations = setmetatable( { }, Mode ), setmetatable( { }, Mode )
 
-HeadRotRemote.OnServerEvent:Connect( function ( Plr, Rotation )
+HeadRotRemote.OnServerEvent:Connect( function ( Plr, Rotation, Disclude )
 	
 	Rotations[ Plr ] = Rotation
+	
+	Discluded[ Plr ] = Disclude
 	
 end )
 
@@ -80,41 +82,45 @@ while wait( 1/30 ) do
 		
 		for _, Plr in ipairs( Players:GetPlayers( ) ) do
 			
-			if Rotations[ Plr ] then
+			if not Discluded[ Plr ] then
 				
-				local Rots = { }
-				
-				for b, c in pairs( Rotations ) do
+				if Rotations[ Plr ] then
 					
-					if b ~= Plr then
+					local Rots = { }
+					
+					for b, c in pairs( Rotations ) do
 						
-						Rots[ #Rots + 1 ] = { b, c }
+						if b ~= Plr then
+							
+							Rots[ #Rots + 1 ] = { b, c }
+							
+						end
 						
 					end
 					
-				end
-				
-				if next( Rots ) then
+					if next( Rots ) then
+						
+						HeadRotRemote:FireClient( Plr, Rots )
+						
+					end
+					
+				else
+					
+					if not Rots then
+						
+						Rots = { }
+						
+						for b, c in pairs( Rotations ) do
+							
+							Rots[ #Rots + 1 ] = { b, c }
+							
+						end
+						
+					end
 					
 					HeadRotRemote:FireClient( Plr, Rots )
 					
 				end
-				
-			else
-				
-				if not Rots then
-					
-					Rots = { }
-					
-					for b, c in pairs( Rotations ) do
-						
-						Rots[ #Rots + 1 ] = { b, c }
-						
-					end
-					
-				end
-				
-				HeadRotRemote:FireClient( Plr, Rots )
 				
 			end
 			

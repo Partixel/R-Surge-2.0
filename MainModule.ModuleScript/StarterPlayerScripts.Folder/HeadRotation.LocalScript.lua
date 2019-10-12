@@ -118,7 +118,7 @@ while wait( 1/20 ) do
 	
 	if Neck and Last ~= Neck.C0 then
 		
-		HeadRotRemote:FireServer( Neck.C0 )
+		HeadRotRemote:FireServer( Neck.C0, not Core.EnabledFeatures["HeadRotation"] or nil )
 		
 		Last = Neck.C0
 		
