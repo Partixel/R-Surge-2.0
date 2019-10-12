@@ -527,14 +527,11 @@ return {
 				self.Tab.Import.Code.FocusLost:Connect(function ()
 					local Ran, Import = pcall(HttpService.JSONDecode, HttpService, self.Tab.Import.Code.Text)
 					
-					if Ran then
+					if Ran and type(Import) == "table" then
 						for a, b in ipairs(Import) do
 							if type(b) == "table" then
-								
 								b = Color3.fromRGB(b[1], b[2], b[3])
-								
 								Import[a] = b
-								
 							end
 							
 							ThemeUtil.UpdateThemeFor(Keys[a].Name, b)
