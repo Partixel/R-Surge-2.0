@@ -138,7 +138,7 @@ local function OnDeath( Damageable )
 					
 					if not CollectionService:HasTag( Damageable, "s2nokos" ) then KOs = KOs + 1 end
 					
-					DeathInfo.VictimInfos[ #DeathInfo.VictimInfos + 1 ] = { Damageable = Damageable, User = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent ) or { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit }
+					DeathInfo.VictimInfos[ #DeathInfo.VictimInfos + 1 ] = { Damageable = Damageable, User = game:GetService( "Players" ):GetPlayerFromCharacter( Damageable.Parent ) or { Name = ( Damageable:FindFirstChild( "UserName" ) and Damageable.UserName.Value or Damageable.Parent.Name ), UserId = Damageable:FindFirstChild( "UserId" ) and Damageable.UserId.Value or nil, TeamColor = Damageable:FindFirstChild( "TeamColor" ) and Damageable.TeamColor.Value or nil }, NoFeed = CollectionService:HasTag( Damageable, "s2nofeed" ), Hit = Hit.Name }
 					
 					if Core.DamageInfos[ Damageable ] then
 						
