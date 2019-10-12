@@ -6,9 +6,9 @@ workspace.DescendantAdded:Connect(function(Explosion)
 		local Dist = math.min(1.4 - (Plr.Character.HumanoidRootPart.Position - Explosion.Position).magnitude / (Explosion.BlastRadius + 10), 1)
 		
 		local Sound = Instance.new("Sound")
-		Sound.SoundId = "rbxassetid://405684182"
-		Sound.Volume = 1
-		Sound.TimePosition = 7.1 - (7.1 * Dist) + 1
+		Sound.SoundId = "rbxassetid://3262620486"
+		Sound.Volume = 2
+		Sound.TimePosition = 6.9 - (5 * Dist) + 1
 		Sound.Ended:Connect(function() Sound:Destroy() end)
 		Sound.Parent = workspace.CurrentCamera
 		Sound:Play()
