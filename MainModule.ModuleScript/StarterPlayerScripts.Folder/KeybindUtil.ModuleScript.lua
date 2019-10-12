@@ -247,7 +247,7 @@ local function NameOfKey( Key )
 	
 	if type( Key ) == "string" then return Key end
 	
-	return Key.Name:gsub( "Button", "" )
+	return Key.EnumType == Enum.KeyCode and UIS:GetStringForKeyCode(Key) or Key.Name:gsub( "Button", "" )
 	
 end
 
