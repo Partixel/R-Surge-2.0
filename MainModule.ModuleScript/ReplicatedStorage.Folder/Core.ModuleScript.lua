@@ -1415,7 +1415,7 @@ if IsServer then
 			if Damage > 0 then
 				local NextDamageable = Damageable.Parent
 				
-				if not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") and (NextDamageable:IsA("Humanoid") or NextDamageable.Name == "Health") then
+				if NextDamageable and not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") and ((NextDamageable:IsA("Humanoid") and NextDamageable.Health > 0) or (NextDamageable.Name == "Health" and NextDamageable.Value > 0)) then
 					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
 				end
 			else
