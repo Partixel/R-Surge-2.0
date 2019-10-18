@@ -296,36 +296,38 @@ Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Di
 		end
 	end
 	
-	if typeof(Attacker) == "Instance" and Attacker:FindFirstChild("leaderstats") then
-		local Stat = TotalDamage > 0 and Attacker.leaderstats:FindFirstChild("Damaged") or Attacker.leaderstats:FindFirstChild("Healed")
-		if Stat then
-			Stat.Value = Stat.Value + math.floor(TotalDamage * 100 + 0.5) / 100 * (TotalDamage > 0 and 1 or -1)
-		end
-		
-		if (Core.Config.CreditsPerDamage and TotalDamage > 0) or (Core.Config.CreditsPerHeal and TotalDamage < 0) then
-			local Credits = Attacker:FindFirstChild("Credits", true)
-			if Credits then
-				Credits.Value = math.floor(Credits.Value + math.abs(TotalDamage) * (TotalDamage > 0 and Core.Config.CreditsPerDamage or Core.Config.CreditsPerHeal), 0)
+	if TotalDamage ~= 0 then
+		if typeof(Attacker) == "Instance" and Attacker:FindFirstChild("leaderstats")  then
+			local Stat = TotalDamage > 0 and Attacker.leaderstats:FindFirstChild("Damaged") or Attacker.leaderstats:FindFirstChild("Healed")
+			if Stat then
+				Stat.Value = Stat.Value + math.floor(TotalDamage * 100 + 0.5) / 100 * (TotalDamage > 0 and 1 or -1)
+			end
+			
+			if (Core.Config.CreditsPerDamage and TotalDamage > 0) or (Core.Config.CreditsPerHeal and TotalDamage < 0) then
+				local Credits = Attacker:FindFirstChild("Credits", true)
+				if Credits then
+					Credits.Value = math.floor(Credits.Value + math.abs(TotalDamage) * (TotalDamage > 0 and Core.Config.CreditsPerDamage or Core.Config.CreditsPerHeal), 0)
+				end
 			end
 		end
-	end
-	
-	if TotalDamage > 0 then
-		for _, DamageSplit in ipairs(DamageSplits) do
-			Core.DamageInfos[DamageSplit[1]] = Core.DamageInfos[DamageSplit[1]] or {}
-Core.DamageInfos[DamageSplit[1]][Attacker] = (Core.DamageInfos[DamageSplit[1]][Attacker] or 0) + DamageSplit[2]
-			Core.DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplit}
-			
-			wait(30)
-	
-			if Core.DamageInfos[DamageSplit[1]] and Core.DamageInfos[DamageSplit[1]][Attacker] then
-				Core.DamageInfos[DamageSplit[1]][Attacker] = Core.DamageInfos[DamageSplit[1]][Attacker] - DamageSplit[2]
+		
+		if TotalDamage > 0 then
+			for _, DamageSplit in ipairs(DamageSplits) do
+				Core.DamageInfos[DamageSplit[1]] = Core.DamageInfos[DamageSplit[1]] or {}
+	Core.DamageInfos[DamageSplit[1]][Attacker] = (Core.DamageInfos[DamageSplit[1]][Attacker] or 0) + DamageSplit[2]
+				Core.DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplit}
 				
-				if Core.DamageInfos[DamageSplit[1]][Attacker] <= 0 then
-					Core.DamageInfos[DamageSplit[1]][Attacker] = nil
+				wait(30)
+		
+				if Core.DamageInfos[DamageSplit[1]] and Core.DamageInfos[DamageSplit[1]][Attacker] then
+					Core.DamageInfos[DamageSplit[1]][Attacker] = Core.DamageInfos[DamageSplit[1]][Attacker] - DamageSplit[2]
 					
-					if not next(Core.DamageInfos[DamageSplit[1]]) then
-						Core.DamageInfos[DamageSplit[1]] = nil
+					if Core.DamageInfos[DamageSplit[1]][Attacker] <= 0 then
+						Core.DamageInfos[DamageSplit[1]][Attacker] = nil
+						
+						if not next(Core.DamageInfos[DamageSplit[1]]) then
+							Core.DamageInfos[DamageSplit[1]] = nil
+						end
 					end
 				end
 			end
