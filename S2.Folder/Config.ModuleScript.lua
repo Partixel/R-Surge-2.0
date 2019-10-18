@@ -94,16 +94,16 @@ return {
 	--------[[ Leaderboard Configs ]]--------
 	
 	--[[If true, wipeouts will be shown on the leaderboard]]
-	ShowWOs = false, -- Default - true
+	ShowWOs = true, -- Default - true
 	
 	--[[If true, assists will be shown on the leaderboard]]
-	ShowAssists = false, -- Default - true
+	ShowAssists = true, -- Default - true
 	
 	--[[If true, damage done will be shown on the leaderboard]]
-	ShowDamaged = true, -- Default - false
+	ShowDamaged = false, -- Default - false
 	
 	--[[If true, healing done will be shown on the leaderboard]]
-	ShowHealed = true, -- Default - false
+	ShowHealed = false, -- Default - false
 	
 	--[[The GroupId used for the rank on the leaderboard ( If nil, no rank stat is created )]]
 	RankGroupId = nil, -- Default - nil
