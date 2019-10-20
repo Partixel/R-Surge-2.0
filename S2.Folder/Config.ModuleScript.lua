@@ -42,7 +42,7 @@ return {
 	LimbDamageMultiplier = 0.9, -- Default - 0.9
 	
 	--[[How much distance affects the damage of a bullet]]
-	DistanceDamageMultiplier = 0.2, -- Default - 0.2
+	DistanceDamageModifier = 0.2, -- Default - 0.2
 	
 	--------[[ Gameplay Configs ]]--------
 	
@@ -131,5 +131,5 @@ return {
 	
 	CreditsPerHeal = 0, -- Default - 0
 	
-	SetupVersion = "1.1.0", -- DO NOT CHANGE THIS
+	SetupVersion = "1.1.1", -- DO NOT CHANGE THIS
 }
