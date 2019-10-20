@@ -26,8 +26,6 @@ Core.FireModeChanged = Instance.new( "BindableEvent" )
 
 Core.WindupChanged = Instance.new( "BindableEvent" )
 
-Core.DamageableAdded = Instance.new( "BindableEvent" )
-
 Core.FiringEnded = Instance.new( "BindableEvent" )
 
 Core.Visuals = { }
@@ -230,60 +228,37 @@ Core.BulletTypes = {
 	end
 }
 
-Core.Damageables = setmetatable( { }, { __mode = "k" } )
-
-workspace.DescendantAdded:Connect( function ( Child )
-	
-	if not Core.Damageables[ Child ] and ( Child:IsA( "Humanoid" ) or ( Child:IsA( "DoubleConstrainedValue" ) and Child.Name == "Health" ) ) then
-		
-		Core.Damageables[ Child ] = true
-		
-		Core.DamageableAdded:Fire( Child )
-		
+Core.Damageables = setmetatable({}, {__mode = "k"})
+Core.DamageableAdded = Instance.new( "BindableEvent" )
+workspace.DescendantAdded:Connect(function(Obj)
+	if not Core.Damageables[Obj] and (Obj:IsA("Humanoid") or (Obj:IsA("DoubleConstrainedValue") and Obj.Name == "Health")) then
+		Core.Damageables[Obj] = true
+		Core.DamageableAdded:Fire(Obj)
 	end
-	
 end )
 
-local Descendants = workspace:GetDescendants( )
-
-for a = 1, #Descendants do
-	
-	if not Core.Damageables[ Descendants[ a ] ] and ( Descendants[ a ]:IsA( "Humanoid" ) or ( Descendants[ a ]:IsA( "DoubleConstrainedValue" ) and Descendants[ a ].Name == "Health" ) ) then
-		
-		Core.Damageables[ Descendants[ a ] ] = true
-		
-		Core.DamageableAdded:Fire( Descendants[ a ] )
-		
+for _, Obj in ipairs(workspace:GetDescendants()) do
+	if not Core.Damageables[Obj] and (Obj:IsA("Humanoid") or (Obj:IsA("DoubleConstrainedValue") and Obj.Name == "Health")) then
+		Core.Damageables[Obj] = true
+		Core.DamageableAdded:Fire(Obj)
 	end
-	
 end
 
 local GunStatFolder
-
 if IsServer then
-	
-	GunStatFolder = game:GetService( "ReplicatedStorage" ):FindFirstChild( "GunStats" )
+	GunStatFolder = game:GetService("ReplicatedStorage"):FindFirstChild("GunStats")
 	
 	if not GunStatFolder then
-	
-		GunStatFolder = Instance.new( "Folder" )
-	
+		GunStatFolder = Instance.new("Folder")
 		GunStatFolder.Name = "GunStats"
-	
-		GunStatFolder.Parent = game:GetService( "ReplicatedStorage" )
-	
+		GunStatFolder.Parent = game:GetService("ReplicatedStorage")
 	end
-	
 else
-	
-	GunStatFolder = game:GetService( "ReplicatedStorage" ):WaitForChild( "GunStats" )
-	
+	GunStatFolder = game:GetService("ReplicatedStorage"):WaitForChild("GunStats")
 end
 
-function Core.GetGunStats( StatObj )
-	
-	return require( GunStatFolder:FindFirstChild( StatObj.Value, true ) )
-	
+function Core.GetGunStats(StatObj)
+	return require( GunStatFolder:FindFirstChild(StatObj.Value, true))
 end
 
 Core.Weapons = setmetatable( { }, { __mode = 'k' } )
@@ -1184,84 +1159,50 @@ Core.DamageType = {
 
 }
 
-function Core.GetTeamInfo( Obj )
-
-	if type( Obj ) == "table" then
-
+function Core.GetTeamInfo(Obj)
+	if type(Obj) == "table" then
 		return Obj.TeamColor, Obj.Neutral, Obj.Character
-
-	elseif Obj:IsA( "Player" ) then
-
+	elseif Obj:IsA("Player") then
 		return Obj.TeamColor, Obj.Neutral, Obj.Character
-
 	end
 
-	local PlrObj = Players:GetPlayerFromCharacter( Obj.Parent )
-
+	local PlrObj = Players:GetPlayerFromCharacter(Obj.Parent)
 	if PlrObj then
-
 		return PlrObj.TeamColor, PlrObj.Neutral, Obj.Parent
-
-	elseif Obj:FindFirstChild( "TeamColor" ) then
-
-		return Obj.TeamColor.Value, Obj:FindFirstChild( "Neutral" ) and Obj.Neutral.Value or false, Obj.Parent
-		
+	elseif Obj:FindFirstChild("TeamColor") then
+		return Obj.TeamColor.Value, Obj:FindFirstChild("Neutral") and Obj.Neutral.Value or false, Obj.Parent
 	else
-		
-		return BrickColor.White( ), not Obj:FindFirstChild( "Neutral" ) and true or Obj.Neutral.Value, Obj.Parent
-
+		return BrickColor.White(), not Obj:FindFirstChild("Neutral") and true or Obj.Neutral.Value, Obj.Parent
 	end
-
 end
 
-local function ActualTeamKill( TC1, N1, Char1, TC2, N2, Char2 )
+function Core.CheckTeamkill(P1, P2, AllowTeamKill, InvertTeamKill)
+	if (AllowTeamKill == nil and Core.Config.AllowTeamKill) or AllowTeamKill then return true end
 	
-	if Char1 == Char2 then -- if self damaging, return AllowSelfDamage
-		
-		return Core.Config.AllowSelfDamage
-
-	elseif N1 and N2 then -- if both neutral, return AllowNeutralTeamKill
-		
-		return Core.Config.AllowNeutralTeamKill
-		
-	elseif ( N1 and not N2 ) or ( not N1 and N2 ) then -- if ones neutral, allow
-		
-		return true
-		
-	elseif TC1 == TC2 then -- if same team, prevent
-		
-		return
-		
-	else -- Check both aren't in the same team table
-		
+	local TC1, N1, Char1 = Core.GetTeamInfo(P1)
+	local TC2, N2, Char2 = Core.GetTeamInfo(P2)
+	local TeamKill
+	if Char1 == Char2 then
+		TeamKill = Core.Config.AllowSelfDamage
+	elseif N1 and N2 then
+		TeamKill = Core.Config.AllowNeutralTeamKill
+	elseif (N1 and not N2) or (not N1 and N2) then
+		TeamKill = true
+	elseif TC1 ~= TC2 then
+		TeamKill = true
 		for a = 1, #Core.Config.AllowTeamKillFor do
-	
 			if Core.Config.AllowTeamKillFor[ a ][ TC1.name ] and Core.Config.AllowTeamKillFor[ a ][ TC2.name ] then
-	
-				return
-	
+				TeamKill = false
+				break
 			end
-	
 		end
-		
-		return true
-		
 	end
 	
-end
-
-function Core.CheckTeamkill( P1, P2, AllowTeamKill, InvertTeamKill )
-	
-	if ( AllowTeamKill == nil and Core.Config.AllowTeamKill ) or AllowTeamKill then return true end
-	
-	local TC1, N1, Char1 = Core.GetTeamInfo( P1 )
-	
-	local TeamKill = ActualTeamKill( TC1, N1, Char1, Core.GetTeamInfo( P2 ) )
-	
-	if InvertTeamKill then TeamKill = not TeamKill end
-	
-	return TeamKill
-
+	if InvertTeamKill then
+		return not TeamKill
+	else
+		return TeamKill
+	end
 end
 
 function Core.GetTopDamageable(Damageable)
@@ -1308,9 +1249,9 @@ function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
 
 	if Distance then
 		if WeaponStats.InvertDistanceModifier or (WeaponStats.InvertDistanceModifier ~= false and Core.Config.InvertDistanceModifier) then
-			Damage = Damage * (1 - Distance) * (WeaponStats.DistanceModifier or Core.Config.DistanceDamageMultiplier)
+			Damage = Damage * (1 - Distance) * ((WeaponStats.DistanceDamageModifier or WeaponStats.DistanceModifier) or Core.Config.DistanceDamageModifier or 1)
 		else
-			Damage = Damage * (1 - Distance * (WeaponStats.DistanceModifier or Core.Config.DistanceDamageMultiplier))
+			Damage = Damage * (1 - Distance * ((WeaponStats.DistanceDamageModifier or WeaponStats.DistanceModifier) or Core.Config.DistanceDamageModifier or 1))
 		end
 	end
 	
