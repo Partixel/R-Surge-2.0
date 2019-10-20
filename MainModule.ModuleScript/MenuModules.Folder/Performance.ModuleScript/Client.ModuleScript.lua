@@ -28,8 +28,24 @@ local SpecialMats = {
 }
 return {
 	RequiresRemote = true,
-	Settings = {
-		{Name = "ShowMaterials", Text = "Show Materials", Default = true, Update = function(Options, Val)
+	AddSetting = function(self, Setting)
+		self.Settings[#self.Settings + 1] = Setting
+		if self.SavedSettings[Setting.Name] == nil then
+			self.SavedSettings[Setting.Name] = Setting.Default
+		end
+		
+		coroutine.wrap(Setting.Update)(self, self.SavedSettings[Setting.Name])
+		
+		if self.Tabs[1].Invalidate then
+			self.Tabs[1]:Invalidate()
+		end
+	end,
+	Settings = {},
+	SavedSettings = {},
+	SetupGui = function(self)
+		ThemeUtil.BindUpdate(self.Gui, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
+		
+		self:AddSetting{Name = "ShowMaterials", Text = "Show Materials", Default = true, Update = function(Options, Val)
 			if Val then
 				if Materials then
 					MaterialsEvent:Disconnect()
@@ -58,8 +74,9 @@ return {
 					end
 				end
 			end
-		end},
-		{Name = "ShowSpecialMaterials", Text = "Show Special Materials (Neon, Glass, Forcefield)", Default = true, Update = function(Options, Val)
+		end}
+		
+		self:AddSetting{Name = "ShowSpecialMaterials", Text = "Show Special Materials (Neon, Glass, Forcefield)", Default = true, Update = function(Options, Val)
 			if Val then
 				if SpecialMaterials then
 					SpecialMaterialsEvent:Disconnect()
@@ -88,11 +105,7 @@ return {
 					end
 				end
 			end
-		end},
-	},
-	SavedSettings = {},
-	SetupGui = function(self)
-		ThemeUtil.BindUpdate(self.Gui, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
+		end}
 		
 		for _, Setting in ipairs(self.Settings) do
 			if self.SavedSettings[Setting.Name] == nil then

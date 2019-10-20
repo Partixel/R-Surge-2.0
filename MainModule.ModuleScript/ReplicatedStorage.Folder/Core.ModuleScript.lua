@@ -34,30 +34,7 @@ Core.Visuals = { }
 
 Core.ShowCursor = true
 
-do
-	Core.EnabledFeatures = {}
-	local FeatureCallbacks = {}
-	
-	function Core.SetFeatureCallback(Feature, Callback)
-		FeatureCallbacks[Feature] = Callback
-		if Callback then
-			Callback(Core.EnabledFeatures[Feature])
-		end
-	end
-	
-	function Core.SetFeatureEnabled(Feature, Enabled, Default)
-		if Default and Core.EnabledFeatures[Feature] ~= nil then return end
-		if Core.EnabledFeatures[Feature] ~= Enabled then
-			Core.EnabledFeatures[Feature] = Enabled
-			if FeatureCallbacks[Feature] then
-				FeatureCallbacks[Feature](Enabled)
-			end
-		end
-	end
-end
-
 local Heartbeat = RunService.Heartbeat
-
 local function hbwait(num)
 	local t=0
 	while t<num do

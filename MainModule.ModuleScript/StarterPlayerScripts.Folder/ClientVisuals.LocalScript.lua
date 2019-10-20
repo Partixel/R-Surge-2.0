@@ -227,7 +227,7 @@ local TweenService, VZero = game:GetService( "TweenService" ), Vector3.new( )
 Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj )
 	
 	if not StatObj or not StatObj.Parent then return end
-	
+--	
 	local GunStats = Core.GetGunStats( StatObj )
 	
 	if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and GunStats.AllowCameraShake ~= false then
@@ -321,30 +321,19 @@ local function FlyBy( StatObj, User, Barrel, _, End )
 	end
 	
 end
-Core.SetFeatureCallback("BulletFlyByNoise", function(Enabled)
-	if Enabled then
-		Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect(FlyBy)
+
+Menu:AddSetting{Name = "BulletFlyByNoise", Text = "Bullet Fly By Noise", Default = true, Update = function(Options, Val)
+	if Val then
+		if not Core.Visuals.FlyBy then
+			Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect(FlyBy)
+		end
 	elseif Core.Visuals.FlyBy then
 		Core.Visuals.FlyBy:Disconnect()
 		Core.Visuals.FlyBy = nil
 	end
-end)
-Core.SetFeatureEnabled("BulletFlyByNoise", true, true)
-
-Menu.Settings[#Menu.Settings + 1] ={Name = "BulletFlyByNoise", Text = "Bullet Fly By Noise", Default = true, Update = function(Options, Val)
-	Core.SetFeatureEnabled("BulletFlyByNoise", Val)
 end}
 
-if Menu.SavedSettings and Menu.SavedSettings["BulletFlyByNoise"] == nil then
-	Menu.SavedSettings["BulletFlyByNoise"] = true
-end
-
-coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["BulletFlyByNoise"])
-
-if Menu.Tabs[1].Invalidate then
-	Menu.Tabs[1]:Invalidate()
-end
-
+local GunBarrelEffectsEnabled = true
 Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
 	
 	if not Barrel or not StatObj or not StatObj.Parent then return end
@@ -419,7 +408,7 @@ Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, U
 			
 		end
 		
-	elseif Core.EnabledFeatures["GunBarrelEffects"] then
+	elseif GunBarrelEffectsEnabled then
 		
 		if not Part:FindFirstChild( "FireParticle" ) then
 			
@@ -460,20 +449,10 @@ Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, U
 	end
 	
 end)
-Core.SetFeatureEnabled("GunBarrelEffects", true, true)
-Menu.Settings[#Menu.Settings + 1] = {Name = "GunBarrelEffects", Text = "Gun Shot Particles", Default = true, Update = function(Options, Val)
-	Core.SetFeatureEnabled("GunBarrelEffects", Val)
+
+Menu:AddSetting{Name = "GunBarrelEffects", Text = "Gun Shot Particles", Default = GunBarrelEffectsEnabled, Update = function(Options, Val)
+	GunBarrelEffectsEnabled = Val
 end}
-
-if Menu.SavedSettings and Menu.SavedSettings["GunBarrelEffects"] == nil then
-	Menu.SavedSettings["GunBarrelEffects"] = true
-end
-
-coroutine.wrap(Menu.Settings[#Menu.Settings].Update)(Menu, Menu.SavedSettings["GunBarrelEffects"])
-
-if Menu.Tabs[1].Invalidate then
-	Menu.Tabs[1]:Invalidate()
-end
 
 local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
