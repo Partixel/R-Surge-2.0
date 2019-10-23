@@ -1,4 +1,7 @@
 return {
+	--[[If the name of an object S2 loads in (e.g. "Hud") is in this table it won't load said object]]
+	Disabled = { }, -- Default - { }
+	
 	--------[[ Damage Configs ]]--------
 	
 	SupportLegacyKOs = false, -- Default - false
@@ -70,8 +73,6 @@ return {
 	--[[Crouch JumpPower (Percentage of normal jump power)]]
 	CrouchJumpPowerMultiplier = 0.6, -- Default - 0.6
 	
-	AllowCharacterRotation = true, -- Default - true
-	
 	AllowSalute = true, -- Default - true
 	
 	AllowAtEase = true, -- Default - true
@@ -131,5 +132,5 @@ return {
 	
 	CreditsPerHeal = 0, -- Default - 0
 	
-	SetupVersion = "1.1.1", -- DO NOT CHANGE THIS
+	SetupVersion = "1.1.2", -- DO NOT CHANGE THIS
 }
