@@ -22,12 +22,19 @@ local EscapePatterns = {
 return {
 	RequiresRemote = true,
 	ButtonText = "Surge 2.0",
-	Settings = {
-		{Name = "CharacterAim", Text = "Rotate character towards target", Default = true},
-	},
-	UpdateCharacterAim = function(self, Val)
-		Core.Config.AllowCharacterRotation = Val
+	AddSetting = function(self, Setting)
+		self.Settings[#self.Settings + 1] = Setting
+		if self.SavedSettings[Setting.Name] == nil then
+			self.SavedSettings[Setting.Name] = Setting.Default
+		end
+		
+		coroutine.wrap(Setting.Update)(self, self.SavedSettings[Setting.Name])
+		
+		if self.Tabs[1].Invalidate then
+			self.Tabs[1]:Invalidate()
+		end
 	end,
+	Settings = {},
 	SavedSettings = {},
 	SetupGui = function(self)
 		ThemeUtil.BindUpdate(self.Gui, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
@@ -36,8 +43,8 @@ return {
 			if self.SavedSettings[Setting.Name] == nil then
 				self.SavedSettings[Setting.Name] = Setting.Default
 			end
-			if self["Update" .. Setting.Name] then
-				coroutine.wrap(self["Update" .. Setting.Name])(self, self.SavedSettings[Setting.Name])
+			if Setting.Update then
+				coroutine.wrap(Setting.Update)(self, self.SavedSettings[Setting.Name])
 			end
 		end
 		
@@ -47,8 +54,8 @@ return {
 				if self.SavedSettings[Setting.Name] == nil then
 					self.SavedSettings[Setting.Name] = Setting.Default
 				end
-				if self["Update" .. Setting.Name] then
-					coroutine.wrap(self["Update" .. Setting.Name])(self, self.SavedSettings[Setting.Name])
+				if Setting.Update then
+					coroutine.wrap(Setting.Update)(self, self.SavedSettings[Setting.Name])
 				end
 			end
 			
@@ -76,6 +83,9 @@ return {
 				end
 				
 				local Txt = self.Tab.Search.Text:lower():gsub(".", EscapePatterns)
+				table.sort(self.Options.Settings, function(a,b)
+					return a.Name < b.Name
+				end)
 				for i, Setting in pairs(self.Options.Settings) do
 					if Setting.Text:lower():find(Txt) then
 						local Type = typeof(Setting.Default)
@@ -89,50 +99,71 @@ return {
 							Inst.Number.Text = self.Options.SavedSettings[Setting.Name]
 							Inst.Number.PlaceholderText = Inst.Number.Text
 							ThemeUtil.BindUpdate(Inst.Number, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})
-							
-							Inst.TextButton.AutoButtonColor = false
 						elseif Type == "boolean" then
 							ThemeUtil.BindUpdate(Inst.Boolean, {BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", BackgroundColor3 = self.Options.SavedSettings[Setting.Name] and "Positive_Color3" or "Negative_Color3"})
 						end
 						
 						for _, Obj in pairs(Inst:GetChildren()) do
-							if Type == "boolean" then
+							if Obj.Name == "TextButton" then
+								Obj.MouseButton1Click:Connect(function ()
+									if Type == "boolean" then
+										if self.Options.SavedSettings[Setting.Name] ~= Setting.Default then
+											self.Options.SavedSettings[Setting.Name] = Setting.Default
+											self.Options.Remote:FireServer(Setting.Name, nil)
+											if Setting.Update then
+												coroutine.wrap(Setting.Update)(self.Options, self.Options.SavedSettings[Setting.Name])
+											end
+											ThemeUtil.BindUpdate(Inst.Boolean, {BackgroundColor3 = self.Options.SavedSettings[Setting.Name] and "Positive_Color3" or "Negative_Color3"})
+										end
+									elseif Type == "number" then
+										if self.Options.SavedSettings[Setting.Name] ~= Setting.Default then
+											Inst.Number.Text = Setting.Default
+											Inst.Number.PlaceholderText = Setting.Default
+											
+											self.Options.SavedSettings[Setting.Name] = Setting.Default
+											self.Options.Remote:FireServer(Setting.Name, nil)
+											if Setting.Update then
+												coroutine.wrap(Setting.Update)(self.Options, Setting.Default)
+											end
+										end
+									end
+								end)
+							elseif Type == "boolean" then
 								Obj.MouseButton1Click:Connect(function ()
 									self.Options.SavedSettings[Setting.Name] = not self.Options.SavedSettings[Setting.Name]
-									self.Options.Remote:FireServer(Setting.Name, self.Options.SavedSettings[Setting.Name] or nil)
-									if self.Options["Update" .. Setting.Name] then
-										coroutine.wrap(self.Options["Update" .. Setting.Name])(self.Options, self.Options.SavedSettings[Setting.Name])
+									self.Options.Remote:FireServer(Setting.Name, self.Options.SavedSettings[Setting.Name])
+									if Setting.Update then
+										coroutine.wrap(Setting.Update)(self.Options, self.Options.SavedSettings[Setting.Name])
 									end
 									ThemeUtil.BindUpdate(Inst.Boolean, {BackgroundColor3 = self.Options.SavedSettings[Setting.Name] and "Positive_Color3" or "Negative_Color3"})
 								end)
-							elseif Obj:IsA("TextBox") then
+							elseif Type == "number" then
 								Obj.FocusLost:Connect(function()
-									if Type == "number" then
-										if Inst.Number.Text == "" then
-											Inst.Number.Text = Inst.Number.PlaceholderText
-											return
+									if Inst.Number.Text == "" then
+										Inst.Number.Text = Inst.Number.PlaceholderText
+										return
+									end
+									
+									local Ran, Num = pcall(StringCalculator, Inst.Number.Text)
+									if not Ran then
+										Inst.Number.Text = Num:sub(-Num:reverse():find(":") + 2)
+									end
+									
+									if Num then
+										if Setting.Min then
+											Num = math.max(Num, Setting.Min)
+										end
+										if Setting.Max then
+											Num = math.min(Num, Setting.Max)
 										end
 										
-										local Ran, Num = pcall(StringCalculator, Inst.Number.Text)
-										if not Ran then
-											Inst.Number.Text = Num:sub(-Num:reverse():find(":") + 2)
-										end
+										Inst.Number.Text = Num
+										Inst.Number.PlaceholderText = Num
 										
-										if Num then
-											if Setting.Min then
-												Num = math.max(Num, Setting.Min)
-											end
-											if Setting.Max then
-												Num = math.min(Num, Setting.Max)
-											end
-											
-											Inst.Number.Text = Num
-											
-											self.Options.SavedSettings[Setting.Name] = Num
-											self.Options.Remote:FireServer(Setting.Name, Num)
-											if self.Options["Update" .. Setting.Name] then
-												coroutine.wrap(self.Options["Update" .. Setting.Name])(self.Options, Num)
-											end
+										self.Options.SavedSettings[Setting.Name] = Num
+										self.Options.Remote:FireServer(Setting.Name, Num)
+										if Setting.Update then
+											coroutine.wrap(Setting.Update)(self.Options, Num)
 										end
 									end
 								end)
