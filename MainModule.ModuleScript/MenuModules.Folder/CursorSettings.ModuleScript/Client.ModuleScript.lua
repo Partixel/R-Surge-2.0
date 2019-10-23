@@ -286,7 +286,7 @@ return {
 							
 						elseif Type == "boolean" then
 							
-							ThemeUtil.BindUpdate(Inst.Boolean, {BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency"})
+							ThemeUtil.BindUpdate(Inst.Boolean, {BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", BackgroundColor3 = ThemeUtil.GetThemeFor(b.Name) and "Positive_Color3" or "Negative_Color3"})
 							
 						end
 						
@@ -305,6 +305,8 @@ return {
 									self.Options.Remote:FireServer(b.Name, Val)
 									
 									ThemeUtil.UpdateThemeFor(b.Name, Val)
+									
+									ThemeUtil.BindUpdate(Inst.Boolean, {BackgroundColor3 = Val and "Positive_Color3" or "Negative_Color3"})
 									
 								end)
 								
