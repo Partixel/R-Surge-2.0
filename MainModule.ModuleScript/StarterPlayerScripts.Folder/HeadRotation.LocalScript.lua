@@ -31,9 +31,10 @@ end
 HandleCharacter(Plr.Character or Plr.CharacterAdded:Wait())
 Plr.CharacterAdded:Connect(HandleCharacter)
 
+local Event
 local HeadRotRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "HeadRot" )
 HeadRotRemote.OnClientEvent:Connect(function(Rotations)
-	if Core.EnabledFeatures["HeadRotation"] then
+	if Event then
 		for _, Rot in ipairs(Rotations) do
 			local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
 			if Neck then
@@ -78,7 +79,6 @@ function UpdateHead( )
 
 end
 
-local Event
 local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
 Menu:AddSetting{Name = "HeadRotation", Text = "Head Rotation", Default = true, Update = function(Options, Val)
 	if Val then
