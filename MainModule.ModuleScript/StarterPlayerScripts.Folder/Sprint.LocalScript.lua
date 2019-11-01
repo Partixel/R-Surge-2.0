@@ -166,11 +166,11 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 			
 			local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
 			
-			if Core.Config.AllowSprinting == false and ( not Weapon or Weapon.GunStats.PreventSprint ~= false ) then return false end
+			if Core.Config.AllowSprinting == false and ( not Weapon or Weapon.PreventSprint ~= false ) then return false end
 			
---			if Weapon and ( Weapon.GunStats.PreventSprint or Weapon.Reloading ) then return false end
+--			if Weapon and ( Weapon.PreventSprint or Weapon.Reloading ) then return false end
 			
-			if Weapon and Weapon.GunStats.PreventSprint then return false end
+			if Weapon and Weapon.PreventSprint then return false end
 					
 			Core.PreventCrouch.Sprinting = true
 			
@@ -204,31 +204,31 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 	
 end, Key = Enum.KeyCode.F, PadKey = Enum.KeyCode.ButtonL3, ToggleState = false, CanToggle = true, OffOnDeath = true, NoHandled = true }
 
---Core.Visuals.AntiSprintReload = Core.ReloadStart.Event:Connect( function ( StatObj )
+--Core.Events.AntiSprintReload = Core.ReloadStart.Event:Connect( function ( StatObj )
 --	
 --	if Core.ActualSprinting then KBU.SetToggle( "Sprint", false ) end
 --	
 --end )
 
-Core.Visuals.AntiSprintShoot = Core.ClientVisuals.Event:Connect( function ( )
+Core.Events.AntiSprintShoot = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( _, User )
 	
-	if Core.ActualSprinting then KBU.SetToggle( "Sprint", false ) end
+	if User == Plr and Core.ActualSprinting then KBU.SetToggle( "Sprint", false ) end
 	
 end )
 
-Core.WeaponSelected.Event:Connect( function ( StatObj, User )
+Core.WeaponSelected.Event:Connect( function ( StatObj )
 	
 	if not StatObj then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	if GunStats.PreventSprint then KBU.SetToggle( "Sprint", false ) end
+	if WeaponStats.PreventSprint then KBU.SetToggle( "Sprint", false ) end
 	
-	if Core.Config.AllowSprinting == false and GunStats.PreventSprint ~= false then KBU.SetToggle( "Sprint", false ) end
+	if Core.Config.AllowSprinting == false and WeaponStats.PreventSprint ~= false then KBU.SetToggle( "Sprint", false ) end
 	
 end )
 
-Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
+Core.WeaponDeselected.Event:Connect( function ( StatObj )
 	
 	if Core.Config.AllowSprinting == false then KBU.SetToggle( "Sprint", false ) end
 	

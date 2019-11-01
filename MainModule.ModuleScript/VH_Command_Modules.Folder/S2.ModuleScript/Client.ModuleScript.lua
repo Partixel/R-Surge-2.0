@@ -1,5 +1,3 @@
-local ReplicatedStorage = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
-
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local PoseUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "PoseUtil" ) )
@@ -8,21 +6,9 @@ local KeybindUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChi
 	
 return function ( Main, ModFolder, VH_Events )
 	
-	Core.Config.AllowSprinting = ReplicatedStorage:WaitForChild( "Sprint" ).Value
+	Core.Config.AllowSprinting = ModFolder:WaitForChild( "Sprint" ).Value
 	
-	Core.Config.AllowCrouching = ReplicatedStorage:WaitForChild( "Crouch" ).Value
-	
-	Core.Config.AllowAtEase = ReplicatedStorage:WaitForChild( "AtEase" ).Value
-	
-	Core.Config.AllowSalute = ReplicatedStorage:WaitForChild( "Salute" ).Value
-	
-	Core.Config.AllowCharacterRotation = ReplicatedStorage:WaitForChild( "CharacterRotation" ).Value
-	
-	Core.Config.AllowSurrender = ReplicatedStorage:WaitForChild( "Surrender" ).Value
-	
-	Core.Config.AllowTeamKill = ReplicatedStorage:WaitForChild( "TeamKill" ).Value
-	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Sprint.Changed:Connect( function( Value )
+	Main.Events[ #Main.Events + 1 ] = ModFolder.Sprint.Changed:Connect( function( Value )
 		
 		Core.Config.AllowSprinting = Value
 		
@@ -34,7 +20,9 @@ return function ( Main, ModFolder, VH_Events )
 		
 	end )
 	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Crouch.Changed:Connect( function( Value )
+	Core.Config.AllowCrouching = ModFolder:WaitForChild( "Crouch" ).Value
+	
+	Main.Events[ #Main.Events + 1 ] = ModFolder.Crouch.Changed:Connect( function( Value )
 		
 		Core.Config.AllowCrouching = Value
 		
@@ -46,7 +34,9 @@ return function ( Main, ModFolder, VH_Events )
 		
 	end )
 	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.AtEase.Changed:Connect( function( Value )
+	Core.Config.AllowAtEase = ModFolder:WaitForChild( "AtEase" ).Value
+	
+	Main.Events[ #Main.Events + 1 ] = ModFolder.AtEase.Changed:Connect( function( Value )
 		
 		Core.Config.AllowAtEase = Value
 		
@@ -58,7 +48,23 @@ return function ( Main, ModFolder, VH_Events )
 		
 	end )
 	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Surrender.Changed:Connect( function( Value )
+	Core.Config.AllowSalute = ModFolder:WaitForChild( "Salute" ).Value
+	
+	Main.Events[ #Main.Events + 1 ] = ModFolder.Salute.Changed:Connect( function( Value )
+		
+		Core.Config.AllowSalute = Value
+		
+		if not Value then
+			
+			KeybindUtil.SetToggle( "Salute", false )
+			
+		end
+		
+	end )
+	
+	Core.Config.AllowSurrender = ModFolder:WaitForChild( "Surrender" ).Value
+	
+	Main.Events[ #Main.Events + 1 ] = ModFolder.Surrender.Changed:Connect( function( Value )
 		
 		Core.Config.AllowSurrender = Value
 		
@@ -70,27 +76,19 @@ return function ( Main, ModFolder, VH_Events )
 		
 	end )
 	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.TeamKill.Changed:Connect( function( Value )
+	Core.Config.AllowTeamKill = ModFolder:WaitForChild( "TeamKill" ).Value
+	
+	Main.Events[ #Main.Events + 1 ] = ModFolder.TeamKill.Changed:Connect( function( Value )
 		
 		Core.Config.AllowTeamKill = Value
 		
 	end )
 	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.CharacterRotation.Changed:Connect( function( Value )
-		
-		Core.Config.AllowCharacterRotation = Value
-		
-	end )
+	Core.Config.SwordFloat = ModFolder:WaitForChild( "SwordFloat" ).Value
 	
-	Main.Events[ #Main.Events + 1 ] = ReplicatedStorage.Salute.Changed:Connect( function( Value )
+	Main.Events[ #Main.Events + 1 ] = ModFolder.SwordFloat.Changed:Connect( function( Value )
 		
-		Core.Config.AllowSalute = Value
-		
-		if not Value then
-			
-			KeybindUtil.SetToggle( "Salute", false )
-			
-		end
+		Core.Config.SwordFloat = Value
 		
 	end )
 

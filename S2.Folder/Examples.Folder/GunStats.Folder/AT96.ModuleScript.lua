@@ -2,7 +2,7 @@ return {
 	
 	PreventSprint = true,
 	
-	FireModes = { "Semi", "Safety" },
+	WeaponModes = { "Semi", "Safety" },
 	
 	BulletType = { Name = "Explosive", BlastRadius = 6, BlastPressure = 10000, ExplosionType = Enum.ExplosionType.CratersAndDebris, Type = "Stun" },
 	

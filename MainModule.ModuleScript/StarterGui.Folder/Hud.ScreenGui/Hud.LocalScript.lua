@@ -114,9 +114,7 @@ end )
 
 function WeaponDeselected( StatObj )
 	
-	local Weapon = Core.GetWeapon( StatObj )
-	
-	if not Weapon or Weapon.User ~= Plr then return end
+	if StatObj and Core.GetWeapon( StatObj ).User ~= Plr then return end
 	
 	AmmoGui.Weapon.Text = "N/A"
 	
@@ -138,25 +136,25 @@ function WeaponSelected( StatObj )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= Plr then return end
+	if Weapon.User ~= Plr or Weapon.WeaponType ~= Core.WeaponTypes.RaycastGun then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
 	AmmoGui.Weapon.Text = StatObj.Parent.Name
 	
-	local Ammo, MaxAmmo = Weapon.Clip or "∞", Weapon.StoredAmmo or GunStats.ClipSize
+	local Ammo, MaxAmmo = Weapon.Clip or "∞", Weapon.StoredAmmo or WeaponStats.ClipSize
 	
 	AmmoGui.Ammo.Text = Ammo .. ( MaxAmmo and " | " .. MaxAmmo or "" )
 	
-	AmmoGui.Weapon.Info.Accuracy.Text = GunStats.AccurateRange .. "  |  Accurate Range"
+	AmmoGui.Weapon.Info.Accuracy.Text = WeaponStats.AccurateRange .. "  |  Accurate Range"
 	
-	AmmoGui.Weapon.Info.Damage.Text = GunStats.Damage .. "  |  Damage"
+	AmmoGui.Weapon.Info.Damage.Text = WeaponStats.Damage .. "  |  Damage"
 	
-	AmmoGui.Weapon.Info.FireRate.Text = GunStats.FireRate .. "  |  Fire Rate"
+	AmmoGui.Weapon.Info.FireRate.Text = WeaponStats.FireRate .. "  |  Fire Rate"
 	
-	AmmoGui.Weapon.Info.Range.Text = GunStats.Range .. "  |  Range"
+	AmmoGui.Weapon.Info.Range.Text = WeaponStats.Range .. "  |  Range"
 	
-	AmmoGui.Weapon.Info.Automatic.Text = ( ( GunStats.Automatic ) and "Yes" or "No" ) .. "  |  Automatic"
+	AmmoGui.Weapon.Info.Automatic.Text = ( ( WeaponStats.Automatic ) and "Yes" or "No" ) .. "  |  Automatic"
 	
 end
 
@@ -176,29 +174,29 @@ Core.WeaponSelected.Event:Connect( WeaponSelected )
 
 Core.WeaponDeselected.Event:Connect( WeaponDeselected )
 
-Core.ClipChanged.Event:Connect( function ( StatObj, Ammo )
+Core.WeaponTypes.RaycastGun.ClipChanged.Event:Connect( function ( StatObj, Ammo )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= Plr or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
+	if Weapon.User ~= Plr or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	local MaxAmmo = Weapon.StoredAmmo or GunStats.ClipSize
+	local MaxAmmo = Weapon.StoredAmmo or WeaponStats.ClipSize
 	
 	AmmoGui.Ammo.Text = ( Ammo or "∞" ) .. ( MaxAmmo and " | " .. MaxAmmo or "" )
 	
 end )
 
-Core.StoredAmmoChanged.Event:Connect( function ( StatObj, StoredAmmo )
+Core.WeaponTypes.RaycastGun.StoredAmmoChanged.Event:Connect( function ( StatObj, StoredAmmo )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= Plr or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
+	if Weapon.User ~= Plr or not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	local Ammo, MaxAmmo = Weapon.Clip or "∞", StoredAmmo or GunStats.ClipSize
+	local Ammo, MaxAmmo = Weapon.Clip or "∞", StoredAmmo or WeaponStats.ClipSize
 	
 	AmmoGui.Ammo.Text = Ammo .. ( MaxAmmo and " | " .. MaxAmmo or "" )
 	

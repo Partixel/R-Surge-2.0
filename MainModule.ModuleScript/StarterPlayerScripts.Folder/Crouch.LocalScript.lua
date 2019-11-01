@@ -162,11 +162,11 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 		
 		if Core.Config.AllowCrouching == false then
 			
-			if not Weapon or Weapon.GunStats.PreventCrouch ~= false then return false end
+			if not Weapon or Weapon.PreventCrouch ~= false then return false end
 			
 		end
 		
-		if Weapon and Weapon.GunStats.PreventCrouch then return false end
+		if Weapon and Weapon.PreventCrouch then return false end
 		
 		PU.SetPose( "Crouching", true )
 		
@@ -190,15 +190,15 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 	
 end, Key = Enum.KeyCode.C, PadKey = Enum.KeyCode.ButtonL3, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true }
 
-Core.WeaponSelected.Event:Connect( function ( StatObj, User )
+Core.WeaponSelected.Event:Connect( function ( StatObj )
 	
 	if not StatObj then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	if GunStats.PreventCrouch then KBU.SetToggle( "Crouch", false ) end
+	if WeaponStats.PreventCrouch then KBU.SetToggle( "Crouch", false ) end
 	
-	if Core.Config.AllowCrouching == false and GunStats.PreventCrouch ~= false then
+	if Core.Config.AllowCrouching == false and WeaponStats.PreventCrouch ~= false then
 		
 		KBU.SetToggle( "Crouch", false )
 		
@@ -206,7 +206,7 @@ Core.WeaponSelected.Event:Connect( function ( StatObj, User )
 	
 end )
 
-Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
+Core.WeaponDeselected.Event:Connect( function ( StatObj )
 	
 	if Core.Config.AllowCrouching == false then KBU.SetToggle( "Crouch", false ) end
 	

@@ -12,7 +12,7 @@ Core.CursorImageChanged = function()
 	
 	if not Weapon then return end
 	
-	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor then
+	if Weapon.ShowCursor ~= false and Core.ShowCursor ~= false then
 		if Core.Config.CursorImage or Weapon.CursorImage then
 			PrevIcon = Mouse.Icon
 			Mouse.Icon = Weapon.CursorImage or Core.Config.CursorImage
@@ -28,13 +28,13 @@ Core.CursorImageChanged = function()
 	end
 end
  
-Core.WeaponSelected.Event:Connect( function ( Mod )
+Core.WeaponSelected.Event:Connect( function ( StatObj )
 	
-	local Weapon = Core.GetWeapon( Mod )
+	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= LocalPlayer then return end
+	if Weapon.User ~= LocalPlayer then return end
 	
-	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( Core.Config.CursorImage or Weapon.CursorImage ) then
+	if Weapon.ShowCursor ~= false and Core.ShowCursor ~= false and ( Core.Config.CursorImage or Weapon.CursorImage ) then
 		
 		PrevIcon = Mouse.Icon
 		
@@ -44,13 +44,13 @@ Core.WeaponSelected.Event:Connect( function ( Mod )
 	
 end )
  
-Core.WeaponDeselected.Event:Connect( function ( Mod )
+Core.WeaponDeselected.Event:Connect( function ( StatObj )
 	
-	local Weapon = Core.GetWeapon( Mod )
+	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= LocalPlayer then return end
+	if Weapon.User ~= LocalPlayer then return end
 	
-	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor and ( Core.Config.CursorImage or Weapon.CursorImage ) then
+	if Weapon.ShowCursor ~= false and Core.ShowCursor ~= false and ( Core.Config.CursorImage or Weapon.CursorImage ) then
 		
 		Mouse.Icon = PrevIcon
 		

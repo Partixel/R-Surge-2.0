@@ -146,7 +146,7 @@ local ForceWeapon = {
 	
 	Clip = 10,
 	
-	GunStats = {
+	WeaponStats = {
 		
 		ClipSize = 10
 		
@@ -166,7 +166,7 @@ function Core.RunCursorHeartbeat( )
 			
 			ShowCursor = Core.ShowCursor
 			
-			if ShowCursor and Weapon.GunStats.ShowCursor ~= false then
+			if ShowCursor ~= false and Weapon.ShowCursor ~= false then
 				
 				script.Parent.Center.Visible = true
 				
@@ -184,7 +184,7 @@ function Core.RunCursorHeartbeat( )
 			
 		end
 		
-		if not Weapon or not Core.ShowCursor or ( not Core.ForceShowCursor and ( Core.Config.CursorImage or Weapon.CursorImage ) ) then
+		if not Weapon or Weapon.WeaponType ~= Core.WeaponTypes.RaycastGun or Core.ShowCursor == false or ( not Core.ForceShowCursor and ( Core.Config.CursorImage or Weapon.CursorImage ) ) then
 			
 			Core.CursorHeartbeat:Disconnect( )
 			
@@ -202,7 +202,7 @@ function Core.RunCursorHeartbeat( )
 		
 		local Humanoid = Core.GetValidDamageable( Core.LPlrsTarget[ 1 ] )
 		
-		local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) or Core.CheckTeamkill( Plr, Humanoid, Weapon.GunStats.AllowTeamKill, Weapon.GunStats.InvertTeamKill ) and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ThemeUtil.GetThemeFor( "Positive_Color3" )
+		local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) or Core.CheckTeamkill( Plr, Humanoid, Weapon.AllowTeamKill, Weapon.InvertTeamKill ) and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ThemeUtil.GetThemeFor( "Positive_Color3" )
 		
 		local CenterColor
 		
@@ -242,11 +242,9 @@ function Core.RunCursorHeartbeat( )
 			
 		end
 		
-		local FireMode = Weapon == ForceWeapon and Core.FireModes.Auto or Core.GetFireMode( Weapon )
-		
 		-- HANDLE COLOR AND ROTATION
 		
-		local Perc = not Weapon.GunStats.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.GunStats.ReloadDelay + ( Weapon.GunStats.InitialReloadDelay or 0 ) + ( Weapon.GunStats.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.GunStats.ClipSize )
+		local Perc = not Weapon.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.ReloadDelay + ( Weapon.InitialReloadDelay or 0 ) + ( Weapon.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.ClipSize )
 		
 		local Rot, MidRot = ThemeUtil.GetThemeFor( "S2_CursorCenterRotation" ), ThemeUtil.GetThemeFor( "S2_CursorRotation" )
 		
@@ -288,7 +286,7 @@ function Core.RunCursorHeartbeat( )
 		
 		-- HANDLE WINDUP COLOUR
 		
-		local PercW = 0.5 * ( Weapon.GunStats.WindupTime == 0 and 0 or ( Weapon.GunStats.WindupTime and math.min( 1 - ( Weapon.Windup or 0 ) / Weapon.GunStats.WindupTime, 1 ) or 0 ) )
+		local PercW = 0.5 * ( Weapon.WindupTime == 0 and 0 or ( Weapon.WindupTime and math.min( 1 - ( Weapon.Windup or 0 ) / Weapon.WindupTime, 1 ) or 0 ) )
 		
 		local ColW = Color3.new( Color.r - PercW, Color.g - PercW, Color.b - PercW )
 		
@@ -308,11 +306,11 @@ function Core.RunCursorHeartbeat( )
 		
 		local Trans = math.min( math.max( 1 - ( ShowMode - tick( ) ), NormTrans ), 1 )
 		
-		local AutoTrans = FireMode.Automatic and Trans or 1
+		local AutoTrans = Weapon.Automatic and Trans or 1
 		
-		local BurstTrans = ( FireMode.Automatic or ( FireMode.Shots and FireMode.Shots > 1 ) ) and Trans or 1
+		local BurstTrans = ( Weapon.Automatic or ( Weapon.Shots and Weapon.Shots > 1 ) ) and Trans or 1
 		
-		script.Parent.Center.Middle.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not FireMode.PreventFire and Core.ActualSprinting ) and Trans or ( FireMode.PreventFire or Core.ActualSprinting ) and 1 or NormTrans
+		script.Parent.Center.Middle.Bottom.BackgroundTransparency = ( ShowMode > tick( ) and not Weapon.PreventAttack and Core.ActualSprinting ) and Trans or ( Weapon.PreventAttack or Core.ActualSprinting ) and 1 or NormTrans
 		
 		script.Parent.Center.Middle.Bottom.L1.BackgroundTransparency = BurstTrans
 		
@@ -328,7 +326,7 @@ function Core.RunCursorHeartbeat( )
 		
 		script.Parent.Center.Position = UDim2.new( 0, Mouse.X, 0, Mouse.Y )
 		
-		local Offset = ThemeUtil.GetThemeFor( "S2_CursorDynamicMovement" ) and ( Weapon == ForceWeapon and 0 or ( 25 / Weapon.GunStats.AccurateRange * 10 ) + ( Weapon.GunStats.AccurateRange - Core.GetAccuracy( Weapon ) ) ) or 0
+		local Offset = ThemeUtil.GetThemeFor( "S2_CursorDynamicMovement" ) and ( Weapon == ForceWeapon and 0 or ( 25 / Weapon.AccurateRange * 10 ) + ( Weapon.AccurateRange - Core.WeaponTypes.RaycastGun.GetAccuracy( Weapon ) ) ) or 0
 		
 		script.Parent.Center.Middle.Bottom.Position = UDim2.new( 0, 0, 0, Offset + Dist )
 		
@@ -358,19 +356,19 @@ function Core.RunCursorHeartbeat( )
 	
 end
 
-Core.FireModeChanged.Event:Connect( function ( Weapon, Value )
+Core.WeaponModeChanged.Event:Connect( function ( Weapon, Value )
 	
 	ShowMode = tick( ) + 1
 	
 end )
 
-function WeaponSelected( Mod )
+function WeaponSelected( StatObj )
 	
-	local Weapon = Core.GetWeapon( Mod )
+	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon or Weapon.User ~= Plr or Core.Config.CursorImage or Weapon.CursorImage then return end
+	if Weapon.User ~= Plr or Core.Config.CursorImage or Weapon.CursorImage then return end
 	
-	if Weapon.GunStats.ShowCursor ~= false and Core.ShowCursor then
+	if Weapon.ShowCursor ~= false and Core.ShowCursor ~= false then
 		
 		script.Parent.Center.Visible = true
 		
@@ -398,7 +396,7 @@ end
  
 Core.WeaponSelected.Event:Connect( WeaponSelected )
 
-Core.Visuals.CursorHitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User, _, _, _, _, _, _, _, Humanoids )
+Core.Events.CursorHitIndicator = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( _, User, _, _, _, _, _, _, _, Humanoids )
 	
 	if Humanoids and User == Plr then
 		

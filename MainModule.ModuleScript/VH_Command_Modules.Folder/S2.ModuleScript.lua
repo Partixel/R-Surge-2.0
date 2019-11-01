@@ -1,138 +1,52 @@
-local ReplicatedStorage	= game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
-
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
+local Full, Mid, None = { [ "full" ] = true, [ "1" ] = true, [ "f" ] = true }, { [ "mid" ] = true, [ "middle" ] = true, [ "0.5" ] = true, [ "m" ] = true }, { [ "none" ] = true, [ "0" ] = true, [ "n" ] = true }
+
 return function ( Main, ModFolder, VH_Events )
 	
-	local AtEase = ReplicatedStorage:FindFirstChild( "AtEase" ) or Instance.new( "BoolValue" )
+	local SwordFloat = ModFolder:FindFirstChild( "SwordFloat" ) or Instance.new( "StringValue" )
+	
+	SwordFloat.Value = "full"
+	
+	SwordFloat.Name = "SwordFloat"
+	
+	SwordFloat.Parent = ModFolder
+	
+	Main.Commands[ "SetFloat" ] = {
+		
+		Alias = { "setfloat", { "float", Args = { "full" } }, { "midfloat", Args = { "mid" } }, { "nofloat", Args = { "none" } } },
+		
+		Description = "Changes float to either 'full', 'mid' or 'none'",
+		
+		Category = "Training",
+		
+		CanRun = "$admin",	
+		
+		ArgTypes = { { Func = function ( self, Strings, Plr )
+			
+			local String = table.remove( Strings, 1 ):lower( )
+			
+			return ( String == Main.TargetLib.ValidChar or Full[ String ] ) and "full" or Mid[ String ] and "mid" or None[ String ] and "none" or nil
+			
+		end, Name = "easy_normal_hard", Required = true } },
+			
+		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
+			
+			SwordFloat.Value = Args[ 1 ]
+			
+			return true
+			
+		end
+		
+	}
+	
+	local AtEase = ModFolder:FindFirstChild( "AtEase" ) or Instance.new( "BoolValue" )
 	
 	AtEase.Value = Core.Config.AllowAtEase ~= false
 	
 	AtEase.Name = "AtEase"
-	
-	AtEase.Parent = ReplicatedStorage
-	
-	local Sprint = ReplicatedStorage:FindFirstChild( "Sprint" ) or Instance.new( "BoolValue" )
-	
-	Sprint.Value = Core.Config.AllowSprinting ~= false
-	
-	Sprint.Name = "Sprint"
-	
-	Sprint.Parent = ReplicatedStorage
-	
-	local Crouch = ReplicatedStorage:FindFirstChild( "Crouch" ) or Instance.new( "BoolValue" )
-	
-	Crouch.Value =Core.Config.AllowCrouching ~= false
-	
-	Crouch.Name = "Crouch"
-	
-	Crouch.Parent = ReplicatedStorage
-	
-	local Salute = ReplicatedStorage:FindFirstChild( "Salute" ) or Instance.new( "BoolValue" )
-	
-	Salute.Value = Core.Config.AllowSalute ~= false
-	
-	Salute.Name = "Salute"
-	
-	Salute.Parent = ReplicatedStorage
-	
-	local CharacterRotation = ReplicatedStorage:FindFirstChild( "CharacterRotation" ) or Instance.new( "BoolValue" )
-	
-	CharacterRotation.Value = Core.Config.AllowCharacterRotation ~= false
-	
-	CharacterRotation.Name = "CharacterRotation"
-	
-	CharacterRotation.Parent = ReplicatedStorage
-	
-	local Surrender = ReplicatedStorage:FindFirstChild( "Surrender" ) or Instance.new( "BoolValue" )
-	
-	Surrender.Value = Core.Config.AllowSurrender ~= false
-	
-	Surrender.Name = "Surrender"
-	
-	Surrender.Parent = ReplicatedStorage
-	
-	local TeamKill = ReplicatedStorage:FindFirstChild( "TeamKill" ) or Instance.new( "BoolValue" )
-	
-	TeamKill.Value = Core.Config.AllowTeamKill == true
-	
-	TeamKill.Name = "TeamKill"
-	
-	TeamKill.Parent = ReplicatedStorage
-	
-	VH_Events:WaitForChild( "Destroyed" ).Event:Connect( function ( Update )
-		
-		if not Update then
-			
-			AtEase:Destroy( )
-			
-			Sprint:Destroy( )
-			
-			Crouch:Destroy( )
-			
-			Salute:Destroy( )
-			
-			CharacterRotation:Destroy( )
-			
-			Surrender:Destroy( )
-			
-			TeamKill:Destroy( )
-			
-			return
-			
-		end
-		
-	end )
-	
-	Main.Commands[ "Sprint" ] = {
-		
-		Alias = { "sprint" },
-		
-		Description = "Toggle sprint on/off",
-		
-		Category = "Training",
-		
-		CanRun = "$admin",	
-		
-		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
-			
-		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
-			
-			Core.Config.AllowSprinting = Args[ 1 ]
-			
-			Sprint.Value = Args[ 1 ]
-			
-			return true
-			
-		end
-		
-	}
-	
-	Main.Commands[ "Crouch" ] = {
-		
-		Alias = { "crouch" },
-		
-		Description = "Toggle crouch on/off",
-		
-		Category = "Training",
-		
-		CanRun = "$admin",	
-		
-		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
-			
-		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
-			
-			Core.Config.AllowCrouching = Args[ 1 ]
-			
-			Crouch.Value = Args[ 1 ]
-			
-			return true
-			
-		end
-		
-	}
 	
 	Main.Commands[ "AtEase" ] = {
 		
@@ -158,6 +72,80 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
+	AtEase.Parent = ModFolder
+	
+	local Sprint = ModFolder:FindFirstChild( "Sprint" ) or Instance.new( "BoolValue" )
+	
+	Sprint.Value = Core.Config.AllowSprinting ~= false
+	
+	Sprint.Name = "Sprint"
+	
+	Main.Commands[ "Sprint" ] = {
+		
+		Alias = { "sprint" },
+		
+		Description = "Toggle sprint on/off",
+		
+		Category = "Training",
+		
+		CanRun = "$admin",	
+		
+		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
+			
+		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
+			
+			Core.Config.AllowSprinting = Args[ 1 ]
+			
+			Sprint.Value = Args[ 1 ]
+			
+			return true
+			
+		end
+		
+	}
+	
+	Sprint.Parent = ModFolder
+	
+	local Crouch = ModFolder:FindFirstChild( "Crouch" ) or Instance.new( "BoolValue" )
+	
+	Crouch.Value =Core.Config.AllowCrouching ~= false
+	
+	Crouch.Name = "Crouch"
+	
+	Main.Commands[ "Crouch" ] = {
+		
+		Alias = { "crouch" },
+		
+		Description = "Toggle crouch on/off",
+		
+		Category = "Training",
+		
+		CanRun = "$admin",	
+		
+		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
+			
+		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
+			
+			Core.Config.AllowCrouching = Args[ 1 ]
+			
+			Crouch.Value = Args[ 1 ]
+			
+			return true
+			
+		end
+		
+	}
+	
+	Crouch.Parent = ModFolder
+	
+	local Salute = ModFolder:FindFirstChild( "Salute" ) or Instance.new( "BoolValue" )
+	
+	Salute.Value = Core.Config.AllowSalute ~= false
+	
+	Salute.Name = "Salute"
+	
+	Salute.Parent = ModFolder
+	
 	Main.Commands[ "Salute" ] = {
 		
 		Alias = { "salute" },
@@ -182,29 +170,13 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
-	Main.Commands[ "CharacterRotation" ] = {
-		
-		Alias = { "characterrotation" },
-		
-		Description = "Toggle Character Rotation on/off",
-		
-		Category = "Training",
-		
-		CanRun = "$admin",	
-		
-		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true } },
-			
-		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
-			
-			Core.Config.AllowCharacterRotation = Args[ 1 ]
-			
-			CharacterRotation.Value = Args[ 1 ]
-			
-			return true
-			
-		end
-		
-	}
+	local Surrender = ModFolder:FindFirstChild( "Surrender" ) or Instance.new( "BoolValue" )
+	
+	Surrender.Value = Core.Config.AllowSurrender ~= false
+	
+	Surrender.Name = "Surrender"
+	
+	Surrender.Parent = ModFolder
 	
 	Main.Commands[ "Surrender" ] = {
 		
@@ -230,6 +202,14 @@ return function ( Main, ModFolder, VH_Events )
 		
 	}
 	
+	local TeamKill = ModFolder:FindFirstChild( "TeamKill" ) or Instance.new( "BoolValue" )
+	
+	TeamKill.Value = Core.Config.AllowTeamKill == true
+	
+	TeamKill.Name = "TeamKill"
+	
+	TeamKill.Parent = ModFolder
+	
 	Main.Commands[ "TeamKill" ] = {
 		
 		Alias = { "teamkill" },
@@ -253,5 +233,29 @@ return function ( Main, ModFolder, VH_Events )
 		end
 		
 	}
+	
+	VH_Events:WaitForChild( "Destroyed" ).Event:Connect( function ( Update )
+		
+		if not Update then
+			
+			AtEase:Destroy( )
+			
+			Sprint:Destroy( )
+			
+			Crouch:Destroy( )
+			
+			Salute:Destroy( )
+			
+			Surrender:Destroy( )
+			
+			TeamKill:Destroy( )
+			
+			Float:Destroy( )
+						
+			return
+			
+		end
+		
+	end )
 	
 end

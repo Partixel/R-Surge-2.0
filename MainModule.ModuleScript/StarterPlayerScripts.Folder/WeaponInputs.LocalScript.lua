@@ -12,19 +12,23 @@ KBU.AddBind{ Name = "Fire", Category = "Surge 2.0", Callback = function ( Began 
 		
 		for a, _ in pairs( Weapons ) do
 			
-			if not a.GunStats.ManualFire then
+			if not a.ManualFire then
 				
-				if Began then
+				if a.AttackOnMouseUp then
+					
+					if not Began then
+						
+						Core.SetMouseDown( a )
+						
+					end
+					
+				elseif Began then
 					
 					Core.SetMouseDown( a )
 					
-				else
+				elseif a.MouseDown then
 					
-					a.MouseDown = nil
-					
-					Core.FiringEnded:Fire( a.StatObj )
-					
-					a.ModeShots = 0
+					Core.EndAttack(a)
 					
 				end
 				
@@ -46,7 +50,7 @@ KBU.AddBind{ Name = "Reload", Category = "Surge 2.0", Callback = function ( Bega
 		
 		for a, _ in pairs( Weapons ) do
 			
-			if not a.GunStats.AllowManualReload then
+			if not a.AllowManualReload then
 				
 				Core.Reload( a )
 				
@@ -58,7 +62,7 @@ KBU.AddBind{ Name = "Reload", Category = "Surge 2.0", Callback = function ( Bega
 
 end, Key = Enum.KeyCode.R, PadKey = Enum.KeyCode.ButtonB, NoHandled = true }
 
-KBU.AddBind{ Name = "Next_fire_mode", Category = "Surge 2.0", Callback = function ( Began )
+KBU.AddBind{ Name = "Next_weapon_mode", Category = "Surge 2.0", Callback = function ( Began )
 
 	if not Began then return end
 	
@@ -68,7 +72,11 @@ KBU.AddBind{ Name = "Next_fire_mode", Category = "Surge 2.0", Callback = functio
 		
 		for a, _ in pairs( Weapons ) do
 			
-			Core.SetFireMode( a, a.CurFireMode + 1 > #a.GunStats.FireModes and 1 or a.CurFireMode + 1 )
+			if a.WeaponModes then
+				
+				Core.SetWeaponMode( a, a.CurWeaponMode + 1 > #a.WeaponModes and 1 or a.CurWeaponMode + 1 )
+				
+			end
 			
 		end
 		

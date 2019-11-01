@@ -1,6 +1,6 @@
 return {
 	
-	FireModes = { "Semi", "Safety" },
+	WeaponModes = { "Semi", "Safety" },
 	
 	Damage = 19,
 	

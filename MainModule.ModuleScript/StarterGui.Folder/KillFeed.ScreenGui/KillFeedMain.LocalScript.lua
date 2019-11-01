@@ -4,6 +4,12 @@ local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" 
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
+
+local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("S2"))
+Menu:AddSetting{Name = "KillFeed", Text = "Enables/disables the killfeed", Default = true, Update = function(Options, Val)
+	script.Parent.Container.Visible = Val
+end}
+
 local function Scale( Feed )
 	
 	Feed.Killer.Size = UDim2.new( 10, 0, 1, 0 )
@@ -121,8 +127,7 @@ end
 
 local VictimTypes = { Head = "rbxassetid://1693819171", NewHead = "rbxassetid://1693819171" }
 -- Need suicide dmgtype
---local DmgTypes = { Kinetic = "rbxassetid://2625025813", Explosive = "rbxassetid://2625029682", Slash = "rbxassetid://2625006640" }
-local DmgTypes = { Kinetic = "rbxassetid://1693831893", Explosive = "rbxassetid://1693825708" }
+local DmgTypes = { Kinetic = "rbxassetid://4263457339", Explosive = "rbxassetid://4263473278", Slash = "rbxassetid://4263464121", Fire = "rbxassetid://4263480827", Electricity = "rbxassetid://4263484727" }
 
 local Zero = UDim2.new( 0, 0, 0, 0 )
 
@@ -142,207 +147,211 @@ end
 
 game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "RemoteKilled" ).OnClientEvent:Connect( function ( DeathInfo )
 	
-	local NewFeed = script.Feed:Clone( )
-	
-	local NumVictims = 0
-	
-	for _, Info in ipairs( DeathInfo.VictimInfos ) do
+	if script.Parent.Container.Visible then
 		
-		if not Info.NoFeed then
+		local NewFeed = script.Feed:Clone( )
+		
+		local NumVictims = 0
+		
+		for _, Info in ipairs( DeathInfo.VictimInfos ) do
 			
-			NumVictims = NumVictims + 1
-			
-			local Victim = script.Victim:Clone( )
-			
-			ThemeUtil.BindUpdate( Victim, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
-			
-			Victim.VictimName.Text = Info.User.Name
-			
-			Victim.VictimName.TextColor3 = Info.User.TeamColor and Info.User.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
-			
-			ThemeUtil.BindUpdate( Victim.VictimName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
-			
-			Victim.Name = "Victim" .. NumVictims
-			
-			local Type = VictimTypes[ Info.Hit ]
-			
-			if Type then
+			if not Info.NoFeed then
 				
-				local VictimType = script.VictimType:Clone( )
+				NumVictims = NumVictims + 1
 				
-				VictimType.Image = Type
+				local Victim = script.Victim:Clone( )
 				
-				VictimType.Parent = Victim
+				ThemeUtil.BindUpdate( Victim, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 				
-			end
-			
-			Victim.Position = UDim2.new( 1, 0, ( Core.Config.KillFeedVerticalAlign == "Bottom" and -1 or 1 ) * ( NumVictims - 1 ), 0 )
-			
-			if NumVictims > 1 then
+				Victim.VictimName.Text = Info.User.Name
 				
-				local VictimFrame = script.VictimFrame:Clone( )
+				Victim.VictimName.TextColor3 = Info.User.TeamColor and Info.User.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
 				
-				if Core.Config.KillFeedVerticalAlign == "Bottom" then
+				ThemeUtil.BindUpdate( Victim.VictimName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
+				
+				Victim.Name = "Victim" .. NumVictims
+				
+				local Type = VictimTypes[ Info.Hit ]
+				
+				if Type then
 					
-					VictimFrame.Position = UDim2.new( 0, 0, 1, 0 )
+					local VictimType = script.VictimType:Clone( )
+					
+					VictimType.Image = Type
+					
+					VictimType.Parent = Victim
 					
 				end
 				
-				ThemeUtil.BindUpdate( VictimFrame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
+				Victim.Position = UDim2.new( 1, 0, ( Core.Config.KillFeedVerticalAlign == "Bottom" and -1 or 1 ) * ( NumVictims - 1 ), 0 )
 				
-				VictimFrame.Parent = Victim
+				if NumVictims > 1 then
+					
+					local VictimFrame = script.VictimFrame:Clone( )
+					
+					if Core.Config.KillFeedVerticalAlign == "Bottom" then
+						
+						VictimFrame.Position = UDim2.new( 0, 0, 1, 0 )
+						
+					end
+					
+					ThemeUtil.BindUpdate( VictimFrame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
+					
+					VictimFrame.Parent = Victim
+					
+				end
+				
+				Victim.Parent = NewFeed
 				
 			end
 			
-			Victim.Parent = NewFeed
-			
 		end
 		
-	end
-	
-	if NumVictims == 0 then return end
-	
-	NewFeed.Type.Image = DmgTypes[ DeathInfo.Type ] or DmgTypes[ "Kinetic" ]
-	
-	ThemeUtil.BindUpdate( NewFeed.Type, { ImageColor3 = "Primary_TextColor", ImageTransparency = "Primary_TextTransparency" } )
-	
-	ThemeUtil.BindUpdate( NewFeed.Killer, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
-	
-	ThemeUtil.BindUpdate( NewFeed.Frame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
-	
-	NewFeed.Killer.KillerName.Text = DeathInfo.Killer and DeathInfo.Killer.Name or NewFeed[ "Victim1" ].VictimName.Text
-	
-	NewFeed.Killer.KillerName.TextColor3 = DeathInfo.Killer and DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or NewFeed[ "Victim1" ].VictimName.TextColor3
-	
-	ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
-	
-	if DeathInfo.Assister then
+		if NumVictims == 0 then return end
 		
-		local Assister = script.Assister:Clone( )
+		NewFeed.Type.Image = DmgTypes[ DeathInfo.Type ] or DmgTypes[ "Kinetic" ]
 		
-		ThemeUtil.BindUpdate( Assister, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
+		ThemeUtil.BindUpdate( NewFeed.Type, { ImageColor3 = "Primary_TextColor", ImageTransparency = "Primary_TextTransparency" } )
 		
-		ThemeUtil.BindUpdate( Assister.Frame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
+		ThemeUtil.BindUpdate( NewFeed.Killer, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 		
-		Assister.AssisterName.Text = DeathInfo.Assister.Name
+		ThemeUtil.BindUpdate( NewFeed.Frame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 		
-		Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
+		NewFeed.Killer.KillerName.Text = DeathInfo.Killer and DeathInfo.Killer.Name or NewFeed[ "Victim1" ].VictimName.Text
 		
-		ThemeUtil.BindUpdate( Assister.AssisterName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
+		NewFeed.Killer.KillerName.TextColor3 = DeathInfo.Killer and DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or NewFeed[ "Victim1" ].VictimName.TextColor3
 		
-		Assister.AssisterPct.Text = PctStr( DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
+		ThemeUtil.BindUpdate( NewFeed.Killer.KillerName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
 		
-		if Core.Config.KillFeedVerticalAlign == "Bottom" then
+		if DeathInfo.Assister then
 			
-			Assister.Frame.Position = UDim2.new( 1, 0, 0.25, 0 )
+			local Assister = script.Assister:Clone( )
 			
-			Assister.Position = UDim2.new( 1, 0, 0, 0 )
+			ThemeUtil.BindUpdate( Assister, { ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency" } )
 			
-		end
-		
-		Assister.Parent = NewFeed.Killer
-		
-		local KillPct = script.KillerPct:Clone( )
-		
-		KillPct.Text = PctStr( DeathInfo.KillerDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
-		
-		KillPct.Parent = NewFeed.Killer
-		
-	end
-	
-	for _, Feed in ipairs( script.Parent.Container:GetChildren( ) ) do
-		
-		if Feed:IsA( "Frame" ) then
+			ThemeUtil.BindUpdate( Assister.Frame, { BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency" } )
 			
-			Feed.ActualPos.Value = Feed.ActualPos.Value + 0.035 + math.max( 0.035 * ( NumVictims - 1 ), DeathInfo.Assister and 0.015 or 0 )
+			Assister.AssisterName.Text = DeathInfo.Assister.Name
+			
+			Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor( "Primary_TextColor" )
+			
+			ThemeUtil.BindUpdate( Assister.AssisterName, { Primary_BackgroundTransparency = UpdateContrastTextStroke } )
+			
+			Assister.AssisterPct.Text = PctStr( DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
 			
 			if Core.Config.KillFeedVerticalAlign == "Bottom" then
 				
-				TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feed.Position.X.Scale, Feed.Position.X.Offset, 0.175 - Feed.ActualPos.Value, 0  ) } ):Play( )
+				Assister.Frame.Position = UDim2.new( 1, 0, 0.25, 0 )
 				
-			else
-				
-				TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feed.Position.X.Scale, Feed.Position.X.Offset, Feed.ActualPos.Value, 0  ) } ):Play( )
+				Assister.Position = UDim2.new( 1, 0, 0, 0 )
 				
 			end
 			
-			if Feed.ActualPos.Value > 0.175 and Feed.Name ~= "Destroying" then
-				
-				local Feed = Feed
-				
-				Feed.Name = "Destroying"
-				
-				local Tween = TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = Zero } )
-				
-				Tween.Completed:Connect( function ( State )
-					
-					Feed:Destroy( )
-					
-				end )
-				
-				Tween:Play( )
-				
-			end
+			Assister.Parent = NewFeed.Killer
+			
+			local KillPct = script.KillerPct:Clone( )
+			
+			KillPct.Text = PctStr( DeathInfo.KillerDamage / DeathInfo.TotalDamage * 100, 0 ) .. "%"
+			
+			KillPct.Parent = NewFeed.Killer
 			
 		end
 		
-	end
-	
-	for _, Feed in ipairs( NewFeed:GetDescendants( ) ) do
-		
-		if Feed:IsA( "TextLabel" ) then
+		for _, Feed in ipairs( script.Parent.Container:GetChildren( ) ) do
 			
-			local Obj = Feed
-			
-			Obj:GetPropertyChangedSignal( "AbsoluteSize" ):Connect( function ( )
+			if Feed:IsA( "Frame" ) then
 				
-				if Obj.AbsoluteSize.X < 1 then
+				Feed.ActualPos.Value = Feed.ActualPos.Value + 0.035 + math.max( 0.035 * ( NumVictims - 1 ), DeathInfo.Assister and 0.015 or 0 )
+				
+				if Core.Config.KillFeedVerticalAlign == "Bottom" then
 					
-					Obj.Visible = false
+					TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feed.Position.X.Scale, Feed.Position.X.Offset, 0.175 - Feed.ActualPos.Value, 0  ) } ):Play( )
 					
 				else
 					
-					Obj.Visible = true
+					TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Position = UDim2.new( Feed.Position.X.Scale, Feed.Position.X.Offset, Feed.ActualPos.Value, 0  ) } ):Play( )
 					
 				end
 				
-			end )
+				if Feed.ActualPos.Value > 0.175 and Feed.Name ~= "Destroying" then
+					
+					local Feed = Feed
+					
+					Feed.Name = "Destroying"
+					
+					local Tween = TweenService:Create( Feed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = Zero } )
+					
+					Tween.Completed:Connect( function ( State )
+						
+						Feed:Destroy( )
+						
+					end )
+					
+					Tween:Play( )
+					
+				end
+				
+			end
 			
 		end
 		
-	end
-	
-	NewFeed.Parent = script.Parent.Container
-	
-	Scale( NewFeed )
-	
-	NewFeed.Size = Zero
-	
-	TweenService:Create( NewFeed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 0.03, 0, 0.03, 0 ) } ):Play( )
-	
-	wait( 0.25 )
-	
-	if NewFeed:FindFirstChild( "Type" ) then
-		
-		TweenService:Create( NewFeed.Type, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 1, 0 ), ImageTransparency = 0 } ):Play( )
-		
-	end
-	
-	wait( 5 )
-	
-	if NewFeed.Parent and NewFeed.Name ~= "Destroying" then
-		
-		NewFeed.Name = "Destroying"
-		
-		local Tween = TweenService:Create( NewFeed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = Zero } )
-		
-		Tween.Completed:Connect( function ( State )
+		for _, Feed in ipairs( NewFeed:GetDescendants( ) ) do
 			
-			NewFeed:Destroy( )
+			if Feed:IsA( "TextLabel" ) then
+				
+				local Obj = Feed
+				
+				Obj:GetPropertyChangedSignal( "AbsoluteSize" ):Connect( function ( )
+					
+					if Obj.AbsoluteSize.X < 1 then
+						
+						Obj.Visible = false
+						
+					else
+						
+						Obj.Visible = true
+						
+					end
+					
+				end )
+				
+			end
 			
-		end )
+		end
 		
-		Tween:Play( )
+		NewFeed.Parent = script.Parent.Container
+		
+		Scale( NewFeed )
+		
+		NewFeed.Size = Zero
+		
+		TweenService:Create( NewFeed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 0.03, 0, 0.03, 0 ) } ):Play( )
+		
+		wait( 0.25 )
+		
+		if NewFeed:FindFirstChild( "Type" ) then
+			
+			TweenService:Create( NewFeed.Type, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = UDim2.new( 1, 0, 1, 0 ), ImageTransparency = 0 } ):Play( )
+			
+		end
+		
+		wait( 5 )
+		
+		if NewFeed.Parent and NewFeed.Name ~= "Destroying" then
+			
+			NewFeed.Name = "Destroying"
+			
+			local Tween = TweenService:Create( NewFeed, TweenInfo.new( 0.25, Enum.EasingStyle.Quad ), { Size = Zero } )
+			
+			Tween.Completed:Connect( function ( State )
+				
+				NewFeed:Destroy( )
+				
+			end )
+			
+			Tween:Play( )
+			
+		end
 		
 	end
 	

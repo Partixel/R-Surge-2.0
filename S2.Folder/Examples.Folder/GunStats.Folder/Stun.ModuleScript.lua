@@ -2,7 +2,7 @@ return {
 	
 	PreventSprint = true,
 	
-	FireModes = { "Auto", "Safety" },
+	WeaponModes = { "Auto", "Safety" },
 	
 	BulletType = { Name = "Stun" },
 	

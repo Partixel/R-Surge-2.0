@@ -1,6 +1,6 @@
 return {
 	
-	FireModes = { "Auto", "Burst", "Semi", "Safety" },
+	WeaponModes = { "Auto", "Burst", "Semi", "Safety" },
 	
 	Damage = 13,
 	

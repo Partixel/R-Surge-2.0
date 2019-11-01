@@ -4,7 +4,7 @@ return {
 	
 	PreventSprint = true,
 	
-	FireModes = { "Auto", "Safety" },
+	WeaponModes = { "Auto", "Safety" },
 	
 	Damage = 30, -- Damage of the gun
 	

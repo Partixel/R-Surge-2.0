@@ -172,32 +172,19 @@ local function NewWeld( Plr, Tool, CF1 )
 	
 end
 
-Core.WeaponSelected.Event:Connect( function ( Mod, Plr )
-	
-	local GunStats = Core.GetGunStats( Mod )
-	
-	if not GunStats then return end
-	
-	local LeftWeld, RightWeld = GunStats.LeftWeld, GunStats.RightWeld
-	
-	if LeftWeld or RightWeld then
-		
-		WeldArms( Plr, Mod.Parent, LeftWeld, RightWeld )
-		
+Core.WeaponSelected.Event:Connect(function(StatObj)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon then
+		local LeftWeld, RightWeld = Weapon.LeftWeld, Weapon.RightWeld
+		if LeftWeld or RightWeld then
+			WeldArms(Weapon.User, StatObj.Parent, LeftWeld, RightWeld)
+		end
 	end
-	
-end )
+end)
 
-Core.WeaponDeselected.Event:Connect( function ( Mod, Plr )
-	
-	local GunStats = Core.GetGunStats( Mod )
-	
-	if not GunStats then return end
-	
-	if GunStats.LeftWeld or GunStats.RightWeld then
-		
-		UnWeld( Plr, Mod.Parent )
-		
+Core.WeaponDeselected.Event:Connect(function(StatObj)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon and (Weapon.LeftWeld or Weapon.RightWeld) then
+		UnWeld(Weapon.User, StatObj.Parent)
 	end
-	
-end )
+end)

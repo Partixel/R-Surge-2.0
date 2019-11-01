@@ -64,13 +64,13 @@ KBU.AddBind( "Inspect", function ( Began, Died )
 	
 end, Enum.KeyCode.E, Enum.KeyCode.ButtonL3, nil, true, true, true, nil, true )
 
-Core.WeaponSelected.Event:Connect( function ( StatObj, User )
+Core.WeaponSelected.Event:Connect( function ( StatObj )
 	
 	KBU.SetToggle( "Inspect", false )
 	
 end )
 
-Core.WeaponDeselected.Event:Connect( function ( StatObj, User )
+Core.WeaponDeselected.Event:Connect( function ( StatObj )
 	
 	KBU.SetToggle( "Inspect", false )
 	

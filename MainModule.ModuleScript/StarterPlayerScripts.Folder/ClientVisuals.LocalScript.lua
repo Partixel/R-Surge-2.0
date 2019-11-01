@@ -52,6 +52,21 @@ local function GetVisualBarrel( Barrel, DontCreate )
 	
 end
 
+Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Type == 0 then
+		local Anim = Instance.new("StringValue")
+		Anim.Name = "toolanim"
+		Anim.Value = "Slash"
+		Anim.Parent = Weapon.StatObj.Parent
+	else
+		local Anim = Instance.new("StringValue")
+		Anim.Name = "toolanim"
+		Anim.Value = "Lunge"
+		Anim.Parent = Weapon.StatObj.Parent
+	end
+end)
+
 Core.BulletArrived = Instance.new( "BindableEvent" )
 
 coroutine.wrap( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { script } ) end )
@@ -112,27 +127,25 @@ local function PlaySoundAtPos( Position, Sound )
 	
 end
 
-Core.Visuals.ReloadSound = Core.ReloadStepped.Event:Connect( function ( StatObj )
-	
-	if not StatObj or not StatObj.Parent then return end
+Core.Events.ReloadSound = Core.ReloadStepped.Event:Connect( function ( StatObj )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon.GunStats.ReloadSound then return end
+	if not Weapon.ReloadSound then return end
 	
 	local Part = GetVisualBarrel( type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart )
 	
-	local ReloadSound = Part:FindFirstChild( "ReloadSound" ) or Weapon.GunStats.ReloadSound:Clone( )
+	local ReloadSound = Part:FindFirstChild( "ReloadSound" ) or Weapon.ReloadSound:Clone( )
 	
 	ReloadSound.Name = "ReloadSound"
 	
 	ReloadSound.Parent = Part
 	
-	if Weapon.GunStats.LongReloadSound then
+	if Weapon.LongReloadSound then
 		
 		if ReloadSound.Playing then return end
 		
-		--ReloadSound.PlaybackSpeed =  ReloadSound.TimeLength / ( Weapon.GunStats.ReloadDelay * ( Weapon.GunStats.ReloadAmount / Weapon.GunStats.ClipSize ) )
+		--ReloadSound.PlaybackSpeed =  ReloadSound.TimeLength / ( Weapon.ReloadDelay * ( Weapon.ReloadAmount / Weapon.ClipSize ) )
 		
 		ReloadSound.Looped = true
 		
@@ -142,13 +155,11 @@ Core.Visuals.ReloadSound = Core.ReloadStepped.Event:Connect( function ( StatObj 
 	
 end )
 
-Core.Visuals.EndReloadSound = Core.ReloadEnd.Event:Connect( function ( StatObj )
-	
-	if not StatObj or not StatObj.Parent then return end
+Core.Events.EndReloadSound = Core.ReloadEnd.Event:Connect( function ( StatObj )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon.GunStats.ReloadSound then return end
+	if not Weapon.ReloadSound then return end
 	
 	local Part = GetVisualBarrel( type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart )
 	
@@ -158,23 +169,21 @@ Core.Visuals.EndReloadSound = Core.ReloadEnd.Event:Connect( function ( StatObj )
 	
 end )
 
-Core.Visuals.WindupSound = Core.WindupChanged.Event:Connect( function ( StatObj, Windup, State )
-	
-	if not StatObj or not StatObj.Parent then return end
+Core.Events.WindupSound = Core.WindupChanged.Event:Connect( function ( StatObj, Windup, State )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon.GunStats.WindupSound then return end
+	if not Weapon.WindupSound then return end
 	
 	local Part = GetVisualBarrel( type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart )
 	
-	local WindupSound = Part:FindFirstChild( "Windup" ) or Weapon.GunStats.WindupSound:Clone( )
+	local WindupSound = Part:FindFirstChild( "Windup" ) or Weapon.WindupSound:Clone( )
 	
 	WindupSound.Parent = Part
 	
 	WindupSound.Looped = true
 	
-	WindupSound.Pitch = math.min( ( Windup or 0 ) / (Weapon.GunStats.WindupTime or 1), 1 ) * 0.75
+	WindupSound.Pitch = math.min( ( Windup or 0 ) / (Weapon.WindupTime or 1), 1 ) * 0.75
 	
 	if State then
 		
@@ -188,13 +197,11 @@ Core.Visuals.WindupSound = Core.WindupChanged.Event:Connect( function ( StatObj,
 	
 end )
 
-Core.Visuals.FireSoundEnd = Core.FiringEnded.Event:Connect( function ( StatObj )
-	
-	if not StatObj or not StatObj.Parent then return end
+Core.Events.FireSoundEnd = Core.AttackEnded.Event:Connect( function ( StatObj )
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if Weapon.GunStats.LongFiringSound then
+	if Weapon.LongFiringSound then
 		
 		local Barrels = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart or { Weapon.BarrelPart }
 		
@@ -206,7 +213,7 @@ Core.Visuals.FireSoundEnd = Core.FiringEnded.Event:Connect( function ( StatObj )
 			
 			if FireSound then
 				
-				local Tween = TweenService:Create( FireSound, TweenInfo.new( type( Weapon.GunStats.LongFiringSound ) == "number" and Weapon.GunStats.LongFiringSound or 1 ), { Volume = 0 } )
+				local Tween = TweenService:Create( FireSound, TweenInfo.new( type( Weapon.LongFiringSound ) == "number" and Weapon.LongFiringSound or 1 ), { Volume = 0 } )
 				
 				FireSound.Name = "Destroying"
 				
@@ -224,25 +231,27 @@ end )
 
 local TweenService, VZero = game:GetService( "TweenService" ), Vector3.new( )
 
-Core.Visuals.CameraRecoil = Core.ClientVisuals.Event:Connect( function ( StatObj )
+Core.Events.CameraRecoil = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User )
 	
-	if not StatObj or not StatObj.Parent then return end
---	
-	local GunStats = Core.GetGunStats( StatObj )
-	
-	if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and GunStats.AllowCameraShake ~= false then
+	if User == Plr then
 		
-		local Hum = Plr.Character.Humanoid
+		local WeaponStats = Core.GetWeaponStats( StatObj )
 		
-		Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Core.Config.ScreenRecoilPercentage * ( GunStats.Damage / 25 )
-		
-		TweenService:Create( Hum, TweenInfo.new( 0.2 ), { CameraOffset = VZero } ):Play( )
+		if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and WeaponStats.AllowCameraShake ~= false then
+			
+			local Hum = Plr.Character.Humanoid
+			
+			Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Core.Config.ScreenRecoilPercentage * ( WeaponStats.Damage / 25 )
+			
+			TweenService:Create( Hum, TweenInfo.new( 0.2 ), { CameraOffset = VZero } ):Play( )
+			
+		end
 		
 	end
 	
 end )
 
-Core.Visuals.HitIndicator = Core.SharedVisuals.Event:Connect( function ( _, User, _, Hit, _, _, _, _, _, Humanoids )
+Core.Events.HitIndicator = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( _, User, _, Hit, _, _, _, _, _, Humanoids )
 	
 	if Humanoids and User == Plr then
 		
@@ -282,11 +291,11 @@ end )
 
 local function FlyBy( StatObj, User, Barrel, _, End )
 	
-	if not Barrel or not StatObj or not StatObj.Parent then return end
+	if not Barrel then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	if GunStats.NoFlybyEffects then return end
+	if WeaponStats.NoFlybyEffects then return end
 	
 	if User == Plr then return end
 	
@@ -324,35 +333,35 @@ end
 
 Menu:AddSetting{Name = "BulletFlyByNoise", Text = "Bullet Fly By Noise", Default = true, Update = function(Options, Val)
 	if Val then
-		if not Core.Visuals.FlyBy then
-			Core.Visuals.FlyBy = Core.SharedVisuals.Event:Connect(FlyBy)
+		if not Core.Events.FlyBy then
+			Core.Events.FlyBy = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(FlyBy)
 		end
-	elseif Core.Visuals.FlyBy then
-		Core.Visuals.FlyBy:Disconnect()
-		Core.Visuals.FlyBy = nil
+	elseif Core.Events.FlyBy then
+		Core.Events.FlyBy:Disconnect()
+		Core.Events.FlyBy = nil
 	end
 end}
 
 local GunBarrelEffectsEnabled = true
-Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
+Core.Events.ShotSound = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
 	
-	if not Barrel or not StatObj or not StatObj.Parent then return end
+	if not Barrel then return end
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	if GunStats.NoBarrelEffect then return end
+	if WeaponStats.NoBarrelEffect then return end
 	
 	local Part = GetVisualBarrel( Barrel )
 	
-	if FirstShot ~= false and GunStats.FireSound and ( not GunStats.LongFiringSound or not Part:FindFirstChild( "FireSound" ) ) then
+	if FirstShot ~= false and WeaponStats.FireSound and ( not WeaponStats.LongFiringSound or not Part:FindFirstChild( "FireSound" ) ) then
 		
-		local FireSound = GunStats.FireSound:Clone( )
+		local FireSound = WeaponStats.FireSound:Clone( )
 		
 		FireSound.Name = "FireSound"
 		
 		FireSound.Parent = Part
 		
-		if not GunStats.LongFiringSound then
+		if not WeaponStats.LongFiringSound then
 			
 			FireSound.Ended:Connect( function ( ) wait( ) FireSound:Destroy( ) end )
 			
@@ -364,7 +373,7 @@ Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, U
 	
 	if type( User ) == "userdata" and User:FindFirstChild( "S2" ) and User.S2:FindFirstChild( "VIPSparkles" ) and User.S2.VIPSparkles.Value then
 		
-		if not Part:FindFirstChild( "Sparkles" ) then
+		if not Part:FindFirstChildWhichIsA( "Sparkles" ) then
 			
 			local Sparkles = Instance.new( "Sparkles" )
 			
@@ -416,7 +425,7 @@ Core.Visuals.ShotSound = Core.SharedVisuals.Event:Connect( function ( StatObj, U
 			
 		end
 		
-		local SizeMult = math.clamp( math.abs( GunStats.Damage )  * ( GunStats.Range / 600 ), 60, 140 ) / 3
+		local SizeMult = math.clamp( math.abs( WeaponStats.Damage )  * ( WeaponStats.Range / 600 ), 60, 140 ) / 3
 		
 		Part.FireParticle.Size = NumberSequence.new(
 			
@@ -454,7 +463,7 @@ Menu:AddSetting{Name = "GunBarrelEffects", Text = "Gun Shot Particles", Default 
 	GunBarrelEffectsEnabled = Val
 end}
 
-local function RenderSegment( User, GunStats, Start, End, Thickness )
+local function RenderSegment( User, WeaponStats, Start, End, Thickness )
 	
 	local Bullet = Instance.new( "BoxHandleAdornment" )
 	
@@ -464,9 +473,9 @@ local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
 	local Col = User.TeamColor.Color
 	
-	if GunStats.BulletColor or Core.BulletColor then
+	if WeaponStats.BulletColor or Core.BulletColor then
 		
-		Col = GunStats.BulletColor or Core.BulletColor
+		Col = WeaponStats.BulletColor or Core.BulletColor
 		
 	elseif type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) then
 		
@@ -476,11 +485,11 @@ local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
 	Bullet.Color3 = Color3.new( Col.r * 3, Col.g * 3, Col.b * 3 )
 	
-	Bullet.Transparency = GunStats.BulletTransparency or Core.BulletTransparency or 0.2
+	Bullet.Transparency = WeaponStats.BulletTransparency or Core.BulletTransparency or 0.2
 	
 	local Dist = ( Start - End ).magnitude
 	
-	local Size = ( GunStats.BulletSize or Core.BulletSize or 0.25 ) * Thickness
+	local Size = ( WeaponStats.BulletSize or Core.BulletSize or 0.25 ) * Thickness
 	
 	Bullet.Size = Vector3.new( Size, Size, Dist )
 		
@@ -492,7 +501,7 @@ local function RenderSegment( User, GunStats, Start, End, Thickness )
 	
 end
 
-local function RenderLightning( User, GunStats, Start, End, Thickness, BranchFactor, Jaggedness, Iterations )
+local function RenderLightning( User, WeaponStats, Start, End, Thickness, BranchFactor, Jaggedness, Iterations )
 	
 	local Theta = math.atan( 2 * Jaggedness )
 	
@@ -534,11 +543,11 @@ local function RenderLightning( User, GunStats, Start, End, Thickness, BranchFac
 				
 				local Distl = Dist * Thickness
 				
-				Parts[ #Parts + 1 ] = RenderSegment( User, GunStats, v[ 1 ], MidPoint, 1 )
+				Parts[ #Parts + 1 ] = RenderSegment( User, WeaponStats, v[ 1 ], MidPoint, 1 )
 				
-				Parts[ #Parts + 1 ] = RenderSegment( User, GunStats, MidPoint, v[ 2 ], 1 )
+				Parts[ #Parts + 1 ] = RenderSegment( User, WeaponStats, MidPoint, v[ 2 ], 1 )
 				
-				Parts[ #Parts + 1 ] = RenderSegment( User, GunStats, MidPoint, Branch, BranchLen * Thickness )
+				Parts[ #Parts + 1 ] = RenderSegment( User, WeaponStats, MidPoint, Branch, BranchLen * Thickness )
 				
 			end
 			
@@ -550,17 +559,17 @@ local function RenderLightning( User, GunStats, Start, End, Thickness, BranchFac
 	
 end
 
-Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, _, Humanoids, Time )
+Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, _, Humanoids )
+	print(StatObj, User.Name, Barrel)
+	if not Barrel then return end
 	
-	if not Barrel or not StatObj or not StatObj.Parent then return end
+	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	local GunStats = Core.GetGunStats( StatObj )
+	if WeaponStats.NoBulletEffect then return end
 	
-	if GunStats.NoBulletEffect then return end
-	
-	if GunStats.BulletType and GunStats.BulletType.Name == "Lightning" then
+	if WeaponStats.BulletType and WeaponStats.BulletType.Name == "Lightning" then
 		
-		local Parts = RenderLightning( User, GunStats, Barrel.Position, End, 0.4, 0.2, 0.05, 4 )
+		local Parts = RenderLightning( User, WeaponStats, Barrel.Position, End, 0.4, 0.2, 0.05, 4 )
 		
 		RunService.RenderStepped:wait( )
 		
@@ -592,9 +601,9 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 			
 		end
 		
-		Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		Core.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
-	elseif GunStats.BulletType and GunStats.BulletType.Name == "Laser" then
+	elseif WeaponStats.BulletType and WeaponStats.BulletType.Name == "Laser" then
 		
 		local Bullet = Instance.new( "BoxHandleAdornment" )
 		
@@ -604,9 +613,9 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		local Col = User.TeamColor.Color
 		
-		if GunStats.BulletColor or Core.BulletColor then
+		if WeaponStats.BulletColor or Core.BulletColor then
 			
-			Col = GunStats.BulletColor or Core.BulletColor
+			Col = WeaponStats.BulletColor or Core.BulletColor
 			
 		elseif type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) then
 			
@@ -616,11 +625,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Color3 = Color3.new( Col.r * 3, Col.g * 3, Col.b * 3 )
 		
-		Bullet.Transparency = GunStats.BulletTransparency or Core.BulletTransparency or 0.4
+		Bullet.Transparency = WeaponStats.BulletTransparency or Core.BulletTransparency or 0.4
 		
 		Debris:AddItem( Bullet, 3 )
 		
-		local Size = GunStats.BulletSize or Core.BulletSize or 0.25
+		local Size = WeaponStats.BulletSize or Core.BulletSize or 0.25
 		
 		Bullet.Size = Vector3.new( Size, Size, ( Barrel.Position - End ).magnitude )
 		
@@ -630,9 +639,9 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Parent = workspace.CurrentCamera
 		
-		Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		Core.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
-		for a = 1, GunStats.BulletType.VisibleFrames or 3 do
+		for a = 1, WeaponStats.BulletType.VisibleFrames or 3 do
 			
 			RunService.Heartbeat:wait( )
 			
@@ -644,11 +653,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 	else
 		
-		local Size = GunStats.BulletSize or Core.Config.BulletSize or 0.27
+		local Size = WeaponStats.BulletSize or Core.Config.BulletSize or 0.27
 		
-		local Speed = GunStats.BulletSpeed or Core.Config.BulletSpeed or 3200
+		local Speed = WeaponStats.BulletSpeed or Core.Config.BulletSpeed or 3200
 		
-		local Length = math.min(  Speed / ( 60 + math.abs( GunStats.BulletLengthMod or Core.Config.BulletLengthMod or 0 ) ), Speed / 60 )
+		local Length = math.min(  Speed / ( 60 + math.abs( WeaponStats.BulletLengthMod or Core.Config.BulletLengthMod or 0 ) ), Speed / 60 )
 		
 		local CF = CFrame.new( Barrel.Position, End )
 		
@@ -662,11 +671,11 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 		
 		Bullet.Adornee = workspace.Terrain
 		
-		Bullet.Color3 = GunStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Core.Config.BulletColor or User.TeamColor.Color
+		Bullet.Color3 = WeaponStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Core.Config.BulletColor or User.TeamColor.Color
 		
 		Bullet.Color3 = Color3.new( Bullet.Color3.r * 3, Bullet.Color3.g * 3, Bullet.Color3.b * 3 )
 		
-		Bullet.Transparency = GunStats.BulletTransparency or Core.Config.BulletTransparency or 0.05
+		Bullet.Transparency = WeaponStats.BulletTransparency or Core.Config.BulletTransparency or 0.05
 		
 		Debris:AddItem( Bullet, 3 )
 		
@@ -684,7 +693,7 @@ Core.Visuals.BulletEffect = Core.SharedVisuals.Event:Connect( function ( StatObj
 				
 				Arrived = true
 				
-				Core.BulletArrived:Fire( User, GunStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+				Core.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 				
 			end
 			
@@ -738,7 +747,7 @@ if Menu.Tabs[1].Invalidate then
 	Menu.Tabs[1]:Invalidate()
 end
 
-Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
+Core.Events.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
 	
 	if not BulletType or BulletType.Name == "Kinectic" or BulletType.Name == "Laser" then
 		
@@ -844,7 +853,7 @@ Core.Visuals.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, B
 	
 end )
 
-Core.Visuals.BulletImpactSound = Core.BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
+Core.Events.BulletImpactSound = Core.BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
 	
 	if not Hit then return end
 	

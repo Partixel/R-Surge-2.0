@@ -1,6 +1,6 @@
 local Values = { }
 
-Values.FireModes = { "Semi" }
+Values.WeaponModes = { "Semi" }
 
 Values.BulletType = { Name = 'Lightning' }
 

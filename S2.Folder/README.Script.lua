@@ -12,7 +12,7 @@
 		      THE EXAMPLE WEAPONS SHOW HOW TO SET UP A WEAPON USING
 			    SURGE 2.0 AS WELL AS GIVING A BASE TO START WITH
 			
-				  MOVE THE GunStats FOLDER TO ReplicatedStorage
+				  MOVE THE WeaponStats FOLDER TO ReplicatedStorage
 				
 				----------------------------------------------
 				
@@ -39,7 +39,7 @@ IgnoreFunction( Part ) -- A function that returns true when the gun should ignor
 
 -- Values --
 
-[+] FireModes -- A table of FireModes a gun has ( "Auto", "Burst", "Semi", "Safety" OR { Name = "Burst", Automatic = false, Shots = 3 } )
+[+] WeaponModes -- A table of WeaponModes a gun has ( "Auto", "Burst", "Semi", "Safety" OR { Name = "Burst", Automatic = false, Shots = 3 } )
 [+] Damage -- Damage of the gun
 [+] FireRate -- How many clicks will be handled in a second
 [+] MaxAmmo -- The max ammo the gun has, -1 is infinite

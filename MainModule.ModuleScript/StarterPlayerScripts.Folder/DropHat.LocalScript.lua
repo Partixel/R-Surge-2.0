@@ -14,13 +14,13 @@ KBU.AddBind{ Name = "Drop_hat", Category = "Surge 2.0", Callback = function ( Be
 
 		local Found
 
-		local Hats = Players.LocalPlayer.Character:GetChildren( )
+		for _, Hat in ipairs(Players.LocalPlayer.Character:GetChildren( )) do
 
-		for a = 1, #Hats do
-
-			if Hats[ a ]:IsA( "Accessory" ) then
+			if Hat:IsA( "Accessory" ) then
 
 				Found = true
+				
+				break
 
 			end
 

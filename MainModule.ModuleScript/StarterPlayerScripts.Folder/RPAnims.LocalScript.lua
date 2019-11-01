@@ -192,7 +192,7 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 	
 end, Key = Enum.KeyCode.U, ToggleState = true, OffOnDeath = true, NoHandled = true }
 
-Core.WeaponSelected.Event:Connect( function ( StatObj, User )
+Core.WeaponSelected.Event:Connect( function ( StatObj )
 	
 	if not StatObj then return end
 	
