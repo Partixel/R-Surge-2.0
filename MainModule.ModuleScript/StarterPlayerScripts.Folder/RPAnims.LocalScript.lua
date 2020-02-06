@@ -66,7 +66,7 @@ KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if not Salute then return false end
 	
-	if SDebounce then return SLast end
+	if Began and SDebounce then return SLast end
 	
 	if Began then
 		
@@ -106,7 +106,7 @@ KBU.AddBind{ Name = "At_ease", Category = "Surge 2.0", Callback = function ( Beg
 	
 	if not AtEase then return false end
 	
-	if ADebounce then return ALast end
+	if Began and ADebounce then return ALast end
 	
 	if Began then
 		
@@ -146,7 +146,7 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 		
 		Core.PreventCrouch[ "Surrender" ] = nil
 		
-		StarterGui:SetCoreGuiEnabled( Enum.CoreGuiType.Backpack, Surrendered )
+		Core.SetBackpackDisabled("Surrender", false)
 		
 		Surrendered = nil
 		
@@ -170,9 +170,7 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 		
 		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowSurrender == false then return false end
 		
-		Surrendered = StarterGui:GetCoreGuiEnabled( Enum.CoreGuiType.Backpack )
-		
-		StarterGui:SetCoreGuiEnabled( Enum.CoreGuiType.Backpack, false )
+		Core.SetBackpackDisabled("Surrender", true)
 		
 		KBU.SetToggle( "Salute", false )
 		

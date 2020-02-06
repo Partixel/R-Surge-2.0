@@ -57,7 +57,7 @@ return {
 					end
 					Materials = nil
 				end
-			else
+			elseif not Materials then
 				Materials = { }
 				MaterialsEvent = workspace.DescendantAdded:Connect(function(Obj)
 					if Obj:IsA("BasePart") and not SpecialMats[Obj.Material] and not CollectionService:HasTag(Obj, "s2color") and not CollectionService:HasTag(Obj, "s2forcematerial") then
@@ -88,7 +88,7 @@ return {
 					end
 					SpecialMaterials = nil
 				end
-			else
+			elseif not SpecialMaterials then
 				SpecialMaterials = { }
 				SpecialMaterialsEvent = workspace.DescendantAdded:Connect(function(Obj)
 					if Obj:IsA("BasePart") and SpecialMats[Obj.Material] and not CollectionService:HasTag(Obj, "s2color") and not CollectionService:HasTag(Obj, "s2forcematerial") then

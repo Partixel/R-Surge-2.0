@@ -2,42 +2,63 @@ local Players, ContextActionService, CollectionService = game:GetService("Player
 
 local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")) or _G.S20Config, IsServer = game:GetService("RunService"):IsServer()}
 
-if Core.IsServer then
-	local ClientSync = Instance.new("RemoteFunction")
-	ClientSync.Name = "ClientSync"
-	ClientSync.Parent = script
-	ClientSync.OnServerInvoke = function(Plr, ClientTime)
-		return tick()
-	end
-else
+if not Core.IsServer then
 	local ClientSync = script:WaitForChild("ClientSync")
 	coroutine.wrap(function()
 		while true do
-			local StartTime = tick()
+			local StartTime, ServerTime, ClientTime = tick(), ClientSync:InvokeServer(tick()+(_G.ServerOffset or 0)), tick()
 			
-			local ServerTime = ClientSync:InvokeServer(StartTime)
-			
-			local ClientTime = tick()
 			_G.ServerOffset = ServerTime + (ClientTime - StartTime) / 2 - ClientTime
 			
-			wait(30)
+			wait(10)
 		end
 	end)()
 end
 
 Core.WeaponTypes = {}
 Core.Events = {}
-
-function AddWeaponType(Module)
-	local WeaponType = require(Module)(Core)
-	WeaponType.Events = {}
-	WeaponType.AttackEvent = Instance.new("BindableEvent")
-	Core.WeaponTypes[Module.Name] = WeaponType
-end
-
-script.DefaultWeaponTypes.ChildAdded:Connect(AddWeaponType)
-for _, Module in ipairs(script:WaitForChild("DefaultWeaponTypes"):GetChildren()) do
-	AddWeaponType(Module)
+if Core.IsServer then
+	local SharedWeaponTypesFolder = game:GetService("ReplicatedStorage"):WaitForChild("S2"):FindFirstChild("SharedWeaponTypes")
+	if not SharedWeaponTypesFolder then
+		SharedWeaponTypesFolder = Instance.new("Folder")
+		SharedWeaponTypesFolder.Name = "SharedWeaponTypes"
+		SharedWeaponTypesFolder.Parent = game:GetService("ReplicatedStorage"):FindFirstChild("S2")
+	end
+	
+	local function AddWeaponType(Module)
+		local SharedWeaponType
+		if Module:FindFirstChild("Shared") then
+			local Shared = Module.Shared
+			SharedWeaponType = require(Shared)(Core)
+			Shared.Name = Module.Name
+			Shared.Parent = SharedWeaponTypesFolder
+		end
+		local WeaponType = SharedWeaponType and setmetatable(require(Module)(Core), {__index = SharedWeaponType}) or require(Module)(Core)
+		
+		WeaponType.ServerSided = SharedWeaponType == nil or nil
+		WeaponType.Events = {}
+		WeaponType.AttackEvent = Instance.new("BindableEvent")
+		Core.WeaponTypes[Module.Name] = WeaponType
+	end
+	
+	local DefualtWeaponTypes = game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("DefaultWeaponTypes")
+	DefualtWeaponTypes.ChildAdded:Connect(AddWeaponType)
+	for _, Module in ipairs(DefualtWeaponTypes:GetChildren()) do
+		AddWeaponType(Module)
+	end
+else
+	function AddWeaponType(Module)
+		local WeaponType = require(Module)(Core)
+		WeaponType.Events = {}
+		WeaponType.AttackEvent = Instance.new("BindableEvent")
+		Core.WeaponTypes[Module.Name] = WeaponType
+	end
+	
+	local SharedWeaponTypesFolder = game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("SharedWeaponTypes")
+	SharedWeaponTypesFolder.ChildAdded:Connect(AddWeaponType)
+	for _, Module in ipairs(SharedWeaponTypesFolder:GetChildren()) do
+		AddWeaponType(Module)
+	end
 end
 
 local Heartbeat = game:GetService("RunService").Heartbeat
@@ -58,7 +79,6 @@ if Core.IsServer then
 		WeaponStatFolder = Instance.new("Folder")
 		WeaponStatFolder.Name = "WeaponStats"
 		WeaponStatFolder.Parent = game:GetService("ReplicatedStorage")
-		WeaponStatFolder.Name = "WeaponStats"
 	end
 else
 	WeaponStatFolder = game:GetService("ReplicatedStorage"):WaitForChild("WeaponStats")
@@ -78,7 +98,20 @@ function Core.GetWeaponType(StatObj)
 end
 
 function Core.GetWeaponStats(StatObj)
-	return require(WeaponStatFolder:FindFirstChild(StatObj.Value, true))
+	local WeaponStats = require(WeaponStatFolder:FindFirstChild(StatObj.Value, true))
+	if not WeaponStats.Loaded then
+		local Overrides = Core.Config.WeaponTypeOverrides[Core.GetWeaponType(StatObj)]
+		if Core.Config.WeaponTypeOverrides.All then
+			if Overrides then
+				setmetatable(Overrides, {__index = Core.Config.WeaponTypeOverrides.All})
+			else
+				Overrides = Core.Config.WeaponTypeOverrides.All
+			end
+		end
+		setmetatable(WeaponStats, {__index = Overrides})
+		WeaponStats.Loaded = true
+	end
+	return WeaponStats
 end
 
 Core.Weapons = setmetatable({}, {__mode = 'k'})
@@ -106,13 +139,13 @@ function Core.RunSelected()
 		for Weapon, _ in pairs(Core.WeaponTick) do
 			if Weapon.MouseDown then
 				if Weapon.WindupTime == nil or Weapon.WindupTime == 0 then
-					Core.Attack(Weapon)
+					coroutine.wrap(Core.Attack)(Weapon)
 				elseif Weapon.Reloading then
-					if Weapon.Windup or Weapon.WindupSound then
+					if Weapon.Windup then
 						Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0))
 					end
 				elseif Weapon.Windup and Weapon.Windup >= Weapon.WindupTime then
-					Core.Attack(Weapon)
+					coroutine.wrap(Core.Attack)(Weapon)
 				else
 					Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step)
 				end
@@ -124,7 +157,15 @@ function Core.RunSelected()
 					Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0))
 				end
 				
-				if not Needed then
+				if Weapon.MaxHoldTime and Weapon.HoldStart then
+					if (tick() - Weapon.HoldStart) >= Weapon.MaxHoldTime then
+						coroutine.wrap(Core.SetMouseUp)(Weapon)
+					else
+						Needed = true
+					end
+				end
+				
+				if not Weapon.MouseDown and not Needed then
 					Core.WeaponTick[Weapon] = nil
 				end
 			end
@@ -151,7 +192,9 @@ function Core.Setup(StatObj, User)
 		end)
 	}
 	
-	Weapon.WeaponType.Setup(Weapon)
+	if Weapon.WeaponType.Setup then
+		Weapon.WeaponType.Setup(Weapon)
+	end
 	Core.Weapons[StatObj] = Weapon
 	
 	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
@@ -171,6 +214,7 @@ function Core.DestroyWeapon(Weapon)
 	if Weapon.StatObj then
 		Core.WeaponDeselected:Fire(Weapon.StatObj)
 		Core.Weapons[Weapon.StatObj] = nil
+		Core.WeaponTick[Weapon] = nil
 	
 		for a, b in pairs(Weapon.Events) do
 			Weapon.Events[a]:Disconnect()
@@ -191,7 +235,7 @@ end
 Core.WeaponSelected = Instance.new("BindableEvent")
 Core.WeaponSelected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
-	if not Weapon.ServerPlaceholder then
+	if not Weapon.Placeholder then
 		if not Weapon.LastClick or Weapon.LastClick < tick() + (Weapon.SelectDelay or 0.2) then
 			Weapon.LastClick = tick() + (Weapon.SelectDelay or 0.2)
 		end
@@ -223,7 +267,7 @@ end)
 Core.WeaponDeselected = Instance.new("BindableEvent")
 Core.WeaponDeselected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
-	if not Weapon.ServerPlaceholder then
+	if not Weapon.Placeholder then
 		if Core.Selected[Weapon.User] then
 			Core.Selected[Weapon.User][Weapon] = nil
 			if not next(Core.Selected[Weapon.User]) then
@@ -231,11 +275,12 @@ Core.WeaponDeselected.Event:Connect(function(StatObj)
 			end
 		end
 		
-		Core.WeaponTick[Weapon] = nil
-		Weapon.MouseDown = nil
+		if Weapon.MouseDown then
+			Core.EndAttack(Weapon)
+		end
 		
 		if not Weapon.ReloadWhileUnequipped then
-			Weapon.Reloading = nil
+			Weapon.Reloading = false
 		end
 	
 		if Weapon.ReloadDelay then
@@ -246,6 +291,14 @@ Core.WeaponDeselected.Event:Connect(function(StatObj)
 			Core.SetWindup(Weapon, 0)
 		end
 	end
+	
+	if Weapon.HoldStart then
+		if not Weapon.Placeholder then
+			Core.HoldEnd:Fire(Weapon.StatObj)
+		end
+		Weapon.HoldStart = nil
+	end
+	
 	if Weapon.WeaponType.Deselected then
 		Weapon.WeaponType.Deselected(Weapon)
 	end
@@ -260,42 +313,99 @@ function Core.Reload(Weapon)
 		Weapon.WeaponType.Reload(Weapon)
 	end
 end
+function Core.EmptyAmmo(Weapon)
+	if not next(Core.PreventReload) and Weapon.WeaponType.EmptyAmmo then
+		Weapon.WeaponType.EmptyAmmo(Weapon)
+	end
+end
 
 Core.PreventAttack = {}
 function Core.CanAttack(Weapon)
-	return not Weapon.PreventAttack and not (next(Core.PreventAttack) or (typeof(Weapon.User) == "Instance" and Weapon.User:IsA("Player") and not Weapon.User.Character) or (Weapon.User.Character and Weapon.User.Character:FindFirstChild("Humanoid") and Weapon.User.Character.Humanoid:GetState() == Enum.HumanoidStateType.Dead))
+	return not Weapon.PreventAttack and not next(Core.PreventAttack) and (typeof(Weapon.User) ~= "Instance" or (Weapon.User.Character and Weapon.User.Character:FindFirstChildOfClass("Humanoid") and Weapon.User.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead))
 end
 
 function Core.Attack(Weapon)
 	if Core.CanAttack(Weapon) then
-		Weapon.WeaponType.Attack(Weapon)
+		local Ran = Weapon.WeaponType.Attack(Weapon)
+		if Weapon.AttackOnMouseUp and not Ran then
+			Core.EndAttack(Weapon)
+		end
 	end
 end
 
 Core.AttackEnded = Instance.new("BindableEvent")
 function Core.EndAttack(Weapon)
 	Weapon.MouseDown = nil
-	if not Weapon.WeaponType then
-		print(Weapon)
-		print(Weapon.StatObj)
-	end
+	Weapon.HoldStart = nil
 	if Weapon.WeaponType.EndedAttack then
 		Weapon.WeaponType.EndAttack(Weapon)
 	end
 	Core.AttackEnded:Fire(Weapon.StatObj)
 end
 
+if not Core.IsServer then
+	Core.HoldReplication = script:WaitForChild("HoldReplication")
+end
+
+Core.HoldStart = Instance.new("BindableEvent")
+Core.HoldEnd = Instance.new("BindableEvent")
 function Core.SetMouseDown(Weapon)
-	Weapon.MouseDown = tick()
-	if Weapon.LastClick and Weapon.LastClick < Weapon.MouseDown then
-		Weapon.LastClick = nil
+	if Weapon.AttackOnMouseUp then
+		Weapon.HoldStart = tick()
+		if Weapon.HeldDamagePctIncreasePerSecond then
+			if Core.IsServer then		
+				coroutine.wrap(Core.HandleHoldReplication)(Weapon.User, Weapon.StatObj, tick( ))
+			else
+				Core.HoldReplication:FireServer(Weapon.StatObj, tick( ) + _G.ServerOffset)
+			end
+		end
+		Core.HoldStart:Fire(Weapon.StatObj)
+		if Weapon.MaxHoldTime then
+			Core.WeaponTick[Weapon] = true
+		end
+	else
+		Weapon.MouseDown = tick()
+		if Weapon.LastClick and Weapon.LastClick < Weapon.MouseDown then
+			Weapon.LastClick = nil
+		end
+		Core.WeaponTick[Weapon] = true
 	end
-	Core.WeaponTick[Weapon] = true
+end
+
+function Core.SetMouseUp(Weapon)
+	if Weapon.AttackOnMouseUp then
+		if Weapon.HoldStart then
+			Core.HoldEnd:Fire(Weapon.StatObj)
+			if (Weapon.FireOnMaxHold or not Weapon.MaxHoldTime or (tick() - Weapon.HoldStart) < Weapon.MaxHoldTime) and (not Weapon.MinHoldTime or (tick() - Weapon.HoldStart) > Weapon.MinHoldTime) then
+				Weapon.MouseDown = tick()
+				if Weapon.LastClick and Weapon.LastClick < Weapon.MouseDown then
+					Weapon.LastClick = nil
+				end
+				Core.WeaponTick[Weapon] = true
+			else
+				Weapon.HoldStart = nil
+				if Weapon.HeldDamagePctIncreasePerSecond then
+					if Core.IsServer then		
+						coroutine.wrap(Core.HandleHoldReplication)(Weapon.User, Weapon.StatObj)
+					else
+						Core.HoldReplication:FireServer(Weapon.StatObj)
+					end
+				end
+			end
+		end
+	elseif Weapon.MouseDown then
+		Core.EndAttack(Weapon)
+	end
 end
 
 Core.WindupChanged = Instance.new("BindableEvent")
 function Core.SetWindup(Weapon, Value)
-	local Started = not Weapon.Windup
+	local Started
+	if not Weapon.Windup then
+		Started = true
+	elseif Value == 0 then
+		Started = false
+	end
 	Weapon.Windup = Value ~= 0 and Value or nil
 	Core.WindupChanged:Fire(Weapon.StatObj, Weapon.Windup, Started)
 end
@@ -306,14 +416,7 @@ function Core.GetWeaponMode(Weapon)
 end
 
 Core.WeaponModeChanged = Instance.new("BindableEvent")
-if Core.IsServer then
-	Core.ReplicateWeaponMode = Instance.new("RemoteEvent")
-	Core.ReplicateWeaponMode.Name = "ReplicateWeaponMode"
-	Core.ReplicateWeaponMode.OnServerEvent:Connect(function(Plr, StatObj, Mode)
-		Core.SetWeaponMode(Core.GetWeapon(StatObj), Mode)
-	end)
-	Core.ReplicateWeaponMode.Parent = script
-else
+if not Core.IsServer then
 	Core.ReplicateWeaponMode = script:WaitForChild("ReplicateWeaponMode")
 end
 Core.SetWeaponMode = function(Weapon, Mode)
@@ -336,7 +439,7 @@ end
 ----[[RAYCAST]]----
 
 function Core.IgnoreFunction(Part)
-    return not CollectionService:HasTag(Part, "nopen") and (not Part or not Part.Parent or CollectionService:HasTag(Part, "forcepen") or Part.Parent:IsA("Accoutrement") or Part.Transparency >= 1 or (Core.GetValidDamageable(Part) == nil and Part.CanCollide == false)) or false
+    return not CollectionService:HasTag(Part, "nopen") and (not Part or not Part.Parent or CollectionService:HasTag(Part, "forcepen") or Part:FindFirstAncestorWhichIsA("Accoutrement") or Part.Transparency >= 1 or (Core.GetValidDamageable(Part) == nil and Part.CanCollide == false) or (Core.GetValidDamageable(Part) and Part:FindFirstAncestorOfClass("Tool"))) or false
 
 end
 
@@ -345,13 +448,43 @@ function Core.FindPartOnRayWithIgnoreFunction(R, IgnoreFunction, Ignore, IgnoreW
 	local Hit, Pos, Normal, Material
 	while true do
 		Hit, Pos, Normal, Material = workspace:FindPartOnRayWithIgnoreList(R, Ignore, false, IgnoreWater == nil and true or IgnoreWater)
+		--[[if IgnoreWater == true then
+			local Color = BrickColor.Random()
+			local C = Instance.new("ConeHandleAdornment")
+			C.Adornee = workspace.Terrain
+			C.CFrame = CFrame.new(R.Origin, Pos)
+			C.Radius = 0.3
+			C.Height = 0.3
+			C.Color3 = Color.Color
+			C.Parent = workspace
+			game.Debris:AddItem(C, 10)
+			local L = Instance.new("BoxHandleAdornment")
+			L.Adornee = workspace.Terrain
+			L.CFrame = CFrame.new(R.Origin + (Pos - R.Origin) / 2, Pos)
+			L.Size = Vector3.new(.1, .1, (Pos - R.Origin).magnitude)
+			L.Color3 = Color.Color
+			L.Parent = workspace
+			game.Debris:AddItem(L, 10)
+		end]]
 		if not Hit or not IgnoreFunction(Hit) then
 			return Hit, Pos, Normal, Material
 		end
-		
 		Ignore[#Ignore + 1] = Hit
-		R = Ray.new(Pos - UnitDirection, UnitDirection * (R.Direction.magnitude - ((Pos - UnitDirection) - R.Origin).magnitude))
+		R = Ray.new(Pos - UnitDirection * 0.01, UnitDirection * (R.Direction.magnitude - ((Pos - UnitDirection) - R.Origin).magnitude))
 	end
+end
+
+----[[MISC]]----
+
+function Core.ClosestPoint(Part, Point)
+	Point = Part.CFrame:PointToObjectSpace(Point)
+    if math.abs(Point.X) > Part.Size.X / 2 then
+        return Vector3.new(Part.Size.X / 2 * math.sign(Point.X), math.clamp(Point.Y, -Part.Size.Y / 2, Part.Size.Y / 2), math.clamp(Point.Z, -Part.Size.Z / 2, Part.Size.Z / 2))
+    elseif math.abs(Point.Y) > Part.Size.Y / 2 then
+        return Vector3.new(math.clamp(Point.X, -Part.Size.X / 2, Part.Size.X / 2), Part.Size.Y / 2 * math.sign(Point.Y), math.clamp(Point.Z, -Part.Size.Z / 2, Part.Size.Z / 2))
+    else
+        return Vector3.new(math.clamp(Point.X, -Part.Size.X / 2, Part.Size.X / 2), math.clamp(Point.Y, -Part.Size.Y / 2, Part.Size.Y / 2), Part.Size.Z / 2 * math.sign(Point.Z))
+    end
 end
 
 ----[[DAMAGE]]----
@@ -388,7 +521,7 @@ function Core.StartStun(StatObj, WeaponStats, User, Hit, Damageable)
 	end
 end
 
-function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable)
+function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, RelativePosition)
 	local Doused
 	local Fire = Instance.new("Fire" , Hit)
 	
@@ -407,7 +540,7 @@ function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable)
 			break
 		end
 		
-		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, WeaponStats.BulletType.DamageType or Core.DamageType.Fire, 0)
+		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, WeaponStats.BulletType.DamageType or Core.DamageType.Fire, nil, RelativePosition)
 		if not Damageable then break end
 		
 		wait(0.3)
@@ -422,7 +555,7 @@ end
 function Core.DoExplosion(User, WeaponStat, Position, Options)
 	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat)
 	local DamageType = Options.DamageType or Core.DamageType.Explosive
-	local Type = type(Options.Type) == "function" and Options.Type or Options.Type == "Stun" and Core.BulletTypes or Options.Type == "Fire" and Core.StartFireDamage
+	local Type = type(Options.Type) == "function" and Options.Type or Options.Type == "Stun" and Core.StartStun or Options.Type == "Fire" and Core.StartFireDamage
 	
 	local Damageables = {}
 	
@@ -437,7 +570,7 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 					Damageables[Damageable] = {Part, Dist, Damage}
 				end
 			end
-		elseif Core.IsServer and Dist <= JointRadius then
+		elseif Core.IsServer and Dist <= JointRadius and not CollectionService:HasTag(Part, "s2_permjoints") then
 			-----------------------------------------------------------------check for both parts in range of joints
 			Part:BreakJoints()
 			--[[Part.CFrame = Part.CFrame + Vector3.new(0, 0.01, 0)-----------------------REMOVE THIS ONCE https://devforum.roblox.com/t/pgs-changing-velocity-of-a-part-doesnt-wake-it/73708 IS FIXED PLAES FASE GSDFG DS GHSE EGFD SSGDF GSFDGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -449,9 +582,10 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 		local EstimatedDamageables = {}
 		for Damageable, Info in pairs(Damageables) do
 			if Core.IsServer then
-				Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], WeaponStat, DamageType, Info[2], Info[3])
+				local ClosestPoint = Core.ClosestPoint(Info[1], Position)
+				Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], WeaponStat, DamageType, Info[2], Info[3], ClosestPoint)
 				if Type then
-					Type(WeaponStat, WeaponStats, User, Info[1], Damageable)
+					Type(WeaponStat, WeaponStats, User, Info[1], Damageable, ClosestPoint)
 				end
 			end
 			EstimatedDamageables[#EstimatedDamageables + 1] = {Damageable, Info[3]}
@@ -461,20 +595,34 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 	end
 end
 
+Core.LastDeath = setmetatable({}, {__mode = "k"})
 Core.Damageables = setmetatable({}, {__mode = "k"})
 Core.DamageableAdded = Instance.new("BindableEvent")
-workspace.DescendantAdded:Connect(function(Obj)
-	if not Core.Damageables[Obj] and (Obj:IsA("Humanoid") or (Obj:IsA("DoubleConstrainedValue") and Obj.Name == "Health")) then
-		Core.Damageables[Obj] = true
-		Core.DamageableAdded:Fire(Obj)
+Core.DamageableDied = Instance.new("BindableEvent")
+local function AddDamageable(Damageable)
+	if not Core.Damageables[Damageable] and (Damageable:IsA("Humanoid") or (Damageable:IsA("DoubleConstrainedValue") and Damageable.Name == "Health")) then
+		Core.Damageables[Damageable] = true
+		Core.DamageableAdded:Fire(Damageable)
+		if Damageable:IsA("Humanoid") then
+			Damageable.Died:Connect(function()
+				Core.LastDeath[Damageable] = tick()
+				Core.DamageableDied:Fire(Damageable)
+			end)
+		else
+			local Ev; Ev = Damageable.Changed:Connect(function()
+				if Damageable.Value <= 0 then
+					Core.LastDeath[Damageable] = tick()
+					Core.DamageableDied:Fire(Damageable)
+					Ev:Disconnect( )
+				end
+			end)
+		end
 	end
-end)
+end
+workspace.DescendantAdded:Connect(AddDamageable)
 
-for _, Obj in ipairs(workspace:GetDescendants()) do
-	if not Core.Damageables[Obj] and (Obj:IsA("Humanoid") or (Obj:IsA("DoubleConstrainedValue") and Obj.Name == "Health")) then
-		Core.Damageables[Obj] = true
-		Core.DamageableAdded:Fire(Obj)
-	end
+for _, Damageable in ipairs(workspace:GetDescendants()) do
+	AddDamageable(Damageable)
 end
 
 Core.DamageType = {
@@ -487,9 +635,7 @@ Core.DamageType = {
 }
 
 function Core.GetTeamInfo(Obj)
-	if type(Obj) == "table" then
-		return Obj.TeamColor, Obj.Neutral, Obj.Character
-	elseif Obj:IsA("Player") then
+	if type(Obj) == "table" or Obj:IsA("Player") then
 		return Obj.TeamColor, Obj.Neutral, Obj.Character
 	end
 
@@ -503,16 +649,16 @@ function Core.GetTeamInfo(Obj)
 	end
 end
 
-function Core.CheckTeamkill(P1, P2, AllowTeamKill, InvertTeamKill)
-	if (AllowTeamKill == nil and Core.Config.AllowTeamKill) or AllowTeamKill then return true end
+function Core.CheckTeamkill(WeaponStats, P1, P2)
+	if WeaponStats.AllowTeamKill then return true end
 	
 	local TC1, N1, Char1 = Core.GetTeamInfo(P1)
 	local TC2, N2, Char2 = Core.GetTeamInfo(P2)
 	local TeamKill
 	if Char1 == Char2 then
-		TeamKill = Core.Config.AllowSelfDamage
+		TeamKill = WeaponStats.AllowSelfDamage
 	elseif N1 and N2 then
-		TeamKill = Core.Config.AllowNeutralTeamKill
+		TeamKill = WeaponStats.AllowNeutralTeamKill
 	elseif (N1 and not N2) or (not N1 and N2) then
 		TeamKill = true
 	elseif TC1 ~= TC2 then
@@ -525,7 +671,7 @@ function Core.CheckTeamkill(P1, P2, AllowTeamKill, InvertTeamKill)
 		end
 	end
 	
-	if InvertTeamKill then
+	if WeaponStats.InvertTeamKill then
 		return not TeamKill
 	else
 		return TeamKill
@@ -533,7 +679,7 @@ function Core.CheckTeamkill(P1, P2, AllowTeamKill, InvertTeamKill)
 end
 
 function Core.GetTopDamageable(Damageable)
-	while Damageable.Parent:IsA("Humanoid") or Damageable.Parent.Name == "Health" do
+	while Damageable.Parent and (Damageable.Parent:IsA("Humanoid") or Damageable.Parent.Name == "Health") do
 		Damageable = Damageable.Parent
 	end
 	return Damageable
@@ -559,7 +705,7 @@ end
 
 function Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance)
 	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
-	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(Attacker, Damageable, WeaponStats.AllowTeamKill, WeaponStats.InvertTeamKill) and (not Distance or Distance < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
+	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(WeaponStats, Attacker, Damageable) and (not Distance or Distance < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
 end
 
 function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
@@ -567,123 +713,32 @@ function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
 	local Damage = WeaponStats.Damage
 	
 	local HitName = Hit.Name:lower()
+	
 	if HitName:find("head") or HitName == "uppertorso" or CollectionService:HasTag(Hit, "s2headdamage") then
-		print(Damage, WeaponStats.HeadDamageMultiplier or Core.Config.HeadDamageMultiplier)
-		Damage = Damage * (WeaponStats.HeadDamageMultiplier or Core.Config.HeadDamageMultiplier)
+		Damage = Damage * WeaponStats.HeadDamageMultiplier
 	elseif HitName:find("leg") or HitName:find("arm") or HitName:find("hand") or HitName:find("foot") or CollectionService:HasTag(Hit, "s2limbdamage") then
-		Damage = Damage * (WeaponStats.LimbDamageMultiplier or Core.Config.LimbDamageMultiplier)
+		Damage = Damage * WeaponStats.LimbDamageMultiplier
+	end
+	
+	if WeaponStats.HeldDamagePctIncreasePerSecond then
+		Damage = Damage + (Damage * math.min(math.max(tick() - WeaponStats.HoldStart - (WeaponStats.MinHoldTime or 0), 0) * WeaponStats.HeldDamagePctIncreasePerSecond, (WeaponStats.MaxHeldDamagePct or math.huge)))
 	end
 
 	if Distance then
-		if WeaponStats.InvertDistanceModifier or (WeaponStats.InvertDistanceModifier ~= false and Core.Config.InvertDistanceModifier) then
-			Damage = Damage * (1 - Distance) * ((WeaponStats.DistanceDamageModifier or WeaponStats.DistanceModifier) or Core.Config.DistanceDamageModifier or 1)
+		if WeaponStats.InvertDistanceModifier then
+			Damage = Damage * (1 - Distance) * WeaponStats.DistanceDamageModifier
 		else
-			Damage = Damage * (1 - Distance * ((WeaponStats.DistanceDamageModifier or WeaponStats.DistanceModifier) or Core.Config.DistanceDamageModifier or 1))
+			Damage = Damage * (1 - Distance * WeaponStats.DistanceDamageModifier)
 		end
 	end
 	
-	return Damage
+	return Damage * WeaponStats.GlobalDamageMultiplier
 end
 
-if Core.IsServer then
-	local ClientDamage = Instance.new("RemoteEvent")
-	ClientDamage.Name = "ClientDamage"
-	ClientDamage.OnServerEvent:Connect(function(Attacker, Time, Hit, WeaponStat, DamageType, Distance)
-		if tick() - Time > 1 then
-			warn(Attacker.Name .. " took too long to send shot packet, discarding! - " .. (tick() - Time))
-		else
-			Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance)
-		end
-	end)
-	ClientDamage.Parent = script
-	--Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits{Damageable, Damage}
-	Core.ObjDamaged = Instance.new("BindableEvent")
-	Core.DamageInfos = setmetatable({}, {__mode = "k"})
-	function Core.ApplyDamage(Attacker, Damageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, RemainingDamage, DamageSplits)
-		local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
-		local Damage = Dmg * (RemainingDamage or 1)
-		
-		local Resistance = 1
-		if Damageable:FindFirstChild("Resistances") then
-			for _, ResistanceObj in ipairs(Damageable.Resistances:GetChildren()) do
-				if ResistanceObj.Name == WeaponStat.Value or ResistanceObj.Name == DamageType or ResistanceObj.Name == "All" then
-					Resistance = Resistance * ResistanceObj.Value
-				end
-			end
-		end
-		Resistance = Resistance * (WeaponStats.Resistances and WeaponStats.Resistances[DamageType] or Core.Config.Resistances and Core.Config.Resistances[DamageType] or 1)
-		Damage = Damage * Resistance * (WeaponStats.GlobalDamageMultiplier or Core.Config.GlobalDamageMultiplier or 1)
-		
-		if Damage == 0 then return end
-		
-		local Prop, MaxProp
-		if Damageable:IsA("Humanoid") then
-			Prop, MaxProp = "Health", "MaxHealth"
-		else
-			Prop, MaxProp = "Value", "MaxValue"
-		end
-		
-		if Damage < 0 and Damageable[Prop] == Damageable[MaxProp] then
-			Damage = 0
-		else
-			Damage = Damage > 0 and (Damageable[Prop] > Damage and Damage or Damageable[Prop]) or (Damageable[Prop] - Damage < Damageable[MaxProp] and Damage or Damageable[Prop] - Damageable[MaxProp])
-			
-			Damageable[Prop] = Damageable[Prop] - Damage
-			if Damageable[Prop] <= 0 then
-				if Damageable:IsA("Humanoid") then
-					Damageable.HealthChanged:Connect(function()
-						Damageable.Health = 0
-					end)
-				else
-					Damageable:GetPropertyChangedSignal("Value"):Connect(function()
-						Damageable.Value = 0
-					end)
-				end
-			end
-		end
-		
-		if Damage > (Damageable[MaxProp] - (Damageable[MaxProp] / 20)) then
-			CollectionService:AddTag(Damageable, "VitalDamage")
-		end
-		
-		local First = not DamageSplits
-		DamageSplits = DamageSplits or {}
-		if Damage ~= 0 then
-			DamageSplits[#DamageSplits + 1] = {Damageable, Damage}
-		end
-		
-		if Damage ~= Dmg * (RemainingDamage or 1) then
-			if Damage > 0 then
-				local NextDamageable = Damageable.Parent
-				
-				if NextDamageable and not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") and ((NextDamageable:IsA("Humanoid") and NextDamageable.Health > 0) or (NextDamageable.Name == "Health" and NextDamageable.Value > 0)) then
-					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
-				end
-			else
-				local NextDamageable = Damageable:FindFirstChild("Health")
-				
-				if NextDamageable and NextDamageable.Value > 0 and not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") then
-					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
-				end
-			end
-		end
-		
-		if First and next(DamageSplits) then
-			if Players:GetPlayerFromCharacter(Damageable.Parent) then
-				ClientDamage:FireClient(Players:GetPlayerFromCharacter(Core.GetTopDamageable(Damageable).Parent), DamageSplits, Attacker.Name)
-			end
-			
-			if typeof(Attacker) == "Instance" then
-				ClientDamage:FireClient(Attacker, DamageSplits)
-			end
-			
-			Core.ObjDamaged:Fire(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits)
-		end
-	end
-else
+if not Core.IsServer then
 	Core.ClientDamage = script:WaitForChild("ClientDamage")
 	Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, Attacker)
-		if Attacker then
+		if type(Attacker) == "string" then
 			local TotalDamage, Split = 0, ""
 			for i, DamageSplit in ipairs(DamageSplits) do
 				TotalDamage = TotalDamage + DamageSplit[2]
@@ -703,26 +758,39 @@ else
 	end)
 end
 -- returns Damageable if one is found, on server will also do damage
-function Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance)
+function Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance, RelativePosition)
 	local Damageable = Core.GetValidDamageable(Hit)
 	if Damageable and Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance) then
 		local Damage = Core.CalculateDamageFor(Hit, WeaponStat, Distance)
 		if Core.IsServer then
-			Core.ApplyDamage(Attacker, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Hit, WeaponStat, DamageType, Distance, Damage)
+			Core.ApplyDamage(Attacker, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Hit, WeaponStat, DamageType, Distance, Damage, RelativePosition)
 		end
 		return Damageable, Damage
 	end
 end
 
+----[[PLAYER HANDLING]]----
 local function ToolAdded(Plr, Tool)
 	local StatObj = Core.FindWeaponStat(Tool)
 	if StatObj and not Core.Weapons[StatObj] then
-		if Core.IsServer then
+		local WeaponType = Core.GetWeaponType(StatObj)
+		if WeaponType.ServerSided or not Core.IsServer then
+			local Weapon = Core.Setup(StatObj, Plr)
+			if Core.IsServer and not Weapon.ManualFire then
+				Tool.Activated:Connect(function()
+					Core.SetMouseDown(Weapon)
+				end)
+				
+				Tool.Deactivated:Connect(function()
+					Core.SetMouseUp(Weapon)
+				end)
+			end
+		elseif Core.IsServer then
 			local Weapon = setmetatable({
-				ServerPlaceholder = true,
+				Placeholder = true,
 				StatObj = StatObj,
 				User = Plr,
-				WeaponType = Core.GetWeaponType(StatObj),
+				WeaponType = WeaponType,
 				CurWeaponMode = 1,
 			}, {__index = Core.GetWeaponStats(StatObj)})
 			Core.Weapons[StatObj] = Weapon
@@ -732,13 +800,11 @@ local function ToolAdded(Plr, Tool)
 			Tool.Unequipped:Connect(function()
 				Core.WeaponDeselected:Fire(StatObj)
 			end)
-		else
-			Core.Setup(StatObj, Plr)
 		end
 	end
 end
 
-local function HandlePlr(Plr)
+function Core.HandlePlr(Plr)
 	if Plr.Character then
 		for _, Tool in ipairs(Plr.Character:GetChildren()) do
 			ToolAdded(Plr, Tool)
@@ -761,34 +827,13 @@ local function HandlePlr(Plr)
 end
 
 if Core.IsServer then
-	Players.PlayerAdded:Connect(HandlePlr)
-	for _, Plr in ipairs(Players:GetPlayers()) do
-		HandlePlr(Plr)
-	end
-
-	Core.HandleServerReplication = function(User, StatObj, Time, ...)
-		if StatObj and StatObj.Parent then
-			local Weapon = Core.GetWeapon(StatObj)
-			if Weapon then
-				if tick() - Time > 0.6 then
-					warn(User.Name .. " took too long to send shot packet, discarding! - "  .. (tick() - Time))
-				else
-					Weapon.WeaponType.HandleServerReplication(Weapon, User, ...)
-				end
-			else
-				warn(tostring(User) .. " sent an invalid server S2 replication request: Weapon doesn't exist\n", User, StatObj, Time, ...)
-			end
-		else
-			warn(tostring(User) .. " sent an invalid server S2 replication request: StatObj doesn't exist\n", User, StatObj, Time, ...)
-		end
-	end
-	
-	Core.WeaponReplication = Instance.new("RemoteEvent")
-	Core.WeaponReplication.Name = "WeaponReplication"
-	Core.WeaponReplication.OnServerEvent:Connect(Core.HandleServerReplication)
-	Core.WeaponReplication.Parent = script
+	require(game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("ServerCore"))(Core)
 else
-	HandlePlr(Players.LocalPlayer)
+	Core.HandlePlr(Players.LocalPlayer)
+	
+	function Core.HandleServerReplication(User, StatObj, Time, ...)
+		Core.WeaponReplication:FireServer(StatObj, Time + _G.ServerOffset, ...)
+	end
 	
 	Core.LPlrsTarget = {}
 	function Core.GetLPlrsTarget()
@@ -804,12 +849,37 @@ else
 					WeaponType.HandleClientReplication(StatObj, User, ...)
 				end
 			else
-				warn(tostring(User) .. " sent an invalid client S2 replication request: WeaponType doesn't exist\n", User, StatObj, ...)
+				warn(User.Name .. " sent an invalid client S2 replication request: WeaponType doesn't exist\n", User, StatObj, ...)
 			end
 		else
-			warn(tostring(User) .. " sent an invalid client S2 replication request: StatObj doesn't exist\n", User, StatObj, ...)
+			warn(User.Name .. " sent an invalid client S2 replication request: StatObj doesn't exist\n", User, StatObj, ...)
 		end
 	end)
+	
+	Core.DisableBackpack = {}
+	Core.BackpackStateChanged = Instance.new("BindableEvent")
+	local StarterGui = game:GetService("StarterGui")
+	
+	local PrevCoreBackpack
+	function Core.SetBackpackDisabled(Key, State)
+		if State then
+			if not next(Core.DisableBackpack) then
+				Core.BackpackStateChanged:Fire(true)
+				PrevCoreBackpack = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Backpack)
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+			end
+			
+			Core.DisableBackpack[Key] = true
+		else
+			Core.DisableBackpack[Key] = nil
+			
+			if not next(Core.DisableBackpack) then
+				Core.BackpackStateChanged:Fire(false)
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, PrevCoreBackpack)
+				PrevCoreBackpack = nil
+			end
+		end
+	end
 end
 
 return Core

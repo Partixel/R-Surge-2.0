@@ -3,6 +3,10 @@ repeat wait( ) until _G.Interactables
 --[[ Options ( All of the following are optional )
 	
 	Name = StringValue = The name that shows above the GUI
+	
+	Ignore = ObjectValue = This model/part will be ignored when checking if the interactable is obscured
+	
+	MainPart = ObjectValue = This part will be used for the display when in a model instead of the models MainPart
 
 	HoldTime = NumberValue = How long this has to be held for
 	

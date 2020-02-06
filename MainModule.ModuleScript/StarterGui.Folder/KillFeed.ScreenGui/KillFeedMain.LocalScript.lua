@@ -4,7 +4,6 @@ local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" 
 
 local ThemeUtil = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "ThemeUtil" ):WaitForChild( "ThemeUtil" ) )
 
-
 local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("S2"))
 Menu:AddSetting{Name = "KillFeed", Text = "Enables/disables the killfeed", Default = true, Update = function(Options, Val)
 	script.Parent.Container.Visible = Val

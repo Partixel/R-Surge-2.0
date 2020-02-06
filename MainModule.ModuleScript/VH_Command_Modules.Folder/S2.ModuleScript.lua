@@ -250,7 +250,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			TeamKill:Destroy( )
 			
-			Float:Destroy( )
+			SwordFloat:Destroy( )
 						
 			return
 			

@@ -1,4 +1,7 @@
 return {
+	--[[Uses Major.minor.patch format, if a number is specified instead of * it'll restrict the version to that number]]
+	Version = "2.*.*", -- Default - "*.*.*"
+	
 	--[[If the name of an object S2 loads in (e.g. "Hud") is in this table it won't load said object]]
 	Disabled = { }, -- Default - { }
 	
@@ -22,41 +25,41 @@ return {
 		
 	}, -- Default - { }
 	
-	--[[If true, anyone without a team ( 'neutral' ) can kill each other]]
-	AllowNeutralTeamKill = true, -- Default - true
-	
-	--[[If true, anyone can kill anyone - Overrides AllowTeamKillFor]]
-	AllowTeamKill = false, -- Default - false
-	
-	AllowSelfDamage = false, -- Default - false
-	
-	--[[How resistant objects are to each type of damage by default ( 1 = 100% of the normal damage ) ( e.g. { Splash = 1, Fire = 0.5 } )
-	Can be overriden per humanoid by putting a Folder name "Resistances" in it and then a NumberValue with the name of the type you want resistance to
-	Types = Kinectic, Explosive, Slash, Fire, Electricity]]
-	Resistances = { }, -- Default - { }
-	
-	--[[How much damage is taken as a percentage of normal damage( 1 = 100% of damage )]]
-	GlobalDamageMultiplier = 1, -- Default - 1
-	
-	--[[How much extra damage hitting the head does ( 1 = 100% )]]
-	HeadDamageMultiplier = 1.75, -- Default - 1.75
-	
-	--[[How much extra damage hitting a limb does ( 1 = 100% )]]
-	LimbDamageMultiplier = 0.9, -- Default - 0.9
-	
-	--[[How much distance affects the damage of a bullet]]
-	DistanceDamageModifier = 0.2, -- Default - 0.2
-	
 	--------[[ Gameplay Configs ]]--------
 	
-	--[[How large is the screen recoil ( 1 = 100% of the normal recoil ) ( 0 = No recoil )]]
-	ScreenRecoilPercentage = 1, -- Default - 1
-	
-	--[[How much does movement affect accuracy ( 1 = 100% of the normal reduction in accuracy ) ( 0 = Not at all )]]
-	MovementAccuracyPercentage = 1, -- Default - 1
-	
-	--[[How large the force pushing an object back when shot is ( 1 = 100% of the normal knockback) ( 0 = No knockback )]]
-	ShotKnockbackPercentage = 1, -- Default - 1
+	--[[Allows you to override the default weapon stats for all weapons of a specific type, e.g.
+WeaponTypeOverrides = {
+	RaycastGun = {Damage = 20, FireRate = 0.5},
+}]]
+	WeaponTypeOverrides = { 
+		
+		All = { 
+			
+			LimbDamageMultiplier = 0.9,
+			
+			DistanceDamageModifier = 0.2,
+			
+			AllowSelfDamage = false,
+			
+			AllowNeutralTeamKill = true,
+			
+			AllowTeamKill = false,
+			
+			GlobalDamageMultiplier = 1,
+			
+			Resistances = { },
+			
+			MovementAccuracyPercentage = 1,
+			
+			HeadDamageMultiplier = 1.75,
+			
+			ScreenRecoilPercentage = 1,
+			
+			ShotKnockbackPercentage = 1,
+			
+		},
+		
+	}, -- Default - { All = { LimbDamageMultiplier = 0.9, DistanceDamageModifier = 0.2, AllowSelfDamage = false, AllowNeutralTeamKill = true, AllowTeamKill = false, ShotKnockbackPercentage = 1, Resistances = { }, MovementAccuracyPercentage = 1, HeadDamageMultiplier = 1.75, ScreenRecoilPercentage = 1, GlobalDamageMultiplier = 1, }, }
 	
 	--[[Automatically handle arm welds]]
 	ArmWelds = true, -- Default - true
@@ -132,5 +135,5 @@ return {
 	
 	CreditsPerHeal = 0, -- Default - 0
 	
-	SetupVersion = "1.1.2", -- DO NOT CHANGE THIS
+	SetupVersion = "1.3.0", -- DO NOT CHANGE THIS
 }

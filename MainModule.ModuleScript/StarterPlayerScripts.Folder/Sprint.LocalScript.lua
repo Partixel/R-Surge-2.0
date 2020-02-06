@@ -154,7 +154,7 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Died then return end
 	
-	if Debounce then return Last end
+	if Began and Debounce then return Last end
 	
 	Last = Began
 	
@@ -222,9 +222,7 @@ Core.WeaponSelected.Event:Connect( function ( StatObj )
 	
 	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	if WeaponStats.PreventSprint then KBU.SetToggle( "Sprint", false ) end
-	
-	if Core.Config.AllowSprinting == false and WeaponStats.PreventSprint ~= false then KBU.SetToggle( "Sprint", false ) end
+	if WeaponStats.PreventSprint or (Core.Config.AllowSprinting == false and WeaponStats.PreventSprint ~= false) then KBU.SetToggle( "Sprint", false ) end
 	
 end )
 

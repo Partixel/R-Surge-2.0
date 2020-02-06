@@ -42,12 +42,6 @@ if Core.Config.TeamCounts then
 			
 		end )
 		
-		Players.PlayerRemoving:Connect( function ( )
-			
-			Team.Name = Name .. " - " .. #Team:GetPlayers( )
-			
-		end )
-		
 	end
 	
 end
@@ -232,63 +226,9 @@ local function OnDeath( Damageable )
 	
 end
 
-Core.DamageableAdded.Event:Connect( function ( Damageable )
-	
-	if Damageable:IsA( "Humanoid" ) then
-		
-		Damageable.Died:Connect( function ( )
-			
-			OnDeath( Damageable )
-			
-		end )
-		
-	else
-		
-		local Ev; Ev = Damageable.Changed:Connect( function ( )
-			
-			if Damageable.Value <= 0 then
-				
-				OnDeath( Damageable )
-				
-				Ev:Disconnect( )
-				
-			end
-			
-		end )
-		
-	end
-	
-end )
+Core.DamageableDied.Event:Connect(OnDeath)
 
-for a, b in pairs( Core.Damageables ) do
-	
-	if a:IsA( "Humanoid" ) then
-		
-		a.Died:Connect( function ( )
-			
-			OnDeath( a )
-			
-		end )
-		
-	else
-		
-		local Ev; Ev = a.Changed:Connect( function ( )
-			
-			if a.Value <= 0 then
-				
-				OnDeath( a )
-				
-				Ev:Disconnect( )
-				
-			end
-			
-		end )
-		
-	end
-	
-end
-
-Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits)
+Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits, RelativePosition)
 	local TotalDamage = 0
 	for _, DamageSplit in ipairs(DamageSplits) do
 		if not CollectionService:HasTag(DamageSplit[1], "s2nokos") then

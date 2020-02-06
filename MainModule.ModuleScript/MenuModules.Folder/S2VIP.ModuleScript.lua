@@ -109,6 +109,20 @@ return {
 	Key = "S2VIP1",
 	SendToClient = true,
 	AllowRemoteSet = true,
+	BeforeSave = function(Plr, Data)
+		if Data then
+			for i = 1, 4 do
+				Data[i] = Data[i] or false
+			end
+		end
+	end,
+	BeforeInitialGet = function(Plr, Data)
+		if Data then
+			for i = 1, 4 do
+				Data[i] = Data[i] or nil
+			end
+		end
+	end,
 	BeforeRemoteSet = function(Plr, DataStore, Remote, VIP, Enabled, Color)
 		if Enabled ~= nil and PlayerOwnsAsset(Plr, VIP) then
 			local Data = DataStore:Get({})

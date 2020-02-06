@@ -150,7 +150,7 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 	
 	if Died then return end
 	
-	if Debounce then return Last end
+	if Began and Debounce then return Last end
 	
 	Last = Began
 	

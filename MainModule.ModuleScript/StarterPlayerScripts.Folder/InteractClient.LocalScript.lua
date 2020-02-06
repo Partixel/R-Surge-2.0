@@ -110,9 +110,9 @@ KBU.BindChanged.Event:Connect( function ( Name )
 	
 end )
 
-local function Obscured( Part )
+local function Obscured( Part, Model, Ignore )
 	
-	for _, Obj in ipairs( workspace.CurrentCamera:GetPartsObscuringTarget( { Part.Position }, { Part, Plr.Character } ) )do
+	for _, Obj in ipairs( workspace.CurrentCamera:GetPartsObscuringTarget( { Part.Position }, { Model, Plr.Character, Ignore } ) )do
 		
 		if not Core.IgnoreFunction( Obj ) then return true end
 		
@@ -138,10 +138,14 @@ local function GetSubject( )
 	
 end
 
-function DefaultShouldOpen( InteractObj, Plr )
+local function DefaultShouldOpen( InteractObj, Plr )
 	
 	return Plr.Character and not Plr.Character:FindFirstChildOfClass( "Tool" )
 	
+end
+
+local function GetPart(InteractObj)
+	return InteractObj.Parent:IsA("BasePart") and InteractObj.Parent or InteractObj:FindFirstChild("MainPart") and InteractObj.MainPart.Value or InteractObj.Parent.PrimaryPart
 end
 
 function StartInteractables( )
@@ -156,7 +160,7 @@ function StartInteractables( )
 				
 				local Nearest, NearestDist
 				
-				if HoldStart and not LastNearest:FindFirstChild( "Disabled" ) and not Interactables.LocalDisabled[ LastNearest ] and ( LastNearest.Parent.Position - Subject.Position ).magnitude <= ( LastNearest:FindFirstChild( "Distance" ) and LastNearest.Distance.Value or 16 ) then
+				if HoldStart and not LastNearest:FindFirstChild( "Disabled" ) and not Interactables.LocalDisabled[ LastNearest ] and ( GetPart(LastNearest).Position - Subject.Position ).magnitude <= ( LastNearest:FindFirstChild( "Distance" ) and LastNearest.Distance.Value or 16 ) then
 					
 					Nearest, NearestDist = LastNearest, -1
 					
@@ -170,13 +174,13 @@ function StartInteractables( )
 							
 							if not a:FindFirstChild( "CharacterOnly" ) or Subject == Humanoid.RootPart then					
 								
-								local Dist = ( a.Parent.Position - Subject.Position ).magnitude
+								local Dist = ( GetPart(a).Position - Subject.Position ).magnitude
 								
-								if Dist <= ( a:FindFirstChild( "Distance" ) and a.Distance.Value or 16 ) and select( 2, workspace.CurrentCamera:WorldToViewportPoint( a.Parent.Position ) ) and not Obscured( a.Parent ) and ( a:FindFirstChild( "CustomFuncs" ) and require( a.CustomFuncs.Value ).ShouldOpen or DefaultShouldOpen )( a, Plr, DefaultShouldOpen ) then
+								if Dist <= ( a:FindFirstChild( "Distance" ) and a.Distance.Value or 16 ) and select( 2, workspace.CurrentCamera:WorldToViewportPoint( GetPart(a).Position ) ) and not Obscured( GetPart(a), a.Parent, a:FindFirstChild("Ignore") and a.Ignore.Value ) and ( a:FindFirstChild( "CustomFuncs" ) and require( a.CustomFuncs.Value ).ShouldOpen or DefaultShouldOpen )( a, Plr, DefaultShouldOpen ) then
 									
 									if not a:FindFirstChild( "Disabled" ) and not Interactables.LocalDisabled[ a ] then
 										
-										if Mouse.Target and ( Mouse.Target == a.Parent or Mouse.Target:IsDescendantOf( a ) ) then
+										if Mouse.Target and ( Mouse.Target == a.Parent or Mouse.Target:IsDescendantOf( a.Parent ) ) then
 											
 											Nearest, NearestDist = a, -1
 											
@@ -188,9 +192,9 @@ function StartInteractables( )
 										
 									end
 									
-									if Interactables.Guis[ a ] and a.Parent ~= Interactables.Guis[ a ].Adornee then
+									if Interactables.Guis[ a ] and GetPart(a) ~= Interactables.Guis[ a ].Adornee then
 										
-										Interactables.Guis[ a ].Adornee = a.Parent
+										Interactables.Guis[ a ].Adornee = GetPart(a)
 										
 									end
 									
@@ -316,7 +320,7 @@ function StartInteractables( )
 						
 					end
 					
-					if not HoldStart and ( KD or ( MD and Mouse.Target and ( Mouse.Target == Nearest.Parent or Mouse.Target:IsDescendantOf( Nearest ) ) ) ) then
+					if not HoldStart and ( KD or ( MD and Mouse.Target and ( Mouse.Target == Nearest.Parent or Mouse.Target:IsDescendantOf( Nearest.Parent ) ) ) ) then
 						
 						HoldStart = tick( )
 						

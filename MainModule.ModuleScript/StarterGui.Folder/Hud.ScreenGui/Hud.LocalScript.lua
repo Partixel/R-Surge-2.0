@@ -12,7 +12,10 @@ AmmoGui.Weapon.Info.Visible = AmmoOpen
 
 Plr:WaitForChild( "leaderstats" )
 
-local Assists = Plr:FindFirstChild( "Assists", true )
+local Assists
+while not Assists do
+	Assists = Plr:FindFirstChild( "Assists", true )
+end
 
 local function Assist( )
 	
@@ -24,9 +27,15 @@ Assists:GetPropertyChangedSignal( "Value" ):Connect( Assist )
 
 Assist( )
 
-local WOs = Plr:FindFirstChild( "WOs", true )
+local WOs
+while not WOs do
+	WOs = Plr:FindFirstChild( "WOs", true )
+end
 
-local KOs = Plr:FindFirstChild( "KOs", true )
+local KOs
+while not KOs do
+	KOs = Plr:FindFirstChild( "KOs", true )
+end
 
 local function WO( )
 	
@@ -142,7 +151,7 @@ function WeaponSelected( StatObj )
 	
 	AmmoGui.Weapon.Text = StatObj.Parent.Name
 	
-	local Ammo, MaxAmmo = Weapon.Clip or "∞", Weapon.StoredAmmo or WeaponStats.ClipSize
+	local Ammo, MaxAmmo = Weapon.Clip or "∞", Weapon.WeaponType.GetStoredAmmo(Weapon) or WeaponStats.ClipSize
 	
 	AmmoGui.Ammo.Text = Ammo .. ( MaxAmmo and " | " .. MaxAmmo or "" )
 	
@@ -182,7 +191,7 @@ Core.WeaponTypes.RaycastGun.ClipChanged.Event:Connect( function ( StatObj, Ammo 
 	
 	local WeaponStats = Core.GetWeaponStats( StatObj )
 	
-	local MaxAmmo = Weapon.StoredAmmo or WeaponStats.ClipSize
+	local MaxAmmo = Weapon.WeaponType.GetStoredAmmo(Weapon) or WeaponStats.ClipSize
 	
 	AmmoGui.Ammo.Text = ( Ammo or "∞" ) .. ( MaxAmmo and " | " .. MaxAmmo or "" )
 	

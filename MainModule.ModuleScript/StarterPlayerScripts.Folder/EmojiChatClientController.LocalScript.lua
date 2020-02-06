@@ -84,6 +84,22 @@ mouse.Move:Connect(function()
 	CheckEmojiTabs()
 end)
 
+local EscapePatterns = {
+	["("] = "%(",
+	[")"] = "%)",
+	["."] = "%.",
+	["%"] = "%%",
+	["+"] = "%+",
+	["-"] = "%-",
+	["*"] = "%*",
+	["?"] = "%?",
+	["["] = "%[",
+	["]"] = "%]",
+	["^"] = "%^",
+	["$"] = "%$",
+	["\0"] = "%z",
+}
+
 local function ShowSuggestedEmojis( complete, pos )
 	local str = ""
 	for i = 1, #TextBox.Text do
@@ -102,7 +118,7 @@ local function ShowSuggestedEmojis( complete, pos )
 		SuggestedEmojis:ClearAllChildren()
 		for i, v in ipairs(EmojiList) do
 			if type(v) ~= "string" then
-				if string.find(v[1], str) ~= nil then
+				if string.find(v[1], str:gsub(".", EscapePatterns), nil) ~= nil then
 					if complete then
 						TextBox.Text = TextBox.Text:sub( 1, pos - 1 ) .. TextBox.Text:sub( pos + 1 )
 						TextBox.Text = string.sub(TextBox.Text, 1, #TextBox.Text - string.len(str)).. v[1] .." "

@@ -1,3 +1,5 @@
+local UpdateRate = 1/20
+
 local HeadRotRemote = Instance.new( "RemoteEvent" )
 
 HeadRotRemote.Name = "HeadRot"
@@ -58,9 +60,7 @@ end
 
 function PlayerAdded( Plr )
 	
-	if not Plr.Character then Plr.CharacterAdded:Wait( ) end
-	
-	HandleCharacter( Plr.Character )
+	HandleCharacter( Plr.Character or Plr.CharacterAdded:Wait( ) )
 	
 	Plr.CharacterAdded:Connect( HandleCharacter )
 	
@@ -74,7 +74,7 @@ for _, Plr in ipairs( Players:GetPlayers( ) ) do
 	
 end
 
-while wait( 1/30 ) do
+while wait( UpdateRate ) do
 	
 	if next( Rotations ) then
 		

@@ -24,7 +24,7 @@ return {
 	ButtonText = "Surge 2.0",
 	AddSetting = function(self, Setting)
 		self.Settings[#self.Settings + 1] = Setting
-		if self.SavedSettings[Setting.Name] == nil then
+		if self.SavedSettings[Setting.Name] == nil or type(self.SavedSettings[Setting.Name]) ~= type(Setting.Default) then
 			self.SavedSettings[Setting.Name] = Setting.Default
 		end
 		
@@ -40,7 +40,7 @@ return {
 		ThemeUtil.BindUpdate(self.Gui, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
 		
 		for _, Setting in ipairs(self.Settings) do
-			if self.SavedSettings[Setting.Name] == nil then
+			if self.SavedSettings[Setting.Name] == nil or type(self.SavedSettings[Setting.Name]) ~= type(Setting.Default) then
 				self.SavedSettings[Setting.Name] = Setting.Default
 			end
 			if Setting.Update then
@@ -51,7 +51,7 @@ return {
 		self.Remote.OnClientEvent:Connect(function(Settings)
 			self.SavedSettings = Settings
 			for _, Setting in ipairs(self.Settings) do
-				if self.SavedSettings[Setting.Name] == nil then
+				if self.SavedSettings[Setting.Name] == nil or type(self.SavedSettings[Setting.Name]) ~= type(Setting.Default) then
 					self.SavedSettings[Setting.Name] = Setting.Default
 				end
 				if Setting.Update then
@@ -96,6 +96,7 @@ return {
 						ThemeUtil.BindUpdate(Inst.TextButton, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency"})
 						
 						if Type == "number" then
+							print(Setting.Name, self.Options.SavedSettings[Setting.Name], Setting.Default)
 							Inst.Number.Text = self.Options.SavedSettings[Setting.Name]
 							Inst.Number.PlaceholderText = Inst.Number.Text
 							ThemeUtil.BindUpdate(Inst.Number, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})

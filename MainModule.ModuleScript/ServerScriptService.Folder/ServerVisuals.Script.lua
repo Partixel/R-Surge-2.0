@@ -17,14 +17,14 @@ end
 Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
 	local Weapon = Core.GetWeapon(StatObj)
 	if Type == 0 then
-		if not Weapon.ServerPlaceholder then
+		if not Weapon.Placeholder then
 			local Anim = Instance.new("StringValue")
 			Anim.Name = "toolanim"
 			Anim.Value = "Slash"
 			Anim.Parent = Weapon.StatObj.Parent
 		end
 	else
-		if not Weapon.ServerPlaceholder then
+		if not Weapon.Placeholder then
 			local Anim = Instance.new("StringValue")
 			Anim.Name = "toolanim"
 			Anim.Value = "Lunge"
@@ -87,6 +87,61 @@ Core.WeaponTypes.Sword.Events.VIPSparkles = Core.WeaponTypes.Sword.AttackEvent.E
 	end
 end)
 
+Core.WeaponTypes.Throwable.Events.HideThrowable = Core.WeaponTypes.Throwable.AttackEvent.Event:Connect(function(StatObj, User, Throwable)
+	local Weapon = Core.GetWeapon(StatObj)
+	
+	if Weapon.HideOnThrow then
+		local OriginalTransparency = {}
+		for _, Part in ipairs(Weapon.StatObj.Parent:GetDescendants()) do
+			if Part:IsA("BasePart") then
+				OriginalTransparency[Part] = Part.Transparency
+				Part.Transparency = 1
+			end
+		end
+		
+		Core.HeartbeatWait(1 / Weapon.ThrowRate)
+		
+		for Part, Transparency in pairs(OriginalTransparency) do
+			Part.Transparency = Transparency
+		end
+	end
+end)
+
+local Red = BrickColor.Red().Color
+Core.WeaponTypes.Throwable.Events.ThrowablePulse = Core.WeaponTypes.Throwable.AttackEvent.Event:Connect(function(StatObj, User, Throwable)
+	local Weapon = Core.GetWeapon(StatObj)
+	
+	local ticksound = Instance.new("Sound")
+	ticksound.SoundId = "rbxasset://sounds\\clickfast.wav"
+	ticksound.Parent = Throwable.PrimaryPart
+	
+	local OriginalColor = {}
+	local OriginalTexture = {}
+	for _, Part in ipairs(Throwable:GetDescendants()) do
+		if Part:IsA("BasePart") then
+			OriginalColor[Part] = Part.Color
+			if Part:IsA("MeshPart") then
+				OriginalTexture[Part] = Part.TextureID
+			end
+		end
+	end
+	
+	local Delay = Weapon.ExplosionDelay
+	local Last = true
+	for a = 1, 15 do
+		Last = not Last
+		for Part, Color in pairs(OriginalColor) do
+			if OriginalTexture[Part] then
+				Part.TextureID = Last and OriginalTexture[Part] or ""
+			end
+			Part.Color = Last and Color or Red
+		end
+		ticksound:play()
+		local Time = Core.HeartbeatWait(Delay/7) * 0.8
+		Delay = Delay - Time
+	end
+end)
+
 Core.Events.SelectedNoise = Core.WeaponSelected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
 	if Weapon.SelectionSound then
@@ -102,13 +157,13 @@ Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connec
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if Core.Config.ShotKnockbackPercentage == 0 or Weapon.Knockback == 0 then return end
+	if Weapon.ShotKnockbackPercentage == 0 then return end
 	
 	local Humanoid = Core.GetValidDamageable( Hit )
 	
 	if not Humanoid and not Weapon.KnockAll then return end
 	
-	local Velocity = ( End - Barrel.Position ).Unit * math.abs( Weapon.Damage ) * ( ( Weapon.Range - ( End - Barrel.Position ).magnitude ) / Weapon.Range ) * Core.Config.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 ) * ( Weapon.Knockback or 1 )
+	local Velocity = ( End - Barrel.Position ).Unit * math.abs( Weapon.Damage ) * ( ( Weapon.Range - ( End - Barrel.Position ).magnitude ) / Weapon.Range ) * Weapon.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 )
 	
 	--Hit.Velocity = Hit.Velocity + Velocity
 	

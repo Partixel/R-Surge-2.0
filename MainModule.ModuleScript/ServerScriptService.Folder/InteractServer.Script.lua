@@ -12,7 +12,7 @@ InteractRemote.OnServerEvent:Connect( function ( Plr, InteractObj, Start, Subjec
 	
 	if InteractObj:FindFirstChild( "CharacterOny" ) and Subject ~= Humanoid.RootPart then return end
 	
-	if not InteractObj:FindFirstChild( "Disabled" ) and Humanoid and Humanoid:GetState( ) ~= Enum.HumanoidStateType.Dead and Subject and Subject:IsDescendantOf( Plr.Character ) and ( InteractObj.Parent.Position - Subject.Position ).magnitude <= ( InteractObj:FindFirstChild( "Distance" ) and InteractObj.Distance.Value or 16 ) then
+	if not InteractObj:FindFirstChild( "Disabled" ) and Humanoid and Humanoid:GetState( ) ~= Enum.HumanoidStateType.Dead and Subject and Subject:IsDescendantOf( Plr.Character ) and ( (InteractObj.Parent:IsA("BasePart") and InteractObj.Parent or InteractObj:FindFirstChild("MainPart") and InteractObj.MainPart.Value or InteractObj.Parent.PrimaryPart).Position - Subject.Position ).magnitude <= ( InteractObj:FindFirstChild( "Distance" ) and InteractObj.Distance.Value or 16 ) then
 		
 		if InteractObj:FindFirstChild( "Cooldown" ) and InteractObj.Cooldown.Value > 0 then
 			

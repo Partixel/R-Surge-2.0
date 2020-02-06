@@ -4,53 +4,7 @@ local RunService, Debris, Plr, CollectionService = game:GetService( "RunService"
 
 local TweenService = game:GetService( "TweenService" )
 
-local Used = setmetatable( { }, { __mode = 'k' } )
-
 local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
-
-local function GetVisualBarrel( Barrel, DontCreate )
-	
-	local Part = Used[ Barrel ]
-	
-	if not Part then
-		
-		if DontCreate then return end
-		
-		Part = Instance.new( "Part" )
-		
-		Part.Name = Barrel.Name .. "_Barrel"
-		
-		Part.CanCollide = false
-		
-		Part.Transparency = 1
-		
-		Part.Size = Vector3.new( )
-		
-		Part.CFrame = Barrel.CFrame
-		
-		Part.Anchored = false
-		
-		Used[ Barrel ] = Part
-		
-	end
-	
-	Part.Parent = workspace.CurrentCamera
-	
-	if not Part:FindFirstChild( "Weld" ) then
-		
-		local Weld = Instance.new( "Weld" )
-		
-		Weld.Part0 = Part
-		
-		Weld.Part1 = Barrel
-		
-		Weld.Parent = Part
-		
-	end
-	
-	return Part
-	
-end
 
 Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
 	local Weapon = Core.GetWeapon(StatObj)
@@ -67,7 +21,7 @@ Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEve
 	end
 end)
 
-Core.BulletArrived = Instance.new( "BindableEvent" )
+Core.WeaponTypes.RaycastGun.BulletArrived = Instance.new( "BindableEvent" )
 
 coroutine.wrap( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { script } ) end )
 
@@ -133,7 +87,7 @@ Core.Events.ReloadSound = Core.ReloadStepped.Event:Connect( function ( StatObj )
 	
 	if not Weapon.ReloadSound then return end
 	
-	local Part = GetVisualBarrel( type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart )
+	local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
 	
 	local ReloadSound = Part:FindFirstChild( "ReloadSound" ) or Weapon.ReloadSound:Clone( )
 	
@@ -161,7 +115,7 @@ Core.Events.EndReloadSound = Core.ReloadEnd.Event:Connect( function ( StatObj )
 	
 	if not Weapon.ReloadSound then return end
 	
-	local Part = GetVisualBarrel( type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart )
+	local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
 	
 	local ReloadSound = Part:FindFirstChild( "ReloadSound" )
 	
@@ -175,7 +129,7 @@ Core.Events.WindupSound = Core.WindupChanged.Event:Connect( function ( StatObj, 
 	
 	if not Weapon.WindupSound then return end
 	
-	local Part = GetVisualBarrel( type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart )
+	local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
 	
 	local WindupSound = Part:FindFirstChild( "Windup" ) or Weapon.WindupSound:Clone( )
 	
@@ -207,7 +161,7 @@ Core.Events.FireSoundEnd = Core.AttackEnded.Event:Connect( function ( StatObj )
 		
 		for _, Obj in ipairs( Barrels ) do
 			
-			local Part = GetVisualBarrel( Obj, true )
+			local Part = Obj
 			
 			local FireSound = Part and Part:FindFirstChild( "FireSound" )
 			
@@ -229,59 +183,23 @@ Core.Events.FireSoundEnd = Core.AttackEnded.Event:Connect( function ( StatObj )
 	
 end )
 
-local TweenService, VZero = game:GetService( "TweenService" ), Vector3.new( )
+local TweenService, VZero = game:GetService( "TweenService" )
+
+Core.CameraCenter = Core.CameraCenter or Vector3.new()
 
 Core.Events.CameraRecoil = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User )
 	
 	if User == Plr then
 		
-		local WeaponStats = Core.GetWeaponStats( StatObj )
+		local Weapon = Core.GetWeapon( StatObj )
 		
-		if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and WeaponStats.AllowCameraShake ~= false then
+		if Plr.Character and Plr.Character:FindFirstChild( "Humanoid" ) and Weapon.ScreenRecoilPercentage ~= 0 then
 			
 			local Hum = Plr.Character.Humanoid
 			
-			Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * Core.Config.ScreenRecoilPercentage * ( WeaponStats.Damage / 25 )
+			Hum.CameraOffset = Vector3.new( ( math.random( 5, 10 ) / 100 ), 0, ( math.random( 10, 20 ) / 100 ) ) * ( Weapon.Damage / 25 ) * Weapon.ScreenRecoilPercentage
 			
-			TweenService:Create( Hum, TweenInfo.new( 0.2 ), { CameraOffset = VZero } ):Play( )
-			
-		end
-		
-	end
-	
-end )
-
-Core.Events.HitIndicator = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( _, User, _, Hit, _, _, _, _, _, Humanoids )
-	
-	if Humanoids and User == Plr then
-		
-		local Type = Hit and Hit.Name:lower( ):find( "head" ) and 2 or 0.75
-		
-		local Noise
-		
-		for _, Hum in ipairs( Humanoids ) do
-			
-			if Hum[ 1 ].Parent then
-				
-				if not CollectionService:HasTag( Hum[ 1 ], "s2_silent" ) then Noise = true end
-				
-				if Type ~= 2 and Hum[ 1 ]:IsA( "Humanoid" ) then Type = 1.25 end
-				
-			end
-			
-		end
-		
-		if Noise then
-			
-			local HitSound = Core.Config.HitSound and Core.Config.HitSound:Clone() or script.HitSound:Clone( )
-			
-			HitSound.Pitch = HitSound.Pitch * Type
-			
-			HitSound.Ended:Connect( function ( ) wait( ) HitSound:Destroy( ) end )
-			
-			HitSound.Parent = workspace.CurrentCamera
-			
-			HitSound:Play( )
+			TweenService:Create( Hum, TweenInfo.new( 0.2 ), { CameraOffset = Core.CameraCenter } ):Play( )
 			
 		end
 		
@@ -343,7 +261,7 @@ Menu:AddSetting{Name = "BulletFlyByNoise", Text = "Bullet Fly By Noise", Default
 end}
 
 local GunBarrelEffectsEnabled = true
-Core.Events.ShotSound = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
+Core.Events.MuzzleEffects = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, _, _, _, _, _, FirstShot )
 	
 	if not Barrel then return end
 	
@@ -351,7 +269,7 @@ Core.Events.ShotSound = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( f
 	
 	if WeaponStats.NoBarrelEffect then return end
 	
-	local Part = GetVisualBarrel( Barrel )
+	local Part = Barrel
 	
 	if FirstShot ~= false and WeaponStats.FireSound and ( not WeaponStats.LongFiringSound or not Part:FindFirstChild( "FireSound" ) ) then
 		
@@ -419,11 +337,19 @@ Core.Events.ShotSound = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( f
 		
 	elseif GunBarrelEffectsEnabled then
 		
+		if not Part:FindFirstChild( "MuzzleFlash" ) then
+			
+			script.MuzzleFlash:Clone( ).Parent = Part
+			
+		end
+		
 		if not Part:FindFirstChild( "FireParticle" ) then
 			
 			script.FireParticle:Clone( ).Parent = Part
 			
 		end
+		
+		Part.MuzzleFlash.Enabled = true
 		
 		local SizeMult = math.clamp( math.abs( WeaponStats.Damage )  * ( WeaponStats.Range / 600 ), 60, 140 ) / 3
 		
@@ -453,6 +379,12 @@ Core.Events.ShotSound = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( f
 			Part.SmokeParticle:Emit( 5 )
 			
 			wait( )
+			
+			if i == 1 then 
+				
+				Part.MuzzleFlash.Enabled = false
+				
+			end
 			
 		end
 	end
@@ -560,7 +492,7 @@ local function RenderLightning( User, WeaponStats, Start, End, Thickness, Branch
 end
 
 Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, _, Humanoids )
-	print(StatObj, User.Name, Barrel)
+	
 	if not Barrel then return end
 	
 	local WeaponStats = Core.GetWeaponStats( StatObj )
@@ -581,7 +513,7 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 		for i = 1, 20 do
 			
-			for _, v in pairs( Parts ) do
+			for _, v in ipairs( Parts ) do
 				
 				v.Transparency = v.Transparency * 1.1
 				
@@ -601,7 +533,13 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 			
 		end
 		
-		Core.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		for _, v in ipairs( Parts ) do
+			
+			v:Destroy()
+			
+		end
+		
+		Core.WeaponTypes.RaycastGun.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 	elseif WeaponStats.BulletType and WeaponStats.BulletType.Name == "Laser" then
 		
@@ -639,7 +577,7 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 		Bullet.Parent = workspace.CurrentCamera
 		
-		Core.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+		Core.WeaponTypes.RaycastGun.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 		
 		for a = 1, WeaponStats.BulletType.VisibleFrames or 3 do
 			
@@ -693,7 +631,7 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 				
 				Arrived = true
 				
-				Core.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
+				Core.WeaponTypes.RaycastGun.BulletArrived:Fire( User, WeaponStats.BulletType, Barrel, End, Hit, Normal, Material, Offset, Humanoids )
 				
 			end
 			
@@ -747,7 +685,7 @@ if Menu.Tabs[1].Invalidate then
 	Menu.Tabs[1]:Invalidate()
 end
 
-Core.Events.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
+Core.Events.BulletImpact = Core.WeaponTypes.RaycastGun.BulletArrived.Event:Connect( function ( User, BulletType, _, End, Hit, Normal, Material, Offset, _ )
 	
 	if not BulletType or BulletType.Name == "Kinectic" or BulletType.Name == "Laser" then
 		
@@ -757,11 +695,9 @@ Core.Events.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, Bu
 			
 			ImpactNum = ImpactNum - 1
 			
-			local Impact, Event = next( Impacts )
+			local Impact = next( Impacts )
 			
 			Impact:Destroy( )
-			
-			Event:Disconnect( )
 			
 			Impacts[ Impact ] = nil
 			
@@ -799,23 +735,9 @@ Core.Events.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, Bu
 		
 		BulletHit.CFrame = CFrame.new( Offset, Hit.CFrame:pointToObjectSpace( Hit.CFrame:pointToWorldSpace( Offset ) + Normal ) )
 		
-		local Event; Event = Hit.AncestryChanged:Connect( function ( )
-			
-			if not Hit:IsDescendantOf( workspace ) then
-				
-				BulletHit.Visible = false
-				
-			else
-				
-				BulletHit.Visible = true
-				
-			end
-			
-		end )
+		BulletHit.Parent = Hit
 		
-		BulletHit.Parent = workspace.CurrentCamera
-		
-		Impacts[ BulletHit ] = Event
+		Impacts[ BulletHit ] = true
 		
 		ImpactNum = ImpactNum + 1
 		
@@ -828,8 +750,6 @@ Core.Events.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, Bu
 			Impacts[ BulletHit ] = nil
 			
 			BulletHit:Destroy( )
-			
-			Event:Disconnect( )
 			
 		end
 		
@@ -853,7 +773,7 @@ Core.Events.BulletImpact = Core.BulletArrived.Event:Connect( function ( User, Bu
 	
 end )
 
-Core.Events.BulletImpactSound = Core.BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
+Core.Events.BulletImpactSound = Core.WeaponTypes.RaycastGun.BulletArrived.Event:Connect( function( User, BulletType, Barrel, _, Hit, _, Material, Offset, _ )
 	
 	if not Hit then return end
 	

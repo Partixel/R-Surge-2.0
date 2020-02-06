@@ -202,7 +202,7 @@ function Core.RunCursorHeartbeat( )
 		
 		local Humanoid = Core.GetValidDamageable( Core.LPlrsTarget[ 1 ] )
 		
-		local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) or Core.CheckTeamkill( Plr, Humanoid, Weapon.AllowTeamKill, Weapon.InvertTeamKill ) and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ThemeUtil.GetThemeFor( "Positive_Color3" )
+		local Color = ( not Humanoid or CollectionService:HasTag( Humanoid, "s2_silent" ) ) or Core.CheckTeamkill( Weapon, Plr, Humanoid ) and ThemeUtil.GetThemeFor( "Negative_Color3" ) or ThemeUtil.GetThemeFor( "Positive_Color3" )
 		
 		local CenterColor
 		
@@ -244,7 +244,7 @@ function Core.RunCursorHeartbeat( )
 		
 		-- HANDLE COLOR AND ROTATION
 		
-		local Perc = not Weapon.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.ReloadDelay + ( Weapon.InitialReloadDelay or 0 ) + ( Weapon.FinalReloadDelay or 0 ) ), 0 ) or ( 1 - Weapon.Clip  / Weapon.ClipSize )
+		local Perc = not Weapon.ClipSize and 0 or ( Weapon.Reloading and Weapon.ReloadStart ) and math.max( 1 - ( tick( ) - Weapon.ReloadStart ) / ( Weapon.ReloadDelay + ( Weapon.InitialReloadDelay or 0 ) + ( Weapon.FinalReloadDelay or 0 ) ), 0 ) or math.max( 1 - Weapon.Clip  / Weapon.ClipSize, 0 )
 		
 		local Rot, MidRot = ThemeUtil.GetThemeFor( "S2_CursorCenterRotation" ), ThemeUtil.GetThemeFor( "S2_CursorRotation" )
 		

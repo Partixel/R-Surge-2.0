@@ -56,7 +56,7 @@ if game["Run Service"]:IsClient( ) then
 				
 				if Plr then
 					
-					Func( Plr, b[ Pose ].State, t - b[ Pose ].Time )
+					Func( Plr, b[ Pose ][1], t - b[ Pose ][2] )
 					
 				end
 				
@@ -80,7 +80,7 @@ if game["Run Service"]:IsClient( ) then
 		
 	end
 	
-	SendPose.OnClientEvent:Connect( function ( Plr, Pose, State )
+	SendPose.OnClientEvent:Connect( function ( Plr, Pose, State, Time )
 		
 		if type( Plr ) == "table" then
 			
@@ -96,7 +96,7 @@ if game["Run Service"]:IsClient( ) then
 					
 					for c, d in pairs( b ) do
 						
-						Module.CallWatched( c, Plr, d.State, t - d.Time )
+						Module.CallWatched( c, Plr, d[1], t - d[2] )
 						
 					end
 					
@@ -112,9 +112,9 @@ if game["Run Service"]:IsClient( ) then
 		
 		PlrPoses[ UserId ] = PlrPoses[ UserId ] or { }
 		
-		PlrPoses[ UserId ][ Pose ] = State
+		PlrPoses[ UserId ][ Pose ] = {State, Time}
 		
-		Module.CallWatched( Pose, Plr, State.State, tick( ) + _G.ServerOffset - State.Time )
+		Module.CallWatched( Pose, Plr, State, tick( ) + _G.ServerOffset - Time )
 		
 	end )
 	
@@ -136,7 +136,7 @@ if game["Run Service"]:IsClient( ) then
 			
 			Module.CallWatched( Pose, Plr, State, 0 )
 			
-			SendPose:FireServer( Pose, { State = State, Time = tick( ) + _G.ServerOffset } )
+			SendPose:FireServer( Pose, State, tick( ) + _G.ServerOffset )
 			
 		end
 		

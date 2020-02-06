@@ -8,19 +8,19 @@ SendPose.Parent = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" )
 
 local PlrPoses = { }
 
-SendPose.OnServerEvent:Connect( function ( Plr, Pose, State )
+SendPose.OnServerEvent:Connect( function ( Plr, Pose, State, Time )
 	
 	local UserId = tostring( Plr.UserId )
 	
 	PlrPoses[ UserId ] = PlrPoses[ UserId ] or { }
 	
-	PlrPoses[ UserId ][ Pose ] = State
+	PlrPoses[ UserId ][ Pose ] = { State, Time }
 	
 	for _, OPlr in ipairs( Players:GetPlayers( ) )  do
 		
 		if OPlr ~= Plr then
 			
-			SendPose:FireClient( OPlr, Plr, Pose, State )
+			SendPose:FireClient( OPlr, Plr, Pose, State, Time )
 			
 		end
 		

@@ -1,3 +1,5 @@
+local UpdateRate = 1/20
+
 local Players = game:GetService( "Players" )
 local Plr = Players.LocalPlayer
 
@@ -38,7 +40,7 @@ HeadRotRemote.OnClientEvent:Connect(function(Rotations)
 		for _, Rot in ipairs(Rotations) do
 			local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
 			if Neck then
-				TweenService:Create( Neck, TweenInfo.new( 1/20, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
+				TweenService:Create( Neck, TweenInfo.new( UpdateRate, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
 			end
 		end
 	end
@@ -100,7 +102,7 @@ end}
 
 local Last
 
-while wait( 1/20 ) do
+while wait( UpdateRate ) do
 	
 	if Neck and Last ~= Neck.C0 then
 		

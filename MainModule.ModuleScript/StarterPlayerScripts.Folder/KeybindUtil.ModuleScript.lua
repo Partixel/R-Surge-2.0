@@ -10,6 +10,8 @@ Module.BindChanged = Instance.new( "BindableEvent" )
 
 local Binds = { }
 
+local Holding = { }
+
 local UIS = game:GetService( "UserInputService" )
 
 function Module.FireBind( Bind, Began, Handled, Died )
@@ -26,7 +28,21 @@ function Module.FireBind( Bind, Began, Handled, Died )
 	
 	if Bind.NoHandled and Handled then return end
 	
-	if Bind.State ~= Began then
+	if Bind.HoldFor then
+		
+		Holding[Bind] = nil
+		
+		local Ran, Error
+		if Bind.NoHandled then
+			Ran, Error = pcall(function() return coroutine.wrap(Bind.Callback)(Began, Died) end)
+		else
+			Ran, Error = pcall(function() return coroutine.wrap(Bind.Callback)(Began, Handled, Died) end)
+		end
+		
+		if not Ran then
+			warn(Bind.Name .. " bind errored\n" .. Error .. "\n" .. debug.traceback())
+		end
+	elseif Bind.State ~= Began then
 		
 		Bind.State = Began
 		
@@ -64,7 +80,15 @@ UIS.WindowFocusReleased:Connect( function ( )
 	
 	for a, b in pairs( Binds ) do
 		
-		if not b.ToggleState then
+		if b.HoldFor then
+			
+			if Holding[b] then
+				
+				Module.FireBind( b, false, false )
+				
+			end
+			
+		elseif not b.ToggleState then
 			
 			Module.FireBind( b, false, false )
 			
@@ -80,13 +104,25 @@ game:GetService( "Players" ).LocalPlayer.CharacterAdded:Connect( function ( )
 		
 		if b.OffOnDeath then
 			
-			if b.ToggleState then
+			if b.HoldFor then
 				
-				b.Toggle = false
+				if Holding[b] then
+					
+					Module.FireBind( b, false, false )
+					
+				end
+				
+			else
+				
+				if b.ToggleState then
+					
+					b.Toggle = false
+					
+				end
+				
+				Module.FireBind( b, false, false, true )
 				
 			end
-			
-			Module.FireBind( b, false, false, true )
 			
 		end
 		
@@ -106,6 +142,15 @@ local function UpdateContext( Type )
 	
 end
 
+local Heartbeat = game:GetService("RunService").Heartbeat
+local function HeartbeatWait(num)
+	local t=0
+	while t<num do
+		t = t + Heartbeat:Wait()
+	end
+	return t
+end
+
 UIS.InputBegan:Connect( function ( Input, Handled )
 	
 	UpdateContext( Input.UserInputType )
@@ -114,15 +159,30 @@ UIS.InputBegan:Connect( function ( Input, Handled )
 		
 		if b.Key == Input.KeyCode or b.PadKey == Input.KeyCode or b.Key == Input.UserInputType or ( b.Key == Enum.UserInputType.MouseButton1 and Input.UserInputType == Enum.UserInputType.Touch ) then
 			
-			if b.ToggleState then
-				
-				b.Toggle = not b.Toggle
-				
-				Module.FireBind( b, b.Toggle, Handled )
-				
+			if b.HoldFor then
+				if not b.NoHandled or not Handled then
+					local Tick = tick()
+					Holding[b] = Tick
+					
+					HeartbeatWait(b.HoldFor)
+					
+					if Holding[b] == Tick then
+						Module.FireBind(b, true, Handled)
+					end
+				end
 			else
 				
-				Module.FireBind( b, true, Handled )
+				if b.ToggleState then
+					
+					b.Toggle = not b.Toggle
+					
+					Module.FireBind( b, b.Toggle, Handled )
+					
+				else
+					
+					Module.FireBind( b, true, Handled )
+					
+				end
 				
 			end
 			
@@ -140,7 +200,11 @@ UIS.InputEnded:Connect( function ( Input, Handled )
 		
 		if b.Key == Input.KeyCode or b.PadKey == Input.KeyCode or b.Key == Input.UserInputType or ( b.Key == Enum.UserInputType.MouseButton1 and Input.UserInputType == Enum.UserInputType.Touch ) then
 			
-			if not b.ToggleState then
+			if b.HoldFor then
+				if Holding[b] then
+					Module.FireBind(b, false, Handled)
+				end
+			elseif not b.ToggleState then
 				
 				Module.FireBind( b, false, Handled )
 				
