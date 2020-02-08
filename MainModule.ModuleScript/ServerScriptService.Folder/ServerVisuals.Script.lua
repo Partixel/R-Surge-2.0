@@ -33,11 +33,15 @@ Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEve
 					
 		wait(0.25)
 		
-		swordOut(Weapon.StatObj.Parent)
-		
-		wait(0.75)
-		
-		swordUp(Weapon.StatObj.Parent)
+		if Weapon.StatObj.Parent then
+			swordOut(Weapon.StatObj.Parent)
+			
+			wait(0.75)
+			
+			if Weapon.StatObj.Parent then
+				swordUp(Weapon.StatObj.Parent)
+			end
+		end
 	end
 end)
 
