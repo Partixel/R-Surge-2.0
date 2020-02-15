@@ -107,6 +107,10 @@ return {
 			end
 		end}
 		
+		self:AddSetting{Name = "ShowShadows", Text = "Show Shadows", Default = true, Update = function(Options, Val)
+			game:GetService("Lighting").GlobalShadows = Val
+		end}
+		
 		for _, Setting in ipairs(self.Settings) do
 			if self.SavedSettings[Setting.Name] == nil then
 				self.SavedSettings[Setting.Name] = Setting.Default
