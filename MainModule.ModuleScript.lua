@@ -1,6 +1,7 @@
 local SetupModel = game:GetService("ServerScriptService"):FindFirstChild("S2") or game:GetService("ServerScriptService"):FindFirstChild("S2.0")
 local Config = require(SetupModel and SetupModel:WaitForChild("Config") or game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config"))
 
+require(game:GetService("ServerStorage"):FindFirstChild("TimeSync") and game:GetService("ServerStorage").TimeSync:FindFirstChild("MainModule") or 0) -- TimeSync
 require(game:GetService("ServerStorage"):FindFirstChild("MenuLib") and game:GetService("ServerStorage").MenuLib:FindFirstChild("MainModule") or 3717582194) -- MenuLib
 
 local LoaderModule = require(game:GetService("ServerStorage"):FindFirstChild("LoaderModule") and game:GetService("ServerStorage").LoaderModule:FindFirstChild("MainModule") or 03593768376)("S2", Config.Disabled or {})

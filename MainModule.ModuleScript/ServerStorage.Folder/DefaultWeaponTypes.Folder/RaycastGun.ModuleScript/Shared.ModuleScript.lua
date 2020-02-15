@@ -1,6 +1,11 @@
 local Players, CollectionService = game:GetService("Players"), game:GetService("CollectionService")
 
 return function(Core)
+	local TimeSync
+	if not Core.IsServer then
+		TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
+	end
+	
 	local function TableCopy(Table)
 		return {unpack(Table)}
 	end
@@ -306,7 +311,7 @@ return function(Core)
 									
 									if ShotsPerClick > 1 then FirstShot = BulNum == 1 end
 									
-									WeaponType.AttackEvent:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, tick( ) + _G.ServerOffset )
+									WeaponType.AttackEvent:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, TimeSync.GetServerTime() )
 			
 								end
 								

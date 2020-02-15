@@ -237,6 +237,8 @@ Term.Visible = false
 
 if not game.ReplicatedStorage:WaitForChild("RaidLib", 5) then return end
 
+local TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
+
 if game.ReplicatedStorage.RaidLib:FindFirstChild( "HomeWinAmount" ) then
 	
 	local HomeWinAmount = game.ReplicatedStorage.RaidLib:WaitForChild( "HomeWinAmount" )
@@ -320,17 +322,15 @@ if game.ReplicatedStorage.RaidLib:FindFirstChild( "HomeWinAmount" ) then
 		
 		if W then WinPoints = W Changed( ) end
 		
-		while not _G.ServerOffset do wait( ) end
-		
 		Start, Limit = S, L
 		
 		if not S then return end
 		
-		Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+		Term.Text = FormatTime( math.ceil( Limit - ( ( TimeSync.GetServerTime() ) - S ) ) )
 		
 		while wait( 1 ) and Start == S and Limit == L do
 			
-			Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+			Term.Text = FormatTime( math.ceil( Limit - ( ( TimeSync.GetServerTime() ) - S ) ) )
 			
 		end
 		
@@ -416,17 +416,15 @@ else
 	
 	Event.OnClientEvent:Connect( function ( S, L )
 		
-		while not _G.ServerOffset do wait( ) end
-		
 		Start, Limit = S, L
 		
 		if not S then return end
 		
-		Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+		Term.Text = FormatTime( math.ceil( Limit - ( ( TimeSync.GetServerTime() ) - S ) ) )
 		
 		while wait( 1 ) and Start == S and Limit == L do
 			
-			Term.Text = FormatTime( math.ceil( Limit - ( ( tick( ) + _G.ServerOffset ) - S ) ) )
+			Term.Text = FormatTime( math.ceil( Limit - ( ( TimeSync.GetServerTime() ) - S ) ) )
 			
 		end
 		

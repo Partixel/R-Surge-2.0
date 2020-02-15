@@ -2,6 +2,8 @@ local InteractObjs = { }
 
 local Plr, UserInputService = game:GetService( "Players" ).LocalPlayer, game:GetService("UserInputService" )
 
+local TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
+
 local KBU, Core = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) ), require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
 local InteractRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "InteractRemote" )
@@ -206,7 +208,7 @@ function StartInteractables( )
 										
 										if Interactables.Guis[ a ].Name ~= "Disabled" then
 											
-											local CooldownLeft = a.Disabled.Value == 0 and true or math.ceil( math.max( a.Disabled.Value - tick( ) - _G.ServerOffset, 0 ) )
+											local CooldownLeft = a.Disabled.Value == 0 and true or math.ceil( math.max( a.Disabled.Value - tick( ) - TimeSync.ServerOffset, 0 ) )
 											
 											if CooldownLeft ~= true then Cooldowns[ a ] = CooldownLeft end
 											
@@ -216,7 +218,7 @@ function StartInteractables( )
 											
 										elseif a.Disabled.Value ~= 0 then
 											
-											local CooldownLeft = math.ceil( math.max( a.Disabled.Value - tick( ) - _G.ServerOffset, 0 ) )
+											local CooldownLeft = math.ceil( math.max( a.Disabled.Value - tick( ) - TimeSync.ServerOffset, 0 ) )
 											
 											if Cooldowns[ a ] ~= CooldownLeft then
 												
@@ -354,7 +356,7 @@ function StartInteractables( )
 							
 							if not Nearest:FindFirstChild( "ClientOnly" ) then
 								
-								InteractRemote:FireServer( Nearest, tick( ) + _G.ServerOffset, Subject ~= Humanoid.RootPart and Subject or nil )
+								InteractRemote:FireServer( Nearest, TimeSync.GetServerTime(), Subject ~= Humanoid.RootPart and Subject or nil )
 								
 							elseif Cooldown then
 								
@@ -362,7 +364,7 @@ function StartInteractables( )
 								
 								Disabled.Name = "Disabled"
 								
-								Disabled.Value = tick( ) + _G.ServerOffset + Cooldown
+								Disabled.Value = TimeSync.GetServerTime() + Cooldown
 								
 								Disabled.Parent = Nearest
 								

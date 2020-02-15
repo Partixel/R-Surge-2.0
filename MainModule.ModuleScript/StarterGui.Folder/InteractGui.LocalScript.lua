@@ -16,7 +16,7 @@ repeat wait( ) until _G.Interactables
 	
 	CharacterOnly = Folder = Will only show if your camera is focused on your character ( stops e.g. drones from using the interactable )
 	
-	Disabled = NumberValue = Prevents the GUI from being selected. If value is 0 then GUI will show infinity symbol, else GUI will assume value is the time until it is next enabled, e.g. tick( )+ 5 + _G.ServerOffset will count down from 5. This is used by the Cooldown option.
+	Disabled = NumberValue = Prevents the GUI from being selected. If value is 0 then GUI will show infinity symbol, else GUI will assume value is the time until it is next enabled, e.g. TimeSync.GetServerTime() + 5 will count down from 5. This is used by the Cooldown option.
 	
 	MinXSize = IntValue = The size in pixels of the GUI when it's not selected
 	
@@ -45,6 +45,8 @@ repeat wait( ) until _G.Interactables
 								The frame must be Size ( 1, 0, 1, 0 ) Position ( 0, 0, 0, 0 ) and you must use ExtraYSize to set the size in pixels of your custom frame.
 	
 --]]
+
+local TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
 
 local Plr = game:GetService( "Players" ).LocalPlayer
 
@@ -166,7 +168,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	if InteractObj:FindFirstChild( "Disabled" )  then
 		
-		Gui.KeyBack.KeyText.Text = InteractObj.Disabled.Value == 0 and "∞" or math.ceil( math.max( InteractObj.Disabled.Value - tick( ) - _G.ServerOffset, 0 ) )
+		Gui.KeyBack.KeyText.Text = InteractObj.Disabled.Value == 0 and "∞" or math.ceil( math.max( InteractObj.Disabled.Value - tick( ) - TimeSync.ServerOffset, 0 ) )
 		
 	elseif Interactables.LocalDisabled[ InteractObj ] then
 		

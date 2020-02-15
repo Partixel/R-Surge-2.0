@@ -2,17 +2,9 @@ local Players, ContextActionService, CollectionService = game:GetService("Player
 
 local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")) or _G.S20Config, IsServer = game:GetService("RunService"):IsServer()}
 
+local TimeSync
 if not Core.IsServer then
-	local ClientSync = script:WaitForChild("ClientSync")
-	coroutine.wrap(function()
-		while true do
-			local StartTime, ServerTime, ClientTime = tick(), ClientSync:InvokeServer(tick()+(_G.ServerOffset or 0)), tick()
-			
-			_G.ServerOffset = ServerTime + (ClientTime - StartTime) / 2 - ClientTime
-			
-			wait(10)
-		end
-	end)()
+	TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
 end
 
 Core.WeaponTypes = {}
@@ -47,6 +39,7 @@ if Core.IsServer then
 		AddWeaponType(Module)
 	end
 else
+	
 	function AddWeaponType(Module)
 		local WeaponType = require(Module)(Core)
 		WeaponType.Events = {}
@@ -356,7 +349,7 @@ function Core.SetMouseDown(Weapon)
 			if Core.IsServer then		
 				coroutine.wrap(Core.HandleHoldReplication)(Weapon.User, Weapon.StatObj, tick( ))
 			else
-				Core.HoldReplication:FireServer(Weapon.StatObj, tick( ) + _G.ServerOffset)
+				Core.HoldReplication:FireServer(Weapon.StatObj, TimeSync.GetServerTime())
 			end
 		end
 		Core.HoldStart:Fire(Weapon.StatObj)
@@ -832,7 +825,7 @@ else
 	Core.HandlePlr(Players.LocalPlayer)
 	
 	function Core.HandleServerReplication(User, StatObj, Time, ...)
-		Core.WeaponReplication:FireServer(StatObj, Time + _G.ServerOffset, ...)
+		Core.WeaponReplication:FireServer(StatObj, Time + TimeSync.ServerOffset, ...)
 	end
 	
 	Core.LPlrsTarget = {}

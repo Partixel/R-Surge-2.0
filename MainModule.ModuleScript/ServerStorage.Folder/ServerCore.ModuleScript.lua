@@ -3,13 +3,6 @@ local Players, CollectionService = game:GetService("Players"), game:GetService("
 return function(Core)
 	local script = getfenv(0,Core).script
 	
-	local ClientSync = Instance.new("RemoteFunction")
-	ClientSync.Name = "ClientSync"
-	ClientSync.Parent = script
-	ClientSync.OnServerInvoke = function(Plr, CT)
-		return tick()
-	end
-	
 	----[[WEAPONS]]----
 	function Core.HandleHoldReplication(User, StatObj, Time)
 		if StatObj and StatObj.Parent then

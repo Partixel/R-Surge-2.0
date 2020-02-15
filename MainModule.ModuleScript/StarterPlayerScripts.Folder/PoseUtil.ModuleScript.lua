@@ -33,8 +33,7 @@ for _, Plr in ipairs( Players:GetPlayers( ) ) do
 end
 
 if game["Run Service"]:IsClient( ) then
-	
-	repeat wait( ) until _G.ServerOffset
+	local TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
 	
 	local Watching = { }
 	
@@ -50,7 +49,7 @@ if game["Run Service"]:IsClient( ) then
 			
 			if b[ Pose ] then
 				
-				if not t then t = tick( ) + _G.ServerOffset end
+				if not t then t = TimeSync.GetServerTime() end
 				
 				local Plr = game.Players:GetPlayerByUserId( tonumber( a ) )
 				
@@ -86,7 +85,7 @@ if game["Run Service"]:IsClient( ) then
 			
 			PlrPoses = Plr
 			
-			local t = tick( ) + _G.ServerOffset
+			local t = TimeSync.GetServerTime()
 			
 			for a, b in pairs( PlrPoses ) do
 				
@@ -114,7 +113,7 @@ if game["Run Service"]:IsClient( ) then
 		
 		PlrPoses[ UserId ][ Pose ] = {State, Time}
 		
-		Module.CallWatched( Pose, Plr, State, tick( ) + _G.ServerOffset - Time )
+		Module.CallWatched( Pose, Plr, State, TimeSync.GetServerTime() - Time )
 		
 	end )
 	
@@ -136,7 +135,7 @@ if game["Run Service"]:IsClient( ) then
 			
 			Module.CallWatched( Pose, Plr, State, 0 )
 			
-			SendPose:FireServer( Pose, State, tick( ) + _G.ServerOffset )
+			SendPose:FireServer( Pose, State, TimeSync.GetServerTime() )
 			
 		end
 		
