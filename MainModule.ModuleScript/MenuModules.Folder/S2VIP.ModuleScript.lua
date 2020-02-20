@@ -112,16 +112,10 @@ return {
 	BeforeSave = function(Plr, Data)
 		if Data then
 			for i = 1, 4 do
-				Data[i] = Data[i] or false
-			end
-		end
-	end,
-	BeforeInitialGet = function(Plr, Data)
-		if Data then
-			for i = 1, 4 do
 				Data[i] = Data[i] or nil
 			end
 		end
+		return Data
 	end,
 	BeforeRemoteSet = function(Plr, DataStore, Remote, VIP, Enabled, Color)
 		if Enabled ~= nil and PlayerOwnsAsset(Plr, VIP) then
