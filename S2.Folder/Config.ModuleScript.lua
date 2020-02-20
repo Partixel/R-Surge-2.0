@@ -1,6 +1,6 @@
 return {
 	--[[Uses Major.minor.patch format, if a number is specified instead of * it'll restrict the version to that number]]
-	Version = "2.*.*", -- Default - "*.*.*"
+	Version = "3.*.*", -- Default - "*.*.*"
 	
 	--[[If the name of an object S2 loads in (e.g. "Hud") is in this table it won't load said object]]
 	Disabled = { }, -- Default - { }
