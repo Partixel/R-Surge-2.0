@@ -92,7 +92,8 @@ WeaponTypeOverrides = {
 	KillFeedVerticalAlign = "Top", -- Default - "Top"
 	
 	--[[Adds the number of players on a team after the teams name, will require scripts that access teams to be updated to do:
-	game.Teams[ "S2_TEAMNAME" ].Value instead of game.Teams.TEAMNAME]]
+game.Teams[ "S2_TEAMNAME" ].Value instead of game.Teams.TEAMNAME
+If this is a string it'll be used as a template for the team names (e.g. "%PlayerCount% Player(s) on %TeamName%" will translate to "2 Player(s) on Red Team" assuming the teams name is "Red Team" and it has 2 players on it]]
 	TeamCounts = true, -- Default - false
 	
 	--------[[ Leaderboard Configs ]]--------
@@ -135,5 +136,5 @@ WeaponTypeOverrides = {
 	
 	CreditsPerHeal = 0, -- Default - 0
 	
-	SetupVersion = "1.3.0", -- DO NOT CHANGE THIS
+	SetupVersion = "1.4.0", -- DO NOT CHANGE THIS
 }
