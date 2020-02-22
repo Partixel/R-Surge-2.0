@@ -273,11 +273,6 @@ if game.ReplicatedStorage.RaidLib:FindFirstChild( "HomeWinAmount" ) then
 	
 	Changed( )
 	
-	function Toggle( )
-		
-		
-	end
-	
 	Term.Visible = true
 	
 	local OfficialRaid = game.ReplicatedStorage:WaitForChild("RaidLib"):WaitForChild( "OfficialRaid" )
@@ -326,11 +321,11 @@ if game.ReplicatedStorage.RaidLib:FindFirstChild( "HomeWinAmount" ) then
 		
 		if not S then return end
 		
-		Term.Text = FormatTime( math.ceil( Limit - ( ( TimeSync.GetServerTime() ) - S ) ) )
+		Term.Text = FormatTime( math.ceil( Limit - ( TimeSync.GetServerTime() - S ) ) )
 		
 		while wait( 1 ) and Start == S and Limit == L do
 			
-			Term.Text = FormatTime( math.ceil( Limit - ( ( TimeSync.GetServerTime() ) - S ) ) )
+			Term.Text = FormatTime( math.ceil( Limit - ( TimeSync.GetServerTime() - S ) ) )
 			
 		end
 		
