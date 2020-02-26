@@ -170,6 +170,8 @@ KBU.AddBind{ Name = "Crouch", Category = "Surge 2.0", Callback = function ( Bega
 		
 		PU.SetPose( "Crouching", true )
 		
+		PU.SetPose( "Sprinting", false )
+		
 		Debounce = true
 		
 		wait( )

@@ -171,8 +171,6 @@ KBU.AddBind{ Name = "Sprint", Category = "Surge 2.0", Callback = function ( Bega
 --			if Weapon and ( Weapon.PreventSprint or Weapon.Reloading ) then return false end
 			
 			if Weapon and Weapon.PreventSprint then return false end
-					
-			Core.PreventCrouch.Sprinting = true
 			
 			PU.SetPose( "Sprinting", true )
 			
