@@ -2,7 +2,7 @@ local new, inverse = Instance.new, CFrame.new( ).inverse
 
 function Weld( Tool )
 	
-	if not Tool:FindFirstChild( "GunStat" ) then return end
+	if not Tool:FindFirstChild( "RaycastGunStat" ) then return end
 	
 	local Handle = Tool:FindFirstChild( "Handle" )
 	
