@@ -2,6 +2,7 @@ local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" 
 local ThemeUtil = require(game:GetService("ReplicatedStorage"):WaitForChild("ThemeUtil"):WaitForChild("ThemeUtil"))
 local StringCalculator = require(script:WaitForChild("StringCalculator"))
 local CollectionService = game:GetService( "CollectionService" )
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local EscapePatterns = {
 	["("] = "%(",
@@ -19,6 +20,65 @@ local EscapePatterns = {
 	["\0"] = "%z",
 }
 
+local Plrs, TeamEvent, AddedEvent, RemovedEvent
+local function HandleTeam()
+	if Plrs then
+		for Plr, Info in ipairs(Plrs) do
+			for Humanoid, DisplayDistanceType in pairs(Info[2]) do
+				Humanoid.DisplayDistanceType = DisplayDistanceType
+			end
+			
+			Info[1]:Disconnect()
+			Plrs[Plr] = nil
+		end
+		
+		AddedEvent:Disconnect()
+		RemovedEvent:Disconnect()
+	end
+	
+	Plrs = {}
+	
+	for _, Plr in ipairs(LocalPlayer.Team:GetPlayers()) do
+		if Plr ~= LocalPlayer then
+			local PlrTable = setmetatable({nil, setmetatable({}, {__mode = "k"})}, {__mode = "k"})
+			Plrs[Plr] = PlrTable
+			if Plr.Character then
+				PlrTable[2][Plr.Character:WaitForChild("Humanoid")] = Plr.Character.Humanoid.DisplayDistanceType
+				Plr.Character.Humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+			end
+			
+			PlrTable[1] = Plr.CharacterAdded:Connect(function(Char)
+				PlrTable[2][Char:WaitForChild("Humanoid")] = Char.Humanoid.DisplayDistanceType
+				Char.Humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+			end)
+		end
+	end
+	
+	AddedEvent = LocalPlayer.Team.PlayerAdded:Connect(function(Plr)
+		local PlrTable = setmetatable({nil, setmetatable({}, {__mode = "k"})}, {__mode = "k"})
+		Plrs[Plr] = PlrTable
+		if Plr.Character then
+			PlrTable[2][Plr.Character:WaitForChild("Humanoid")] = Plr.Character.Humanoid.DisplayDistanceType
+			Plr.Character.Humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		end
+		
+		PlrTable[1] = Plr.CharacterAdded:Connect(function(Char)
+			PlrTable[2][Char:WaitForChild("Humanoid")] = Char.Humanoid.DisplayDistanceType
+			Char.Humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		end)
+	end)
+	
+	RemovedEvent = LocalPlayer.Team.PlayerRemoved:Connect(function(Plr)
+		if Plr ~= LocalPlayer then
+			for Humanoid, DisplayDistanceType in pairs(Plrs[Plr][2]) do
+				Humanoid.DisplayDistanceType = DisplayDistanceType
+			end
+			
+			Plrs[Plr][1]:Disconnect()
+			Plrs[Plr] = nil
+		end
+	end)
+end
 return {
 	RequiresRemote = true,
 	ButtonText = "Surge 2.0",
@@ -38,6 +98,27 @@ return {
 	SavedSettings = {},
 	SetupGui = function(self)
 		ThemeUtil.BindUpdate(self.Gui, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
+		
+		self:AddSetting{Name = "ShowFriendlyNames", Text = "Show Team Character Names", Default = true, Update = function(Options, Val)
+			if Val then
+				if Plrs then
+					for Plr, Info in pairs(Plrs) do
+						for Humanoid, DisplayDistanceType in pairs(Info[2]) do
+							Humanoid.DisplayDistanceType = DisplayDistanceType
+						end
+						
+						Info[1]:Disconnect()
+					end
+					
+					Plrs = nil
+					
+					TeamEvent, AddedEvent, RemovedEvent = TeamEvent:Disconnect(), AddedEvent:Disconnect(), RemovedEvent:Disconnect()
+				end
+			elseif not Plrs then
+				TeamEvent = LocalPlayer:GetPropertyChangedSignal("Team"):Connect(HandleTeam)
+				HandleTeam()
+			end
+		end}
 		
 		for _, Setting in ipairs(self.Settings) do
 			if self.SavedSettings[Setting.Name] == nil or type(self.SavedSettings[Setting.Name]) ~= type(Setting.Default) then
