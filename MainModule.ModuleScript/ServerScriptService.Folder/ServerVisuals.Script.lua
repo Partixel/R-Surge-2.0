@@ -157,7 +157,7 @@ end)
 
 Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, _, Barrel, Hit, End )
 	
-	if not Barrel or not StatObj or not StatObj.Parent or not Hit or Hit.Anchored then return end
+	if not Hit or Hit.Anchored then return end
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
@@ -169,9 +169,9 @@ Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connec
 	
 	local Velocity = ( End - Barrel.Position ).Unit * math.abs( Weapon.Damage ) * ( ( Weapon.Range - ( End - Barrel.Position ).magnitude ) / Weapon.Range ) * Weapon.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 )
 	
-	--Hit.Velocity = Hit.Velocity + Velocity
+	Hit.Velocity = Hit.Velocity + Velocity
 	
-	local BodyVelocity = Instance.new( "BodyVelocity", Hit )
+	--[[ocal BodyVelocity = Instance.new( "BodyVelocity", Hit )
 	
 	BodyVelocity.Velocity = Velocity * 0.2
 	
@@ -179,7 +179,7 @@ Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connec
 		
 		BodyVelocity:Destroy( )
 		
-	end )
+	end )]]
 	
 end )
 
