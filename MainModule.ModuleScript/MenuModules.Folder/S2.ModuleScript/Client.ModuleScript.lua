@@ -23,7 +23,7 @@ local EscapePatterns = {
 local Plrs, TeamEvent, AddedEvent, RemovedEvent
 local function HandleTeam()
 	if Plrs then
-		for Plr, Info in ipairs(Plrs) do
+		for Plr, Info in pairs(Plrs) do
 			for Humanoid, DisplayDistanceType in pairs(Info[2]) do
 				Humanoid.DisplayDistanceType = DisplayDistanceType
 			end
