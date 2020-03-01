@@ -376,6 +376,8 @@ Core.Events.MuzzleEffects = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connec
 		
 		for i = 1, 5 do
 			
+			if not Part.Parent then break end
+			
 			Part.SmokeParticle:Emit( 5 )
 			
 			wait( )
