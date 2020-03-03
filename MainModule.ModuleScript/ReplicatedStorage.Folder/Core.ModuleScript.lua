@@ -863,7 +863,7 @@ else
 			end
 			
 			Core.DisableBackpack[Key] = true
-		else
+		elseif PrevCoreBackpack then
 			Core.DisableBackpack[Key] = nil
 			
 			if not next(Core.DisableBackpack) then
