@@ -204,7 +204,7 @@ return function ( Main, ModFolder, VH_Events )
 	
 	local TeamKill = ModFolder:FindFirstChild( "TeamKill" ) or Instance.new( "BoolValue" )
 	
-	TeamKill.Value = Core.Config.AllowTeamKill == true
+	TeamKill.Value = Core.Config.WeaponTypeOverrides.All.AllowTeamKill == true
 	
 	TeamKill.Name = "TeamKill"
 	
@@ -224,7 +224,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
-			Core.Config.AllowTeamKill = Args[ 1 ]
+			Core.Config.WeaponTypeOverrides.All.AllowTeamKill = Args[ 1 ]
 			
 			TeamKill.Value = Args[ 1 ]
 			

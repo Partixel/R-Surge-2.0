@@ -76,11 +76,11 @@ return function ( Main, ModFolder, VH_Events )
 		
 	end )
 	
-	Core.Config.AllowTeamKill = ModFolder:WaitForChild( "TeamKill" ).Value
+	Core.Config.WeaponTypeOverrides.All.AllowTeamKill = ModFolder:WaitForChild( "TeamKill" ).Value
 	
 	Main.Events[ #Main.Events + 1 ] = ModFolder.TeamKill.Changed:Connect( function( Value )
 		
-		Core.Config.AllowTeamKill = Value
+		Core.Config.WeaponTypeOverrides.All.AllowTeamKill = Value
 		
 	end )
 	
