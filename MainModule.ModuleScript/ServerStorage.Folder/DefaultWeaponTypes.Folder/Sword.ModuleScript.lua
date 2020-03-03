@@ -20,6 +20,7 @@ return function(Core)
 					if type(Parts) == "table" then
 						Parts = Parts[PartIndex or 1]
 					end
+					
 					Core.DamageHelper(Weapon.User, Part, Weapon.StatObj, Weapon.DamageType and Weapon.DamageType or Core.DamageType.Slash, nil, Core.ClosestPoint(Part, Parts.Position))
 				else
 					local Part = string.byte(Part)
