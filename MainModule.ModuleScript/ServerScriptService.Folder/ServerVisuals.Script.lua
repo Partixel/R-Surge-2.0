@@ -169,9 +169,11 @@ Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connec
 	
 	local Velocity = ( End - Barrel.Position ).Unit * math.abs( Weapon.Damage ) * ( ( Weapon.Range - ( End - Barrel.Position ).magnitude ) / Weapon.Range ) * Weapon.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 )
 	
-	Hit.Velocity = Hit.Velocity + Velocity
+	--Hit.Velocity = Hit.Velocity + Velocity
 	
-	--[[ocal BodyVelocity = Instance.new( "BodyVelocity", Hit )
+	local BodyVelocity = Instance.new( "BodyVelocity", Hit )
+	
+	BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
 	
 	BodyVelocity.Velocity = Velocity * 0.2
 	
@@ -179,7 +181,7 @@ Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connec
 		
 		BodyVelocity:Destroy( )
 		
-	end )]]
+	end )
 	
 end )
 
