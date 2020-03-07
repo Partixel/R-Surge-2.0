@@ -7,6 +7,19 @@ local TweenService = game:GetService( "TweenService" )
 
 local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
 
+local Event
+local HeadRotRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "HeadRot" )
+HeadRotRemote.OnClientEvent:Connect(function(Rotations)
+	if Event then
+		for _, Rot in ipairs(Rotations) do
+			local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
+			if Neck then
+				TweenService:Create( Neck, TweenInfo.new( UpdateRate, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
+			end
+		end
+	end
+end)
+
 local Root, Neck, R6
 function HandleCharacter( Char )
 	
@@ -32,19 +45,6 @@ end
 
 HandleCharacter(Plr.Character or Plr.CharacterAdded:Wait())
 Plr.CharacterAdded:Connect(HandleCharacter)
-
-local Event
-local HeadRotRemote = game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "HeadRot" )
-HeadRotRemote.OnClientEvent:Connect(function(Rotations)
-	if Event then
-		for _, Rot in ipairs(Rotations) do
-			local Neck = Rot[ 1 ].Character and Rot[ 1 ].Character:FindFirstChild( "Neck", true )
-			if Neck then
-				TweenService:Create( Neck, TweenInfo.new( UpdateRate, Enum.EasingStyle.Linear ), { C0 = Rot[ 2 ] } ):Play( )
-			end
-		end
-	end
-end)
 
 function UpdateHead( )
 	if Root and Neck and workspace.CurrentCamera.CameraSubject and workspace.CurrentCamera.CameraSubject:IsA( "Humanoid" ) and workspace.CurrentCamera.CameraSubject.Parent == Plr.Character then
