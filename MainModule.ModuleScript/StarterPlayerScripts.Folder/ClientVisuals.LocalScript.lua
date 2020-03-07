@@ -6,18 +6,54 @@ local TweenService = game:GetService( "TweenService" )
 
 local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
 
-Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
-	local Weapon = Core.GetWeapon(StatObj)
+require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("SharedVisuals"))
+
+Core.WeaponTypes.Sword.Events.AttackSound = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
+	local WeaponStats = Core.GetWeaponStats(StatObj)
 	if Type == 0 then
-		local Anim = Instance.new("StringValue")
-		Anim.Name = "toolanim"
-		Anim.Value = "Slash"
-		Anim.Parent = Weapon.StatObj.Parent
-	else
-		local Anim = Instance.new("StringValue")
-		Anim.Name = "toolanim"
-		Anim.Value = "Lunge"
-		Anim.Parent = Weapon.StatObj.Parent
+		if WeaponStats.SlashSound then
+			local SlashSound = StatObj.Parent.Handle:FindFirstChild("SlashSound") or WeaponStats.SlashSound:Clone()
+			SlashSound.Parent = StatObj.Parent.Handle
+			SlashSound:Play()
+		end
+	elseif WeaponStats.LungeSound then
+		local LungeSound = StatObj.Parent.Handle:FindFirstChild("LungeSound") or WeaponStats.LungeSound:Clone()
+		LungeSound.Parent = StatObj.Parent.Handle
+		LungeSound:Play()
+	end
+end)
+
+Core.WeaponTypes.Sword.Events.VIPSparkles = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
+	local WeaponStats = Core.GetWeaponStats(StatObj)
+	if Type == 1 and typeof(User) == "Instance" and User:FindFirstChild("S2") and User.S2:FindFirstChild("VIPSparkles") and User.S2.VIPSparkles.Value then
+		local Col = BrickColor.Random().Color
+		
+		for _, Part in ipairs(WeaponStats.DamageParts(StatObj)) do
+			if not Part:FindFirstChild("Sparkles") then
+				for a = 1, 5 do
+					Instance.new("Sparkles", Part)
+				end
+			end
+		end
+		
+		for _, Part in ipairs(WeaponStats.DamageParts(StatObj)) do
+			for _, Spark in ipairs(Part:GetChildren()) do
+				if Spark:IsA( "Sparkles" ) then
+					Spark.SparkleColor = Col
+					Spark.Enabled = true
+				end
+			end
+		end
+		
+		wait(0.25)
+		
+		for _, Part in ipairs(WeaponStats.DamageParts(StatObj)) do
+			for _, Spark in ipairs(Part:GetChildren()) do
+				if Spark:IsA( "Sparkles" ) then
+					Spark.Enabled = false
+				end
+			end
+		end
 	end
 end)
 

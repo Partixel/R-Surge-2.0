@@ -42,6 +42,9 @@ return function(Core)
 		ShouldCancelHold = function(Weapon, Time, Part)
 			return typeof(Part) ~= "Instance"
 		end,
+		HandleClientReplication = function(StatObj, User, Type)
+			WeaponType.AttackEvent:Fire(StatObj, User, string.byte(Type))
+		end,
 		Attack = function(Weapon)
 			if not Weapon.AttackCooldown or tick() >= Weapon.AttackCooldown then
 				if Weapon.LastAttack and Weapon.MouseDown - Weapon.LastAttack < 0.2 then
