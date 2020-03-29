@@ -307,12 +307,13 @@ function Module.SetToggle( Name, Val )
 	
 end
 
-local function NameOfKey( Key )
-	
-	if type( Key ) == "string" then return Key end
-	
-	return Key.EnumType == Enum.KeyCode and UIS:GetStringForKeyCode(Key) or Key.Name:gsub( "Button", "" )
-	
+local function NameOfKey(Key)
+	if type( Key ) == "string" then
+		return Key
+	else
+		local Name = Key.EnumType == Enum.KeyCode and UIS:GetStringForKeyCode(Key)
+		return Name and Name ~= "" and Name  or Key.Name:gsub("Button", "")
+	end
 end
 
 function Module.GetKeyInContext( Name )
