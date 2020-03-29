@@ -585,33 +585,25 @@ return function(Core)
 				end
 			end
 		},
-		GetAccuracy = function ( Weapon )
-		
+		GetAccuracy = function(Weapon)
 			local ShotRecoil = Weapon.ShotRecoil
-			
-			if  Weapon.User.Character and Weapon.User.Character:FindFirstChild( "HumanoidRootPart" ) then
-		
-				local Vel = Weapon.User.Character.HumanoidRootPart.Velocity / Vector3.new( 1, 3, 1 )
-		
+			if Weapon.User.Character and Weapon.User.Character:FindFirstChild("HumanoidRootPart") then
+				local Vel = Weapon.User.Character.HumanoidRootPart.Velocity / Vector3.new(1, 3, 1)
 				if Vel.magnitude > 0.1 then
-		
-					ShotRecoil = ShotRecoil + ( Vel.magnitude / 4 * Weapon.MovementAccuracyPercentage )
-		
+					ShotRecoil = ShotRecoil + (Vel.magnitude / 4 * Weapon.MovementAccuracyPercentage)
 				end
-		
 			end
 			
-			return math.max( Weapon.AccurateRange - ShotRecoil, 1 )
-		
+			return math.max(Weapon.AccurateRange - ShotRecoil, 1)
 		end,
-		GetBulletType = function ( Weapon )
-		
-			if not Weapon.BulletType then return WeaponType.BulletTypes.Kinetic end
-		
-			if WeaponType.BulletTypes[ Weapon.BulletType.Name ] then return WeaponType.BulletTypes[ Weapon.BulletType.Name ] end
-		
-			return Weapon.BulletType
-		
+		GetBulletType = function(Weapon)
+			if not Weapon.BulletType then
+				return WeaponType.BulletTypes.Kinetic 
+			elseif WeaponType.BulletTypes[Weapon.BulletType.Name] then
+				return WeaponType.BulletTypes[Weapon.BulletType.Name]
+			else
+				return Weapon.BulletType
+			end
 		end,
 		GetStoredAmmo = function ( Weapon )
 			return WeaponType.StoredAmmo[Weapon.AmmoType]
@@ -622,7 +614,7 @@ return function(Core)
 				WeaponType.StoredAmmoChanged:Fire(Weapon.StatObj, Value)
 				
 				if Weapon.ClipReloadPerSecond and Weapon.Clip < Weapon.ClipSize and Value ~= 0 then
-					Core.WeaponTick[ Weapon ] = true
+					Core.WeaponTick[Weapon] = true
 				end
 			end
 		end,
