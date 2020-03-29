@@ -22,7 +22,7 @@ if Core.Config.TeamCounts then
 		
 		local Name = Team.Name
 		
-		Team.Name = Core.Config.TeamCounts:gsub( "%%%w*%%", { [ "%PlayerCount%" ] = #Team:GetPlayers( ), [ "%TeamName%" ] = Name } )
+		Team.Name = Core.Config.TeamCounts:gsub( "%%(%w*)%%", { [ "PlayerCount" ] = #Team:GetPlayers( ), [ "TeamName" ] = Name } )
 		
 		local Obj = Instance.new( "ObjectValue" )
 		
@@ -34,13 +34,13 @@ if Core.Config.TeamCounts then
 		
 		Team.PlayerAdded:Connect( function ( )
 			
-			Team.Name = Core.Config.TeamCounts:gsub( "%%%w*%%", { [ "%PlayerCount%" ] = #Team:GetPlayers( ), [ "%TeamName%" ] = Name } )
+			Team.Name = Core.Config.TeamCounts:gsub( "%%(%w*)%%", { [ "PlayerCount" ] = #Team:GetPlayers( ), [ "TeamName" ] = Name } )
 			
 		end )
 		
 		Team.PlayerRemoved:Connect( function ( )
 			
-			Team.Name = Core.Config.TeamCounts:gsub( "%%%w*%%", { [ "%PlayerCount%" ] = #Team:GetPlayers( ), [ "%TeamName%" ] = Name } )
+			Team.Name = Core.Config.TeamCounts:gsub( "%%(%w*)%%", { [ "PlayerCount" ] = #Team:GetPlayers( ), [ "TeamName" ] = Name } )
 			
 		end )
 		
