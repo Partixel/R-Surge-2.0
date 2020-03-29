@@ -800,8 +800,11 @@ if not Core.IsServer then
 				TotalDamage = TotalDamage + DamageSplit[2]
 				Split = Split .. DamageSplit[1].Name .. ":" .. (math.floor(math.abs(DamageSplit[2]) * 100 + 0.5) / 100) .. (i == #DamageSplits and "" or ", ")
 			end
-			
-			print("You did " .. (math.floor(math.abs(TotalDamage) * 100 + 0.5) / 100) .. (TotalDamage > 0 and " damage" or " healing") .. " to " .. Core.GetTopDamageable(DamageSplits[1][1]).Parent.Name .. " (" .. Split .. ")")
+			local Top = Core.GetTopDamageable(DamageSplits[1][1])
+			if Top.Parent then
+				Top = Top.Parent
+			end
+			print("You did " .. (math.floor(math.abs(TotalDamage) * 100 + 0.5) / 100) .. (TotalDamage > 0 and " damage" or " healing") .. " to " .. Top.Name .. " (" .. Split .. ")")
 		end
 	end)
 end
