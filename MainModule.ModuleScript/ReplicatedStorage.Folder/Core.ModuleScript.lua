@@ -871,7 +871,7 @@ function Core.HandlePlr(Plr)
 end
 
 if Core.IsServer then
-	require(game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("ServerCore"))(Core)
+	require(game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("ServerCore"))(Core, script)
 else
 	Core.HandlePlr(Players.LocalPlayer)
 	
