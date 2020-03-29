@@ -9,19 +9,19 @@ return function(Core, script)
 			if Weapon then
 				if Weapon.Placeholder then
 					if Time and tick() - Time > 0.6 then
-						warn(User.Name .. " sent an invalid server S2 hold replication request: Took too long to send replication packet, discarding! "  .. (tick() - Time - 0.6) .. "\n", User, StatObj, Time, tick())
+						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Took too long to send replication packet, discarding! "  .. (tick() - Time - 0.6) .. "\n", User, StatObj, Time, tick())
 						return
 					elseif StatObj.Parent.Parent ~= User.Character then
-						warn(User.Name .. " sent an invalid server S2 hold replication request: Weapon is not selected " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
+						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon is not selected " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
 						return
 					end
 				end
 				Weapon.HoldStart = Time
 			else
-				warn(User.Name .. " sent an invalid server S2 hold replication request: Weapon doesn't exist\n", User, StatObj, Time)
+				warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon doesn't exist\n", User, StatObj, Time)
 			end
 		else
-			warn(User.Name .. " sent an invalid server S2 hold replication request: StatObj doesn't exist\n", User, StatObj, Time)
+			warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: StatObj doesn't exist\n", User, StatObj, Time)
 		end
 	end
 	
@@ -172,16 +172,16 @@ return function(Core, script)
 					CancelReplication = Weapon.WeaponType.HandleServerReplication(Weapon, Time, ...)
 				end
 				if CancelReplication then
-					warn(User.Name .. " sent an invalid server S2 replication request: " .. CancelReplication .. "\n", User, StatObj, Time, ...)
+					warn(User.Name .. " sent an invalid server S2 replication request " .. (tick() - Time) .. " seconds ago: " .. CancelReplication .. "\n", User, StatObj, Time, ...)
 				end
 				if not Weapon.WeaponType.ShouldCancelHold or Weapon.WeaponType.ShouldCancelHold(Weapon, Time, ...) then
 					Weapon.HoldStart = nil
 				end
 			else
-				warn(User.Name .. " sent an invalid server S2 replication request: Weapon doesn't exist\n", User, StatObj, Time, ...)
+				warn(User.Name .. " sent an invalid server S2 replication request " .. (tick() - Time) .. " seconds ago: Weapon doesn't exist\n", User, StatObj, Time, ...)
 			end
 		else
-			warn(User.Name .. " sent an invalid server S2 replication request: StatObj doesn't exist\n", User, StatObj, Time, ...)
+			warn(User.Name .. " sent an invalid server S2 replication request " .. (tick() - Time) .. " seconds ago: StatObj doesn't exist\n", User, StatObj, Time, ...)
 		end
 	end
 	
