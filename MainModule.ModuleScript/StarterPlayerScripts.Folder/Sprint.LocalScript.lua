@@ -10,48 +10,45 @@ local TweenService = game:GetService( "TweenService" )
 
 local FOVMod
 
-function UpdateCamera( Sprinting )
-	
+local ActSprint
+
+function UpdateCamera(Sprinting)
 	if Core.ActualSprinting ~= Sprinting then
+		local MySprint = {}
+		ActSprint = MySprint
 		
 --		Core.PreventReload.Sprinting = Sprinting
---		
 --		if Sprinting then
---			
---			local Weapon = Core.Selected[ Plr ] and next( Core.Selected[ Plr ] )
---			
+--			local Weapon = Core.Selected[Plr] and next(Core.Selected[Plr])
 --			if Weapon and Weapon.Reloading then
---				
---				KBU.SetToggle( "Sprint", false )
+--				KBU.SetToggle("Sprint", false)
 --				
 --				return
 --				
 --				Weapon.Reloading = false
---				
 --			end
---			
 --		end
 		
 		Core.PreventCharacterRotation.Sprinting = Sprinting
-		
 		Core.ActualSprinting = Sprinting
 		
 		if not FOVMod or not FOVMod.Parent then
-			
-			FOVMod = Instance.new( "NumberValue" )
-			
+			FOVMod = Instance.new("NumberValue")
 			FOVMod.Name = "FieldOfViewModifier"
-			
 			FOVMod.Value = 1
-			
 		end
 		
 		FOVMod.Parent = workspace.CurrentCamera
 		
-		TweenService:Create( FOVMod, TweenInfo.new( 0.1 ), { Value = Sprinting and 80/75 or 1 } ):Play( )
+		if not Sprinting then
+			wait(0.1)
+			if MySprint ~= ActSprint then
+				return
+			end
+		end
 		
+		TweenService:Create(FOVMod, TweenInfo.new(0.1), {Value = Sprinting and 80/75 or 1}):Play()
 	end
-	
 end
 
 function HandleChar( Char )
