@@ -177,7 +177,6 @@ return {
 						ThemeUtil.BindUpdate(Inst.TextButton, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency"})
 						
 						if Type == "number" then
-							print(Setting.Name, self.Options.SavedSettings[Setting.Name], Setting.Default)
 							Inst.Number.Text = self.Options.SavedSettings[Setting.Name]
 							Inst.Number.PlaceholderText = Inst.Number.Text
 							ThemeUtil.BindUpdate(Inst.Number, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})
