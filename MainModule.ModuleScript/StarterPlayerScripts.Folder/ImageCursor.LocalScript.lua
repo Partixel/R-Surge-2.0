@@ -52,7 +52,7 @@ Core.WeaponDeselected.Event:Connect( function ( StatObj )
 	
 	if Weapon.ShowCursor ~= false and Core.ShowCursor ~= false and ( Core.Config.CursorImage or Weapon.CursorImage ) then
 		
-		Mouse.Icon = PrevIcon
+		Mouse.Icon = PrevIcon or ""
 		
 		PrevIcon = nil
 		
