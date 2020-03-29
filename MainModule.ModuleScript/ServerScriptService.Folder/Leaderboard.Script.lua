@@ -182,13 +182,15 @@ local function OnDeath( Damageable )
 				
 				if DeathInfo.Killer then
 					
-					if typeof( DeathInfo.Killer ) == "Instance" then
+					local Killer = type(DeathInfo.Killer) == "table" and DeathInfo.Killer.Owner or DeathInfo.Killer
+					
+					if typeof( Killer ) == "Instance" then
 						
-						DeathInfo.Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = DeathInfo.Killer.leaderstats.KOs.Value + KOs
+						Killer:WaitForChild( "leaderstats" ):WaitForChild( "KOs" ).Value = Killer.leaderstats.KOs.Value + KOs
 						
 						if Core.Config.CreditsPerKill then
 							
-							local Credits = DeathInfo.Killer:FindFirstChild( "Credits", true )
+							local Credits = Killer:FindFirstChild( "Credits", true )
 							
 							if Credits then Credits.Value = math.floor( Credits.Value + KOs * Core.Config.CreditsPerKill, 0 ) end
 							
@@ -200,13 +202,15 @@ local function OnDeath( Damageable )
 				
 				if DeathInfo.Assister then
 					
-					if typeof( DeathInfo.Assister ) == "Instance" then
+					local Assister = type(DeathInfo.Assister) == "table" and DeathInfo.Assister.Owner or DeathInfo.Assister
+					
+					if typeof( Assister ) == "Instance" then
 						
-						DeathInfo.Assister:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = DeathInfo.Assister.leaderstats.Assists.Value + KOs
+						Assister:WaitForChild( "leaderstats" ):WaitForChild( "Assists" ).Value = Assister.leaderstats.Assists.Value + KOs
 						
 						if Core.Config.CreditsPerKill then
 							
-							local Credits = DeathInfo.Assister:FindFirstChild( "Credits", true )
+							local Credits = Assister:FindFirstChild( "Credits", true )
 							
 							if Credits then Credits.Value = math.floor( Credits.Value + KOs * ( Core.Config.CreditsPerAssist or Core.Config.CreditsPerKill / 2 ), 0 ) end
 							
