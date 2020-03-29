@@ -2,6 +2,10 @@ local Players, ContextActionService, CollectionService = game:GetService("Player
 
 local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")), IsServer = game:GetService("RunService"):IsServer()}
 
+if not Core.IsServer then
+	game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config").Parent = nil
+end
+
 local TimeSync
 if not Core.IsServer then
 	TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
@@ -47,6 +51,7 @@ else
 	end
 	
 	local SharedWeaponTypesFolder = game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("SharedWeaponTypes")
+	SharedWeaponTypesFolder.Parent = nil
 	SharedWeaponTypesFolder.ChildAdded:Connect(AddWeaponType)
 	for _, Module in ipairs(SharedWeaponTypesFolder:GetChildren()) do
 		AddWeaponType(Module)
@@ -74,6 +79,7 @@ if Core.IsServer then
 	end
 else
 	WeaponStatFolder = game:GetService("ReplicatedStorage"):WaitForChild("WeaponStats")
+	WeaponStatFolder.Parent = nil
 end
 
 function Core.FindWeaponStat(Obj)
