@@ -466,7 +466,7 @@ return {
 				
 				local Txt = self.Tab.Search.Text:lower():gsub(".", EscapePatterns)
 				
-				if ("Default"):lower():find(Txt) then
+				if ("default"):find(Txt) then
 					
 					local Preset = script.Preset:Clone()
 					
