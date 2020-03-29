@@ -113,6 +113,11 @@ end
 
 Core.Selected = setmetatable({}, {__mode = 'k'})
 Core.WeaponTick = setmetatable({}, {__mode = 'k'})
+function Core.UpdateLPlrsTarget()
+	local UnitRay = Players.LocalPlayer:GetMouse().UnitRay
+	Core.LPlrsTarget = {Core.FindPartOnRayWithIgnoreFunction(Ray.new(UnitRay.Origin, UnitRay.Direction * 5000), Core.IgnoreFunction, {Players.LocalPlayer.Character})}
+end
+
 function Core.RunSelected()
 	Core.SelectedHB = Heartbeat:Connect(function (Step)
 		if Core.IsServer then
@@ -124,8 +129,7 @@ function Core.RunSelected()
 			Core.SelectedHB:Disconnect()
 			Core.SelectedHB = nil
 		else
-			local UnitRay = Players.LocalPlayer:GetMouse().UnitRay
-			Core.LPlrsTarget = {Core.FindPartOnRayWithIgnoreFunction(Ray.new(UnitRay.Origin, UnitRay.Direction * 5000), Core.IgnoreFunction, {Players.LocalPlayer.Character})}
+			Core.UpdateLPlrsTarget()
 		end
 		
 		for Weapon, _ in pairs(Core.WeaponTick) do
