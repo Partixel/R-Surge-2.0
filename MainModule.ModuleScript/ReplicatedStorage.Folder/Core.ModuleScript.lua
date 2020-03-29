@@ -39,7 +39,6 @@ if Core.IsServer then
 		AddWeaponType(Module)
 	end
 else
-	
 	function AddWeaponType(Module)
 		local WeaponType = require(Module)(Core)
 		WeaponType.Events = {}
@@ -484,7 +483,7 @@ end
 ----[[RAYCAST]]----
 
 function Core.IgnoreFunction(Part)
-    return not CollectionService:HasTag(Part, "nopen") and (not Part or not Part.Parent or CollectionService:HasTag(Part, "forcepen") or Part:FindFirstAncestorWhichIsA("Accoutrement") or Part.Transparency >= 1 or (Core.GetValidDamageable(Part) == nil and Part.CanCollide == false) or (Core.GetValidDamageable(Part) and Part:FindFirstAncestorOfClass("Tool"))) or false
+    return not CollectionService:HasTag(Part, "nopen") and (not Part.Parent or Part.Name == "HumanoidRootPart" or CollectionService:HasTag(Part, "forcepen") or Part:FindFirstAncestorWhichIsA("Accoutrement") or Part.Transparency >= 1 or (Core.GetValidDamageable(Part) == nil and Part.CanCollide == false) or (Core.GetValidDamageable(Part) and Part:FindFirstAncestorOfClass("Tool"))) or false
 
 end
 
