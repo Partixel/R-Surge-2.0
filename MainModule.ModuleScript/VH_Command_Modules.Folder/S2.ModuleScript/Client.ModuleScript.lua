@@ -6,6 +6,22 @@ local KeybindUtil = require( game:GetService( "Players" ).LocalPlayer:WaitForChi
 	
 return function ( Main, ModFolder, VH_Events )
 	
+	if ModFolder:WaitForChild( "Tools" ).Value then
+		Core.SetBackpackDisabled("S2_ToolsCommand", false)
+	else
+		Core.SetBackpackDisabled("S2_ToolsCommand", true)
+		game.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+	end
+	
+	Main.Events[ #Main.Events + 1 ] = ModFolder.Tools.Changed:Connect(function(Value)
+		if Value then
+			Core.SetBackpackDisabled("S2_ToolsCommand", false)
+		else
+			Core.SetBackpackDisabled("S2_ToolsCommand", true)
+			game.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+		end
+	end)
+	
 	Core.Config.AllowSprinting = ModFolder:WaitForChild( "Sprint" ).Value
 	
 	Main.Events[ #Main.Events + 1 ] = ModFolder.Sprint.Changed:Connect( function( Value )

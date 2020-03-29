@@ -74,6 +74,36 @@ return function ( Main, ModFolder, VH_Events )
 	
 	AtEase.Parent = ModFolder
 	
+	local Tools = ModFolder:FindFirstChild( "Tools" ) or Instance.new( "BoolValue" )
+	
+	Tools.Value = Core.Config.AllowSprinting ~= false
+	
+	Tools.Name = "Tools"
+	
+	Main.Commands[ "Tools" ] = {
+		
+		Alias = { Main.TargetLib.AliasTypes.Toggle(1, "tools")},
+		
+		Description = "Enable/disables the ability to use tools",
+		
+		Category = "Training",
+		
+		CanRun = "$admin",	
+		
+		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true, Default = Main.TargetLib.Defaults.Toggle, ToggleValue = function() return Tools.Value end} },
+			
+		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
+			
+			Tools.Value = Args[ 1 ]
+			
+			return true
+			
+		end
+		
+	}
+	
+	Tools.Parent = ModFolder
+	
 	local Sprint = ModFolder:FindFirstChild( "Sprint" ) or Instance.new( "BoolValue" )
 	
 	Sprint.Value = Core.Config.AllowSprinting ~= false
