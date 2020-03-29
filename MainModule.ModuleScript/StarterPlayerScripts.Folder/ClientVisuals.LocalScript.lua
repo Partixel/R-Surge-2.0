@@ -163,25 +163,31 @@ Core.Events.WindupSound = Core.WindupChanged.Event:Connect( function ( StatObj, 
 	
 	local Weapon = Core.GetWeapon( StatObj )
 	
-	if not Weapon.WindupSound then return end
-	
-	local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
-	
-	local WindupSound = Part:FindFirstChild( "Windup" ) or Weapon.WindupSound:Clone( )
-	
-	WindupSound.Parent = Part
-	
-	WindupSound.Looped = true
-	
-	WindupSound.Pitch = math.min( ( Windup or 0 ) / (Weapon.WindupTime or 1), 1 ) * 0.75
-	
-	if State then
+	if Weapon.WindupSound then
 		
-		WindupSound:Play( )
+		local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
 		
-	elseif State == false then
-		
-		WindupSound:Stop( )
+		if Part then
+			
+			local WindupSound = Part:FindFirstChild( "Windup" ) or Weapon.WindupSound:Clone( )
+			
+			WindupSound.Parent = Part
+			
+			WindupSound.Looped = true
+			
+			WindupSound.Pitch = math.min( ( Windup or 0 ) / (Weapon.WindupTime or 1), 1 ) * 0.75
+			
+			if State then
+				
+				WindupSound:Play( )
+				
+			elseif State == false then
+				
+				WindupSound:Stop( )
+				
+			end
+			
+		end
 		
 	end
 	

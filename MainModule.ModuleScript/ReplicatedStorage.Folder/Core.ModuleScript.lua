@@ -130,7 +130,33 @@ function Core.RunSelected()
 		end
 		
 		for Weapon, _ in pairs(Core.WeaponTick) do
-			if Weapon.MouseDown then
+			if not Core.IsServer and Weapon.Placeholder then
+				if Weapon.ReplicatedWindupState ~= nil then
+					local Step = Step
+					if Weapon.ReplicatedWindupTime then
+						Step = TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
+						Weapon.ReplicatedWindupTime = nil
+					end
+					if Weapon.ReplicatedWindupState then
+						if Weapon.WindupTime and Weapon.WindupTime ~= 0 then
+							if Weapon.Reloading then
+								if Weapon.Windup then
+									Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+								end
+							elseif not Weapon.Windup or Weapon.Windup < Weapon.WindupTime then
+								Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step, true)
+							end
+						end
+					else
+						if Weapon.Windup then
+							Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+						else
+							Core.WeaponTick[Weapon] = nil
+							Core.DestroyWeapon(Weapon)
+						end
+					end
+				end
+			elseif Weapon.MouseDown then
 				if Weapon.WindupTime == nil or Weapon.WindupTime == 0 then
 					coroutine.wrap(Core.Attack)(Weapon)
 				elseif Weapon.Reloading then
@@ -208,20 +234,22 @@ function Core.DestroyWeapon(Weapon)
 		Core.WeaponDeselected:Fire(Weapon.StatObj)
 		Core.Weapons[Weapon.StatObj] = nil
 		Core.WeaponTick[Weapon] = nil
-	
+		
 		for a, b in pairs(Weapon.Events) do
 			Weapon.Events[a]:Disconnect()
 		end
 		
-		local StatObj = Weapon.StatObj
+		local StatObj, Placeholder = Weapon.StatObj, Weapon.Placeholder
 		for a, b in pairs(Weapon) do
 			Weapon[a] = nil
 		end
-	
-		if StatObj.Parent then
-			StatObj.Parent:Destroy()
+		
+		if not Placeholder then
+			if StatObj.Parent then
+				StatObj.Parent:Destroy()
+			end
+			StatObj:Destroy()
 		end
-		StatObj:Destroy()
 	end
 end
 
@@ -392,14 +420,38 @@ function Core.SetMouseUp(Weapon)
 end
 
 Core.WindupChanged = Instance.new("BindableEvent")
-function Core.SetWindup(Weapon, Value)
+function Core.SetWindup(Weapon, Value, Placeholder)
 	local Started
 	if not Weapon.Windup then
 		Started = true
 	elseif Value == 0 then
 		Started = false
 	end
+	
+	if not Placeholder then
+		if Weapon.Windup and Value < Weapon.Windup then
+			if Weapon.WindupRampingUp then
+				Weapon.WindupRampingUp = nil
+				if Core.IsServer then		
+					coroutine.wrap(Core.HandleWindupReplication)(Weapon.User, Weapon.StatObj, tick())
+				else
+					Core.WindupReplication:FireServer(Weapon.StatObj, TimeSync.GetServerTime())
+				end
+			end
+		else
+			if not Weapon.WindupRampingUp then
+				Weapon.WindupRampingUp = true
+				if Core.IsServer then		
+					coroutine.wrap(Core.HandleWindupReplication)(Weapon.User, Weapon.StatObj, tick(), true)
+				else
+					Core.WindupReplication:FireServer(Weapon.StatObj, TimeSync.GetServerTime(), true)
+				end
+			end
+		end
+	end
+	
 	Weapon.Windup = Value ~= 0 and Value or nil
+	
 	Core.WindupChanged:Fire(Weapon.StatObj, Weapon.Windup, Started)
 end
 
@@ -846,6 +898,48 @@ else
 			end
 		else
 			warn(User.Name .. " sent an invalid client S2 replication request: StatObj doesn't exist\n", User, StatObj, ...)
+		end
+	end)
+	
+	Core.WindupReplication = script:WaitForChild("WindupReplication")
+	Core.WindupReplication.OnClientEvent:Connect(function(User, StatObj, Time, State)
+		if StatObj and StatObj.Parent then
+			local WeaponType = Core.GetWeaponType(StatObj)
+			if WeaponType then
+				local Weapon = Core.GetWeapon(StatObj)
+				if not Weapon then
+					Weapon = setmetatable({
+						Placeholder = true,
+						StatObj = StatObj,
+						User = User,
+						WeaponType = WeaponType
+					}, {__index = Core.GetWeaponStats(StatObj)})
+					
+					Weapon.Events = {
+						StatObj.AncestryChanged:Connect(function()
+							if not StatObj:IsDescendantOf(game) then
+								Core.DestroyWeapon(Weapon)
+							end
+						end)
+					}
+					
+					Core.Weapons[StatObj] = Weapon
+					Core.WeaponTick[Weapon] = true
+					
+					Core.Selected[User] = Core.Selected[User] or {}
+					Core.Selected[User][Weapon] = tick()
+					if not Core.SelectedHB then
+						Core.RunSelected()
+					end
+				end
+				
+				Weapon.ReplicatedWindupTime = Time
+				Weapon.ReplicatedWindupState = State or false
+			else
+				warn(User.Name .. " sent an invalid client S2 replication request: WeaponType doesn't exist\n", User, StatObj, Time, State)
+			end
+		else
+			warn(User.Name .. " sent an invalid client S2 replication request: StatObj doesn't exist\n", User, StatObj, Time, State)
 		end
 	end)
 	

@@ -30,6 +30,37 @@ return function(Core, script)
 	Core.HoldReplication.OnServerEvent:Connect(Core.HandleHoldReplication)
 	Core.HoldReplication.Parent = script
 	
+	function Core.HandleWindupReplication(User, StatObj, Time, State)
+		if StatObj and StatObj.Parent then
+			local Weapon = Core.GetWeapon(StatObj)
+			if Weapon then
+				if Weapon.Placeholder then
+					if Time and tick() - Time > 0.6 then
+						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Took too long to send replication packet, discarding! "  .. (tick() - Time - 0.6) .. "\n", User, StatObj, Time, tick())
+						return
+					elseif StatObj.Parent.Parent ~= User.Character then
+						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon is not selected " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
+						return
+					end
+				end
+				for _, Plr in ipairs(Players:GetPlayers()) do
+					if Plr ~= User then
+						Core.WindupReplication:FireClient(Plr, User, StatObj, Time, State)
+					end
+				end
+			else
+				warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon doesn't exist\n", User, StatObj, Time)
+			end
+		else
+			warn(User.Name .. " sent an invalid server S2 hold replication reques " .. (tick() - Time) .. " seconds agot: StatObj doesn't exist\n", User, StatObj, Time)
+		end
+	end
+	
+	Core.WindupReplication = Instance.new("RemoteEvent")
+	Core.WindupReplication.Name = "WindupReplication"
+	Core.WindupReplication.OnServerEvent:Connect(Core.HandleWindupReplication)
+	Core.WindupReplication.Parent = script
+	
 	Core.ReplicateWeaponMode = Instance.new("RemoteEvent")
 	Core.ReplicateWeaponMode.Name = "ReplicateWeaponMode"
 	Core.ReplicateWeaponMode.OnServerEvent:Connect(function(User, StatObj, Mode)
