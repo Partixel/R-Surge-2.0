@@ -1,7 +1,6 @@
 local Players, CollectionService = game:GetService("Players"), game:GetService("CollectionService")
 
-return function(Core)
-	local script = getfenv(0,Core).script
+return function(Core, script)
 	
 	----[[WEAPONS]]----
 	function Core.HandleHoldReplication(User, StatObj, Time)
