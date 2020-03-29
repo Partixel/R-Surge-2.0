@@ -1,6 +1,6 @@
 local Players, ContextActionService, CollectionService = game:GetService("Players"), game:GetService("ContextActionService"), game:GetService("CollectionService")
 
-local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")) or _G.S20Config, IsServer = game:GetService("RunService"):IsServer()}
+local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")), IsServer = game:GetService("RunService"):IsServer()}
 
 local TimeSync
 if not Core.IsServer then
