@@ -157,6 +157,29 @@ local Presets = {
 		S2_CursorCenterColor = Color3.fromRGB(255, 0, 255),
 		S2_CursorTransparency = 0,
 	},
+	["Dot"] = {
+		S2_CursorDistFromCenter = 5, 	
+		S2_CursorBorderWidth = 1, 	
+		S2_CursorSwapWidthHeight = false, 	
+		S2_CursorCenterBorder = Color3.fromRGB( 46, 46, 46 ), 	
+		S2_CursorCenterBorderTransparency = 0, 	
+		S2_CursorCenterWidth = 5, 	
+		S2_CursorBorder = Color3.fromRGB( 46, 46, 46 ), 	
+		S2_CursorDynamicMovement = false, 	
+		S2_CursorHeight = 6, 	
+		S2_CursorCenterRotateWith = false, 	
+		S2_CursorCenterRotation = 0, 	
+		S2_CursorCenterBorderWidth = 1, 	
+		S2_CursorColor = Color3.fromRGB( 255, 255, 255 ), 	
+		S2_CursorCenterTransparency = 0, 	
+		S2_CursorRotateReload = false, 	
+		S2_CursorRotate = false, 	
+		S2_CursorWidth = 2, 	
+		S2_CursorRotation = 0, 	
+		S2_CursorCenterHeight = 5, 	
+		S2_CursorCenterColor = Color3.fromRGB( 255, 255, 255 ), 	
+		S2_CursorTransparency = 1,	
+	}
 }
 
 function ExportSettings()
