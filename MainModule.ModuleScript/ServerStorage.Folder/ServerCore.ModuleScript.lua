@@ -32,8 +32,18 @@ return function(Core, script)
 	
 	Core.ReplicateWeaponMode = Instance.new("RemoteEvent")
 	Core.ReplicateWeaponMode.Name = "ReplicateWeaponMode"
-	Core.ReplicateWeaponMode.OnServerEvent:Connect(function(Plr, StatObj, Mode)
-		Core.SetWeaponMode(Core.GetWeapon(StatObj), Mode)
+	Core.ReplicateWeaponMode.OnServerEvent:Connect(function(User, StatObj, Mode)
+		if StatObj and StatObj.Parent then
+			local Weapon = Core.GetWeapon(StatObj)
+			if Weapon then
+				Core.SetWeaponMode(Core.GetWeapon(StatObj), Mode)
+			else
+				warn(User.Name .. " sent an invalid server S2 hold replication request: Weapon doesn't exist\n", User, StatObj, Mode)
+			end
+		else
+			warn(User.Name .. " sent an invalid server S2 hold replication request: StatObj doesn't exist\n", User, StatObj, Mode)
+		end
+		
 	end)
 	Core.ReplicateWeaponMode.Parent = script
 	
