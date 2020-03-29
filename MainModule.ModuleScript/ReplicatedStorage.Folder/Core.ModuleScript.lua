@@ -837,7 +837,17 @@ local function ToolAdded(Plr, Tool)
 				WeaponType = WeaponType,
 				CurWeaponMode = 1,
 			}, {__index = Core.GetWeaponStats(StatObj)})
+			
+			Weapon.Events = {
+				StatObj.AncestryChanged:Connect(function()
+					if not StatObj:IsDescendantOf(game) then
+						Core.DestroyWeapon(Weapon)
+					end
+				end)
+			}
+			
 			Core.Weapons[StatObj] = Weapon
+			
 			Tool.Equipped:Connect(function()
 				Core.WeaponSelected:Fire(StatObj)
 			end)
