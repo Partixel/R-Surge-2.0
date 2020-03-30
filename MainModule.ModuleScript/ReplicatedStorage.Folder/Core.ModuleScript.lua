@@ -494,7 +494,6 @@ end
 
 function Core.IgnoreFunction(Part)
     return not CollectionService:HasTag(Part, "nopen") and (not Part.Parent or Part.Name == "HumanoidRootPart" or CollectionService:HasTag(Part, "forcepen") or Part:FindFirstAncestorWhichIsA("Accoutrement") or Part.Transparency >= 1 or (Core.GetValidDamageable(Part) == nil and Part.CanCollide == false) or (Core.GetValidDamageable(Part) and Part:FindFirstAncestorOfClass("Tool"))) or false
-
 end
 
 function Core.FindPartOnRayWithIgnoreFunction(R, IgnoreFunction, Ignore, IgnoreWater)

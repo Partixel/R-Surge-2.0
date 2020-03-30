@@ -631,7 +631,11 @@ return function(Core)
 			if not Weapon.StatObj or Weapon.UseBarrelAsOrigin or Weapon.NoAntiWall or not Weapon.User.Character then return end
 			local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position ), Core.IgnoreFunction, Weapon.Ignore )
 			if Hit then
-				return Hit, End, Normal, Material
+				if Weapon.PreventFireWithoutSnap then
+					return false
+				else
+					return Hit, End, Normal, Material
+				end 
 			end
 		end,
 	}
