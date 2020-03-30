@@ -538,8 +538,12 @@ return {
 			SetupTab = function(self)
 				ThemeUtil.BindUpdate({self.Tab.Export.Code, self.Tab.Export.TextButton, self.Tab.Import.Code, self.Tab.Import.TextButton}, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency"})
 				
-				self.Tab.Export.Code:GetPropertyChangedSignal("Text"):Connect(function()
-					self.Tab.Export.Code.Text = ExportSettings( )
+				self.Tab.Export.Code:GetPropertyChangedSignal("SelectionStart"):Connect(function()
+					self.Tab.Export.Code.CursorPosition = #self.Tab.Export.Code.Text + 1
+					self.Tab.Export.Code.SelectionStart = 1
+				end)
+				
+				self.Tab.Export.Code:GetPropertyChangedSignal("CursorPosition"):Connect(function()
 					self.Tab.Export.Code.CursorPosition = #self.Tab.Export.Code.Text + 1
 					self.Tab.Export.Code.SelectionStart = 1
 				end)
