@@ -131,7 +131,7 @@ local EmojiList = {
 	{":v:", "✌️"},
 	{":raised_hand:", "✋"},
 	{":open_hands:", "👐"},
-	{":muslce:", "💪"},
+	{":muscle:", "💪"},
 	{":pray:", "🙏"},
 	{":point_up:", "☝️"},
 	{":point_up_2:", "👆"},
