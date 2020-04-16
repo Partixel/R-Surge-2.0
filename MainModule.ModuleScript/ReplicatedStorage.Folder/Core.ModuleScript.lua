@@ -746,7 +746,7 @@ function Core.GetBottomDamageable(Damageable)
 	return Damageable
 end
 
-function Core.GetValidDamageable(Obj, Top)
+function Core.GetValidDamageable(Obj)
 	if Obj and Obj:IsDescendantOf(game) then
 		local Damageable = Obj:FindFirstChild("Health") or Obj.Parent:FindFirstChildOfClass("Humanoid") or Obj.Parent:FindFirstChild("Health") or Obj.Parent.Parent:FindFirstChildOfClass("Humanoid") or Obj.Parent.Parent:FindFirstChild("Health")
 		
