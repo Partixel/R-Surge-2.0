@@ -1,5 +1,3 @@
-require(2621701837) -- StringCalculator
-
 return {
 	Key = "Performance1",
 	SendToClient = true,
