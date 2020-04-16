@@ -140,10 +140,8 @@ local function GetSubject( )
 	
 end
 
-local function DefaultShouldOpen( InteractObj, Plr )
-	
-	return Plr.Character and not Plr.Character:FindFirstChildOfClass( "Tool" )
-	
+local function DefaultShouldOpen(InteractObj, Plr)
+	return not InteractObj:FindFirstChild("Hide") and Plr.Character and not Plr.Character:FindFirstChildOfClass("Tool")
 end
 
 local function GetPart(InteractObj)
