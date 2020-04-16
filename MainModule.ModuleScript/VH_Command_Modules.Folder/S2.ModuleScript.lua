@@ -30,7 +30,7 @@ return function ( Main, ModFolder, VH_Events )
 			
 			return ( String == Main.TargetLib.ValidChar or Full[ String ] ) and "full" or Mid[ String ] and "mid" or None[ String ] and "none" or nil
 			
-		end, Name = "easy_normal_hard", Required = true } },
+		end, Name = "full_mid_none", Required = true } },
 			
 		Callback = function ( self, objPlayer, strCmd, Args, NextCmds, Silent )	
 			
