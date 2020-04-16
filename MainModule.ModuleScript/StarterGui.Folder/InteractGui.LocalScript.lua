@@ -16,6 +16,8 @@ repeat wait( ) until _G.Interactables
 	
 	CharacterOnly = Folder = Will only show if your camera is focused on your character ( stops e.g. drones from using the interactable )
 	
+	Hide = Folder = Will prevent the GUI from showing and close it if already shown
+	
 	Disabled = NumberValue = Prevents the GUI from being selected. If value is 0 then GUI will show infinity symbol, else GUI will assume value is the time until it is next enabled, e.g. TimeSync.GetServerTime() + 5 will count down from 5. This is used by the Cooldown option.
 	
 	MinXSize = IntValue = The size in pixels of the GUI when it's not selected
@@ -180,7 +182,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	local MinXSize = InteractObj:FindFirstChild( "MinXSize" ) and InteractObj.MinXSize.Value or 50
 	
-	local NameSize = ( InteractObj:FindFirstChild( "Name" ) and (25 * (MaxXSize / 75)) or 0 )
+	local NameSize = ( InteractObj:FindFirstChild( "Name" ) and 25 or 0 )
 
 	local ExtraYSize = NameSize + ( InteractObj:FindFirstChild( "ExtraYSize" ) and InteractObj.ExtraYSize.Value or 0 )
 	
