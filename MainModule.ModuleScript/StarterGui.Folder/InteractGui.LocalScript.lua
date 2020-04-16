@@ -180,7 +180,7 @@ Interactables.OpenGui:Connect( function ( InteractObj, Gui, Key )
 	
 	local MinXSize = InteractObj:FindFirstChild( "MinXSize" ) and InteractObj.MinXSize.Value or 50
 	
-	local NameSize = ( InteractObj:FindFirstChild( "Name" ) and 25 or 0 )
+	local NameSize = ( InteractObj:FindFirstChild( "Name" ) and (25 * (MaxXSize / 75)) or 0 )
 
 	local ExtraYSize = NameSize + ( InteractObj:FindFirstChild( "ExtraYSize" ) and InteractObj.ExtraYSize.Value or 0 )
 	
