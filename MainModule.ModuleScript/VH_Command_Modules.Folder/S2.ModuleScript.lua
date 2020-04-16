@@ -88,7 +88,7 @@ return function ( Main, ModFolder, VH_Events )
 		
 		Category = "Training",
 		
-		CanRun = "$admin",	
+		CanRun = "$moderator",	
 		
 		ArgTypes = { { Func = Main.TargetLib.ArgTypes.Boolean, Required = true, Default = Main.TargetLib.Defaults.Toggle, ToggleValue = function() return Tools.Value end} },
 			
