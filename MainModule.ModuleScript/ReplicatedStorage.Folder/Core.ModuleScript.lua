@@ -351,7 +351,7 @@ end
 
 Core.PreventAttack = {}
 function Core.CanAttack(Weapon)
-	return not Weapon.PreventAttack and not next(Core.PreventAttack) and (typeof(Weapon.User) ~= "Instance" or (Weapon.User.Character and Weapon.User.Character:FindFirstChildOfClass("Humanoid") and Weapon.User.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead))
+	return not Weapon.PreventAttack and not next(Core.PreventAttack) and (typeof(Weapon.User) ~= "Instance" or (Weapon.User.Character and Weapon.User.Character:FindFirstChildOfClass("Humanoid") and Weapon.User.Character:FindFirstChildOfClass("Humanoid").Health > 0))
 end
 
 function Core.Attack(Weapon)
