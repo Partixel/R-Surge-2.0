@@ -83,6 +83,12 @@ return {
 	RequiresRemote = true,
 	ButtonText = "Surge 2.0",
 	AddSetting = function(self, Setting)
+		if self.SettingOverrides and self.SettingOverrides[Setting.Name] then
+			for k, v in pairs(self.SettingOverrides[Setting.Name]) do
+				Setting[k] = v
+			end
+		end
+		
 		self.Settings[#self.Settings + 1] = Setting
 		if self.SavedSettings[Setting.Name] == nil or type(self.SavedSettings[Setting.Name]) ~= type(Setting.Default) then
 			self.SavedSettings[Setting.Name] = Setting.Default

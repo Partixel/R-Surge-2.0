@@ -29,6 +29,12 @@ local SpecialMats = {
 return {
 	RequiresRemote = true,
 	AddSetting = function(self, Setting)
+		if self.SettingOverrides and self.SettingOverrides[Setting.Name] then
+			for k, v in pairs(self.SettingOverrides[Setting.Name]) do
+				Setting[k] = v
+			end
+		end
+		
 		self.Settings[#self.Settings + 1] = Setting
 		if self.SavedSettings[Setting.Name] == nil then
 			self.SavedSettings[Setting.Name] = Setting.Default
