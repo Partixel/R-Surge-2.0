@@ -28,7 +28,19 @@ SendPose.OnServerEvent:Connect( function ( Plr, Pose, State, Time )
 	
 end )
 
+Players.PlayerRemoving:Connect( function ( Plr )
+	
+	PlrPoses[ tostring( Plr.UserId ) ] = nil
+	
+end )
+
 Players.PlayerAdded:Connect( function ( Plr )
+	
+	Plr.CharacterAdded:Connect( function ( )
+		
+		PlrPoses[ tostring( Plr.UserId ) ] = nil
+		
+	end )
 	
 	if next( PlrPoses ) then
 		
@@ -37,3 +49,13 @@ Players.PlayerAdded:Connect( function ( Plr )
 	end
 	
 end )
+
+for _, Plr in ipairs( Players:GetPlayers( ) ) do
+	
+	Plr.CharacterAdded:Connect( function ( )
+		
+		PlrPoses[ tostring( Plr.UserId ) ] = nil
+		
+	end )
+	
+end
