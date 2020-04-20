@@ -1,8 +1,8 @@
 return {
 	--[[Uses Major.minor.patch format, if a number is specified instead of * it'll restrict the version to that number]]
-	Version = "4.*.*", -- Default - "*.*.*"
+	Version = "5.*.*", -- Default - "5.*.*"
 	
-	--[[If the name of an object S2 loads in (e.g. "Hud") is in this table it won't load said object]]
+	--[[If the name of an object S2 loads in (e.g. ["Hud"] = true) is in this table it won't load said object]]
 	Disabled = { }, -- Default - { }
 	
 	--------[[ Damage Configs ]]--------
@@ -28,9 +28,9 @@ return {
 	--------[[ Gameplay Configs ]]--------
 	
 	--[[Allows you to override the default weapon stats for all weapons of a specific type, e.g.
-WeaponTypeOverrides = {
-	RaycastGun = {Damage = 20, FireRate = 0.5},
-}]]
+	WeaponTypeOverrides = {
+		RaycastGun = {Damage = 20, FireRate = 0.5},
+	}]]
 	WeaponTypeOverrides = { 
 		
 		All = { 
@@ -45,9 +45,9 @@ WeaponTypeOverrides = {
 			
 			AllowTeamKill = false,
 			
-			GlobalDamageMultiplier = 1,
+			ShotKnockbackPercentage = 1,
 			
-			Resistances = { },
+			GlobalDamageMultiplier = 1,
 			
 			MovementAccuracyPercentage = 1,
 			
@@ -55,7 +55,7 @@ WeaponTypeOverrides = {
 			
 			ScreenRecoilPercentage = 1,
 			
-			ShotKnockbackPercentage = 1,
+			Resistances = { },
 			
 		},
 		
@@ -92,49 +92,23 @@ WeaponTypeOverrides = {
 	KillFeedVerticalAlign = "Top", -- Default - "Top"
 	
 	--[[Adds the number of players on a team after the teams name, will require scripts that access teams to be updated to do:
-game.Teams[ "S2_TEAMNAME" ].Value instead of game.Teams.TEAMNAME
-If this is a string it'll be used as a template for the team names (e.g. "%PlayerCount% Player(s) on %TeamName%" will translate to "2 Player(s) on Red Team" assuming the teams name is "Red Team" and it has 2 players on it]]
+	game.Teams[ "S2_TEAMNAME" ].Value instead of game.Teams.TEAMNAME
+	If this is a string it'll be used as a template for the team names (e.g. "%PlayerCount% Player(s) on %TeamName%" will translate to "2 Player(s) on Red Team" assuming the teams name is "Red Team" and it has 2 players on it]]
 	TeamCounts = true, -- Default - false
 	
 	--------[[ Leaderboard Configs ]]--------
 	
-	--[[If true, wipeouts will be shown on the leaderboard]]
-	ShowWOs = true, -- Default - true
+	--[[Lets you override/add stat options for the S2 leaderboard system - You can check what values are available within the Leaderboard script - S2.ServerScriptService.Leaderboard]]
+	LeaderboardOverrides = { }, -- Default - { }
 	
-	--[[If true, assists will be shown on the leaderboard]]
-	ShowAssists = true, -- Default - true
+	--[[Lets create a stat that combines other stats, e.g.
+	["K/D/A"] = {
+		Format = "{Kills}/{Deaths}/{Assists}",
+		Priority = 110,
+	},]]
+	LeaderboardCombinedStats = { }, -- Default - { }
 	
-	--[[If true, damage done will be shown on the leaderboard]]
-	ShowDamaged = false, -- Default - false
+	--------[[ DO NOT TOUCH ]]--------
 	
-	--[[If true, healing done will be shown on the leaderboard]]
-	ShowHealed = false, -- Default - false
-	
-	--[[The GroupId used for the rank on the leaderboard ( If nil, no rank stat is created )]]
-	RankGroupId = nil, -- Default - nil
-	
-	--[[If true, credits will be shown on the leaderboard]]
-	ShowCredits = false, -- Default - false
-	
-	--[[The default amount of credits a player will start with]]
-	DefaultCredits = 100, -- Default - 100
-	
-	SaveCredits = false, -- Default - false
-	
-	--[[The time between each payday]]
-	PaydayDelay = 60, -- Default - 60
-	
-	--[[How many credits a player gets per payday]]
-	CreditsPerPayday = 20, -- Default - 20
-	
-	--[[How many points a player gets for kills]]
-	CreditsPerKill = 40, -- Default - 40
-	
-	CreditsPerAssist = 20, -- Default - 20
-	
-	CreditsPerDamage = 0, -- Default - 0
-	
-	CreditsPerHeal = 0, -- Default - 0
-	
-	SetupVersion = "1.4.0", -- DO NOT CHANGE THIS
+	SetupVersion = "1.5.0", -- DO NOT CHANGE THIS
 }

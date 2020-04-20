@@ -27,21 +27,15 @@ Assists:GetPropertyChangedSignal( "Value" ):Connect( Assist )
 
 Assist( )
 
-local WOs
-while not WOs do
-	WOs = Plr:FindFirstChild( "WOs", true )
-end
+local WOs = Plr:WaitForChild("S2"):WaitForChild("Deaths")
 
-local KOs
-while not KOs do
-	KOs = Plr:FindFirstChild( "KOs", true )
-end
+local KOs = Plr:WaitForChild("S2"):WaitForChild("Kills")
 
 local function WO( )
 	
 	HealthGui.Health.Info.Wipeouts.Text = "Wipeouts  |  " .. WOs.Value
 	
-	HealthGui.Health.Info.KDR.Text = "KDR  |  " .. math.floor( KOs.Value / math.max( 1,WOs.Value ) * 100 ) / 100
+	HealthGui.Health.Info.KDR.Text = "KDR  |  " .. math.floor( KOs.Value / math.max( 1, WOs.Value ) * 100 ) / 100
 	
 end
 

@@ -132,13 +132,13 @@ return {
 			if VIP ~= 4 then
 				local S2Folder = Plr:FindFirstChild("S2") or Instance.new("Folder")
 				S2Folder.Name = "S2"
+				S2Folder.Parent = Plr
 				
 				local VIPObj = S2Folder:FindFirstChild("VIP" .. (VIP == 1 and "Sparkles" or VIP == 2 and "Neon" or "Color")) or VIP == 3 and Instance.new("BrickColorValue") or Instance.new("BoolValue")
 				VIPObj.Name = "VIP" .. ( VIP == 1 and "Sparkles" or VIP == 2 and "Neon" or "Color" )
 				VIPObj.Value = VIP == 3 and CloseColors(Plr.TeamColor)[Color] or Enabled
 				
 				VIPObj.Parent = S2Folder
-				S2Folder.Parent = Plr
 			end
 			
 			if (VIP == 2 or VIP == 3) and Plr.Character then
@@ -158,13 +158,13 @@ return {
 				if Data[VIP] then
 					local S2Folder = Plr:FindFirstChild("S2") or Instance.new("Folder")
 					S2Folder.Name = "S2"
+					S2Folder.Parent = Plr
 					
 					local VIPObj = S2Folder:FindFirstChild("VIP" .. (VIP == 1 and "Sparkles" or VIP == 2 and "Neon" or "Color")) or VIP == 3 and Instance.new("BrickColorValue") or Instance.new("BoolValue")
 					VIPObj.Name = "VIP" .. ( VIP == 1 and "Sparkles" or VIP == 2 and "Neon" or "Color" )
 					VIPObj.Value = VIP == 3 and CloseColors(Plr.TeamColor)[Data[VIP][Plr.TeamColor.Name] or 1] or Data[VIP]
 					
 					VIPObj.Parent = S2Folder
-					S2Folder.Parent = Plr
 					
 					if VIP ~= 1 and Plr.Character then
 						local CurWep = Plr.Character:FindFirstChildOfClass( "Tool" )
@@ -182,10 +182,7 @@ return {
 		Plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
 			local Data = DataStore:Get()
 			if Data and Data[3] then
-				local S2Folder = Plr:FindFirstChild("S2") or Instance.new("Folder")
-				S2Folder.Name = "S2"
-				
-				local VIPObj = S2Folder:FindFirstChild("VIPColor")
+				local VIPObj = Plr:FindFirstChild("S2") and Plr:FindFirstChild("S2"):FindFirstChild("VIPColor")
 				if VIPObj then
 					VIPObj.Value = CloseColors(Plr.TeamColor)[Data[3] and Data[3][Plr.TeamColor.Name] or 1]
 				end
