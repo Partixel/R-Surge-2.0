@@ -94,12 +94,17 @@ local Stats = setmetatable({
 		Priority = 50,
 		Setup = function(self)
 			if self.PerPayday and self.TimeBetweenPaydays then
+				local NextPayday = Instance.new("NumberValue")
+				NextPayday.Name = "NextPayday"
+				NextPayday.Value = tick() + self.TimeBetweenPaydays
+				NextPayday.Parent = game:GetService("ReplicatedStorage"):WaitForChild("S2")
 				coroutine.wrap(function()
 					while wait(self.TimeBetweenPaydays) do
 						for _, Plr in ipairs(Players:GetPlayers()) do
 							local CreditsStat = GetStat(Plr, "Credits")
 							CreditsStat.Value = CreditsStat.Value + self.PerPayday
 						end
+						NextPayday.Value = tick() + self.TimeBetweenPaydays
 					end
 				end)()
 			end
