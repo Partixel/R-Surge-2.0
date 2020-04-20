@@ -123,7 +123,13 @@ local Stats = setmetatable({
 						end
 					end
 				end
+				if self.AllyReplacement and self.AllyReplacement[Rank] then
+					return self.AllyReplacement[Rank]
+				end
+			elseif self.RankReplacements and self.RankReplacements[Rank] then
+				return self.RankReplacements[Rank]
 			end
+			
 			return Rank
 		end,
 		Setup = function(self)
