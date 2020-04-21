@@ -33,8 +33,20 @@ local function CreateStat(Plr, StatKey, Options, S2Folder, leaderstats)
 			ShowStat.Name = Options.Show
 			
 			ShowStat.Value = Options.FormatForDisplay and Options:FormatForDisplay(Stat.Value) or Stat.Value
+			
+			local MyChange
 			Stat:GetPropertyChangedSignal("Value"):Connect(function()
-				ShowStat.Value = Options.FormatForDisplay and Options:FormatForDisplay(Stat.Value) or Stat.Value
+				local Value = Options.FormatForDisplay and Options:FormatForDisplay(Stat.Value) or Stat.Value
+				MyChange = Value ~= ShowStat.Value or nil
+				ShowStat.Value = Value
+			end)
+			
+			ShowStat:GetPropertyChangedSignal("Value"):Connect(function()
+				if MyChange then
+					MyChange = nil
+				else
+					Stat.Value = ShowStat.Value
+				end
 			end)
 		end
 		
