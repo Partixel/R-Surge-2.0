@@ -114,13 +114,21 @@ local Stats = setmetatable({
 					while wait(self.TimeBetweenPaydays) do
 						for _, Plr in ipairs(Players:GetPlayers()) do
 							local CreditsStat = GetStat(Plr, "Credits")
-							CreditsStat.Value = CreditsStat.Value + self.PerPayday
+							CreditsStat.Value = CreditsStat.Value + self:GetPer("Payday", Plr)
 						end
 						NextPayday.Value = tick() + self.TimeBetweenPaydays
 					end
 				end)()
 			end
-		end
+		end,
+		GetPer = function(self, Per, Plr)
+			local Per = self["Per" .. Per]
+			if type(Per) == "function" then
+				return Per(Plr)
+			else
+				return Per
+			end
+		end,
 	},
 	Rank = {
 		Type = "String",
@@ -274,12 +282,12 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				if Creator and Creator.Value then
 					warn(Damageable.Parent.Name .. " has died to non-S2 damage, please update to using S2s damage system")
 					
-					local KillsStat = GetStat(Victim, "Kills")
+					local KillsStat = GetStat(Creator.Value, "Kills")
 					KillsStat.Value = KillsStat.Value + 1
 					
 					if Stats.Credits.PerKill then
-						local CreditsStat = GetStat(Victim, "Credits")
-						CreditsStat.Value = CreditsStat.Value + Stats.Credits.PerKill
+						local CreditsStat = GetStat(Creator.Value, "Credits")
+						CreditsStat.Value = CreditsStat.Value + Stats.Credits:GetPer("Kill", Creator.Value)
 					end
 				end
 			end
@@ -359,8 +367,8 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 							KillsStat.Value = KillsStat.Value + Kills
 							
 							if Stats.Credits.PerKill then
-								local CreditsStat = GetStat(Victim, "Credits")
-								CreditsStat.Value = CreditsStat.Value + Stats.Credits.PerKill * Kills
+								local CreditsStat = GetStat(Killer, "Credits")
+								CreditsStat.Value = CreditsStat.Value + Stats.Credits:GetPer("Kill", Killer) * Kills
 							end
 						end
 					end
@@ -372,9 +380,12 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 							local AssistsStat = GetStat(Assister, "Assists")
 							AssistsStat.Value = AssistsStat.Value + Kills
 							
-							if Stats.Credits.PerAssist or Stats.Credits.PerKill then
-								local CreditsStat = GetStat(Victim, "Credits")
-								CreditsStat.Value = CreditsStat.Value + (Stats.Credits.PerAssist or Stats.Credits.PerKill / 2) * Kills
+							if Stats.Credits.PerAssist then
+								local CreditsStat = GetStat(Assister, "Credits")
+								CreditsStat.Value = CreditsStat.Value + Stats.Credits:GetPer("Assist", Assister) * Kills
+							elseif Stats.Credits.PerKill then
+								local CreditsStat = GetStat(Assister, "Credits")
+								CreditsStat.Value = CreditsStat.Value + (Stats.Credits:GetPer("Kill", Assister) / 2) * Kills
 							end
 						end
 					end
@@ -403,7 +414,7 @@ Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Di
 			
 			if Stats.Credits["Per" .. Type] then
 				local CreditsStat = GetStat(Attacker, "Credits")
-				CreditsStat.Value = CreditsStat.Value + math.abs(TotalDamage) * Stats.Credits["Per" .. Type]
+				CreditsStat.Value = CreditsStat.Value + math.abs(TotalDamage) * Stats.Credits:GetPer(Type, Attacker)
 			end
 		end
 		
