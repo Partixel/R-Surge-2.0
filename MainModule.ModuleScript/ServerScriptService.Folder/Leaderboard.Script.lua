@@ -142,14 +142,17 @@ local Stats = setmetatable({
 			if Rank == "Guest" then
 				for _, Group in ipairs(GroupService:GetGroupsAsync(Plr.UserId)) do
 					if self.Allies[Group.Id] then
-						Rank.Value = Group.Name
+						Rank = Group.Name
 						if Group.IsPrimary then
 							break
 						end
 					end
 				end
+				
 				if self.AllyReplacement and self.AllyReplacement[Rank] then
 					return self.AllyReplacement[Rank]
+				else
+					return Rank
 				end
 			elseif self.RankReplacements and self.RankReplacements[Rank] then
 				return self.RankReplacements[Rank]
