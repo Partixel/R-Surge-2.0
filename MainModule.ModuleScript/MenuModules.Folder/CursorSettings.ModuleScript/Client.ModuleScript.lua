@@ -69,6 +69,7 @@ local Presets = {
 	["Peekay's Preset"] = {
 		S2_CursorDistFromCenter = 15,
 		S2_CursorBorderWidth = 0,
+		S2_CursorSwapWidthHeight = false,
 		S2_CursorCenterBorder = Color3.fromRGB(46, 46, 46),
 		S2_CursorCenterBorderTransparency = 1,
 		S2_CursorCenterWidth = 2,
