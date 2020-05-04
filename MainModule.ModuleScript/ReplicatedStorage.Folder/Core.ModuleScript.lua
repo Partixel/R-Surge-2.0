@@ -96,7 +96,11 @@ function Core.GetWeaponType(StatObj)
 end
 
 function Core.GetWeaponStats(StatObj)
-	local WeaponStats = require(WeaponStatFolder:FindFirstChild(StatObj.Value, true))
+	local Module = WeaponStatFolder:FindFirstChild(StatObj.Value, true)
+	
+	assert(Module and Module:IsA("ModuleScript"), "Could not get weapon stat for " .. StatObj.Value .. " - " .. tostring(Module))
+	
+	local WeaponStats = require(Module)
 	if not WeaponStats.Loaded then
 		local Overrides = Core.Config.WeaponTypeOverrides[Core.GetWeaponType(StatObj)]
 		if Core.Config.WeaponTypeOverrides.All then
