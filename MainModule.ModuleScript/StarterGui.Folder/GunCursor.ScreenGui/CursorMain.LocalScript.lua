@@ -150,7 +150,9 @@ local ForceWeapon = {
 		
 		ClipSize = 10
 		
-	}
+	},
+	
+	WeaponType = Core.WeaponTypes.RaycastGun
 	
 }
 
