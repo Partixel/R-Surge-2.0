@@ -160,7 +160,7 @@ function StartInteractables( )
 				
 				local Nearest, NearestDist
 				
-				if HoldStart and not LastNearest:FindFirstChild( "Disabled" ) and not Interactables.LocalDisabled[ LastNearest ] and ( GetPart(LastNearest).Position - Subject.Position ).magnitude <= ( LastNearest:FindFirstChild( "Distance" ) and LastNearest.Distance.Value or 16 ) then
+				if HoldStart and LastNearest:IsDescendantOf(workspace) and not LastNearest:FindFirstChild( "Disabled" ) and not Interactables.LocalDisabled[ LastNearest ] and ( GetPart(LastNearest).Position - Subject.Position ).magnitude <= ( LastNearest:FindFirstChild( "Distance" ) and LastNearest.Distance.Value or 16 ) then
 					
 					Nearest, NearestDist = LastNearest, -1
 					
@@ -261,23 +261,17 @@ function StartInteractables( )
 						end
 						
 					else
-						
 						InteractObjs[ a ] = nil
-						
 						Cooldowns[ a ] = nil
-						
 						if Interactables.Guis[ a ] then
+							Interactables.Guis[ a ] = Interactables.Guis[ a ]:Destroy()
 							
-							Interactables.Guis[ a ]:Destroy( )
-							
-							Interactables.Guis[ a ] = nil
-							
-							if LastNearest == a then LastNearest = nil HoldStart = nil end
-							
+							if LastNearest == a then
+								LastNearest = nil
+								HoldStart = nil
+							end
 						end
-						
 					end
-			
 				end
 				
 				if LastNearest ~= Nearest then
