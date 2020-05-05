@@ -213,9 +213,6 @@ function Core.Setup(StatObj, User)
 		CurWeaponMode = 1,
 	}, {__index = Core.GetWeaponStats(StatObj)})
 	
-	if Weapon.WeaponModes then
-		Core.SetWeaponMode(Weapon, 1)
-	end
 	Weapon.Events = {
 		StatObj.AncestryChanged:Connect(function()
 			if not StatObj:IsDescendantOf(game) then
@@ -224,10 +221,13 @@ function Core.Setup(StatObj, User)
 		end)
 	}
 	
+	Core.Weapons[StatObj] = Weapon
+	if Weapon.WeaponModes then
+		Core.SetWeaponMode(Weapon, 1)
+	end
 	if Weapon.WeaponType.Setup then
 		Weapon.WeaponType.Setup(Weapon)
 	end
-	Core.Weapons[StatObj] = Weapon
 	
 	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
 		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Equipped:Connect(function()
