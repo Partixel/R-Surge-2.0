@@ -221,14 +221,6 @@ function Core.Setup(StatObj, User)
 		end)
 	}
 	
-	Core.Weapons[StatObj] = Weapon
-	if Weapon.WeaponModes then
-		Core.SetWeaponMode(Weapon, 1)
-	end
-	if Weapon.WeaponType.Setup then
-		Weapon.WeaponType.Setup(Weapon)
-	end
-	
 	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
 		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Equipped:Connect(function()
 			Core.WeaponSelected:Fire(StatObj)
@@ -238,6 +230,23 @@ function Core.Setup(StatObj, User)
 			Core.WeaponDeselected:Fire(StatObj)
 		end)
 	end
+	
+	if Weapon.WeaponType.ServerSided or not Core.IsServer then
+		if Weapon.WeaponModes then
+			Core.SetWeaponMode(Weapon, 1)
+		end
+		if Weapon.WeaponType.Setup then
+			Weapon.WeaponType.Setup(Weapon)
+		end
+	elseif Core.IsServer then
+		Weapon.Placeholder = true
+		
+		if Weapon.WeaponType.PlaceholderSetup then
+			Weapon.WeaponType.PlaceholderSetup(Weapon)
+		end
+	end
+	
+	Core.Weapons[StatObj] = Weapon
 	
 	return Weapon
 end
@@ -833,44 +842,7 @@ end
 local function ToolAdded(Plr, Tool)
 	local StatObj = Core.FindWeaponStat(Tool)
 	if StatObj and not Core.Weapons[StatObj] then
-		local WeaponType = Core.GetWeaponType(StatObj)
-		if WeaponType.ServerSided or not Core.IsServer then
-			local Weapon = Core.Setup(StatObj, Plr)
-			if Core.IsServer and not Weapon.ManualFire then
-				Tool.Activated:Connect(function()
-					Core.SetMouseDown(Weapon)
-				end)
-				
-				Tool.Deactivated:Connect(function()
-					Core.SetMouseUp(Weapon)
-				end)
-			end
-		elseif Core.IsServer then
-			local Weapon = setmetatable({
-				Placeholder = true,
-				StatObj = StatObj,
-				User = Plr,
-				WeaponType = WeaponType,
-				CurWeaponMode = 1,
-			}, {__index = Core.GetWeaponStats(StatObj)})
-			
-			Weapon.Events = {
-				StatObj.AncestryChanged:Connect(function()
-					if not StatObj:IsDescendantOf(game) then
-						Core.DestroyWeapon(Weapon)
-					end
-				end)
-			}
-			
-			Core.Weapons[StatObj] = Weapon
-			
-			Tool.Equipped:Connect(function()
-				Core.WeaponSelected:Fire(StatObj)
-			end)
-			Tool.Unequipped:Connect(function()
-				Core.WeaponDeselected:Fire(StatObj)
-			end)
-		end
+		Core.Setup(StatObj, Plr)
 	end
 end
 
