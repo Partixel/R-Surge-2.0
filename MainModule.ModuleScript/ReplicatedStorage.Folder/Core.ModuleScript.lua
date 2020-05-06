@@ -205,6 +205,46 @@ function Core.RunSelected()
 	end)
 end
 
+local ContentProvider = game:GetService("ContentProvider")
+local LuaPreload = function(...) return ContentProvider:PreloadAsync(...) end
+function Core.Preload(Weapon)
+	local PreloadArray = {}
+	
+	if Weapon.SelectionSound then
+		PreloadArray[#PreloadArray + 1] = Weapon.SelectionSound.SoundId
+	end
+	if Weapon.R6HoldAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6HoldAnimation.Id
+	end
+	if Weapon.R15HoldAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15HoldAnimation.Id
+	end
+	if Weapon.R6SprintAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6SprintAnimation.Id
+	end
+	if Weapon.R15SprintAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15SprintAnimation.Id
+	end
+	if Weapon.R6ReloadAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6ReloadAnimation.Id
+	end
+	if Weapon.R15ReloadAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15ReloadAnimation.Id
+	end
+	if Weapon.R6AtEaseAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6AtEaseAnimation.Id
+	end
+	if Weapon.R15AtEaseAnimation then
+		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15AtEaseAnimation.Id
+	end
+	
+	if Weapon.WeaponType.Preload then
+		Weapon.WeaponType.Preload(Weapon, PreloadArray)
+	end
+	
+	coroutine.wrap(LuaPreload)(PreloadArray)
+end
+
 function Core.Setup(StatObj, User)
 	local WeaponStats = Core.GetWeaponStats(StatObj)
 	
@@ -239,6 +279,9 @@ function Core.Setup(StatObj, User)
 		end
 		if Weapon.WeaponType.Setup then
 			Weapon.WeaponType.Setup(Weapon)
+		end
+		if not Core.IsServer then
+			Core.Preload(Weapon)
 		end
 	elseif Core.IsServer then
 		Weapon.Placeholder = true
