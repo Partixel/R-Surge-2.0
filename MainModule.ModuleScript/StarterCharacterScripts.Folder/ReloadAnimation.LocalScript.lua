@@ -1,22 +1,12 @@
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
-local Humanoid = script.Parent.Parent:WaitForChild("Humanoid")
-local Animations = {}
-local function GetAnimation(AnimProps)
-	if not Animations[AnimProps] then
-		local Animation = Instance.new("Animation")
-		Animation.AnimationId = "rbxassetid://" .. AnimProps.Id
-		Animations[AnimProps] = Humanoid:LoadAnimation(Animation)
-	end
-	
-	return Animations[AnimProps]
-end
+local AnimationWrapper = require(script.Parent:WaitForChild("AnimationWrapper"))
 
 Core.ReloadStart.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
 	if Weapon then
-		local Animation = Weapon[Humanoid.RigType.Name .. "ReloadAnimation"]
+		local Animation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "ReloadAnimation"]
 		if Animation then
-			Animation = GetAnimation(Animation)
+			Animation = AnimationWrapper.GetAnimation("ReloadAnim", Animation, 10)
 			Weapon.ReloadAnimation = Animation
 			Animation:Play(nil, nil, Animation.Length / (Weapon.ReloadDelay + (Weapon.InitialReloadDelay or 0) + (Weapon.FinalReloadDelay or 0)))
 		end
