@@ -60,10 +60,10 @@ return function(Core)
 		},
 		Preload = function (Weapon, PreloadArray)
 			if Weapon.FireSound then
-				PreloadArray[#PreloadArray + 1] = Weapon.FireSound.SoundId
+				PreloadArray[#PreloadArray + 1] = Weapon.FireSound
 			end
 			if Weapon.ReloadSound then
-				PreloadArray[#PreloadArray + 1] = Weapon.ReloadSound.SoundId
+				PreloadArray[#PreloadArray + 1] = Weapon.ReloadSound
 			end
 		end,
 		Setup = function(Weapon)

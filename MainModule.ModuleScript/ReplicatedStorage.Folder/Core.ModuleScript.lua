@@ -209,31 +209,22 @@ function Core.Preload(Weapon)
 	local PreloadArray = {}
 	
 	if Weapon.SelectionSound then
-		PreloadArray[#PreloadArray + 1] = Weapon.SelectionSound.SoundId
+		PreloadArray[#PreloadArray + 1] = Weapon.SelectionSound
 	end
-	if Weapon.R6HoldAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6HoldAnimation.Id
-	end
-	if Weapon.R15HoldAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15HoldAnimation.Id
-	end
-	if Weapon.R6SprintAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6SprintAnimation.Id
-	end
-	if Weapon.R15SprintAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15SprintAnimation.Id
-	end
-	if Weapon.R6ReloadAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6ReloadAnimation.Id
-	end
-	if Weapon.R15ReloadAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15ReloadAnimation.Id
-	end
-	if Weapon.R6AtEaseAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R6AtEaseAnimation.Id
-	end
-	if Weapon.R15AtEaseAnimation then
-		PreloadArray[#PreloadArray + 1] = "rbxassetid://" .. Weapon.R15AtEaseAnimation.Id
+	
+	local AnimationsToLoad = {"HoldAnimation", "SprintAnimation", "ReloadAnimation", "AtEaseAnimation"}
+	for _, Name in ipairs(AnimationsToLoad) do
+		if Weapon["R6" .. Name] then
+			local R6Animation = Instance.new("Animation")
+			R6Animation.AnimationId = "rbxassetid://" .. Weapon["R6" .. Name].Id
+			PreloadArray[#PreloadArray + 1] = R6Animation
+		end
+		
+		if Weapon["R15" .. Name] then
+			local R15Animation = Instance.new("Animation")
+			R15Animation.AnimationId = "rbxassetid://" .. Weapon["R15" .. Name].Id
+			PreloadArray[#PreloadArray + 1] = R15Animation
+		end
 	end
 	
 	if Weapon.WeaponType.Preload then
