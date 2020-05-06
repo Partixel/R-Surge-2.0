@@ -58,6 +58,14 @@ return function(Core)
 			Burst = {Shots = 3},
 			Safety = {PreventAttack = true},
 		},
+		Preload = function (Weapon, PreloadArray)
+			if Weapon.FireSound then
+				PreloadArray[#PreloadArray + 1] = Weapon.FireSound.SoundId
+			end
+			if Weapon.ReloadSound then
+				PreloadArray[#PreloadArray + 1] = Weapon.ReloadSound.SoundId
+			end
+		end,
 		Setup = function(Weapon)
 			Weapon.ShotRecoil = 0
 			Weapon.Clip = Weapon.StartingClip or Weapon.ClipSize

@@ -25,6 +25,14 @@ return function(Core)
 				end
 			end
 		end,
+		Preload = function (Weapon, PreloadArray)
+			if Weapon.SlashSound then
+				PreloadArray[#PreloadArray + 1] = Weapon.SlashSound.SoundId
+			end
+			if Weapon.LungeSound then
+				PreloadArray[#PreloadArray + 1] = Weapon.LungeSound.SoundId
+			end
+		end,
 		Setup = function(Weapon)
 			local Parts = Weapon.DamageParts(Weapon.StatObj)
 			if type(Parts) == "table" then
