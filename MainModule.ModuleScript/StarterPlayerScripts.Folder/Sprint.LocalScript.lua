@@ -7,20 +7,29 @@ local PU = require(Plr:WaitForChild("PlayerScripts"):WaitForChild("S2"):WaitForC
 
 Core.PreventSprint = {}
 
-local Animations, Humanoid
-local function GetAnimation(AnimProps)
-	if Humanoid and Humanoid.Parent then
-		if not Animations[AnimProps] then
-			local Animation = Instance.new("Animation")
-			Animation.AnimationId = "rbxassetid://" .. AnimProps.Id
-			Animations[AnimProps] = Humanoid:LoadAnimation(Animation)
+local AnimationWrapper
+
+local FOVMod, ActSprint, SprintAnimation
+function UpdateSprintAnimation(Sprinting, Weapon)
+	if Sprinting then
+		Weapon = Weapon or Core.Selected[Plr] and next(Core.Selected[Plr])
+		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
+		if Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"] then
+			local MySprintAnimation = AnimationWrapper.GetAnimation("SprintAnim", Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"], 5)
+			if SprintAnimation and SprintAnimation ~= MySprintAnimation then
+				SprintAnimation:Stop()
+			end
+			
+			SprintAnimation = MySprintAnimation
+			if not SprintAnimation.AnimationTrack.IsPlaying then
+				SprintAnimation:Play()
+			end
 		end
-		
-		return Animations[AnimProps]
+	elseif SprintAnimation then
+		SprintAnimation = SprintAnimation:Stop()
 	end
 end
 
-local FOVMod, ActSprint, SprintAnimation
 function UpdateCamera(Sprinting)
 	if Core.ActualSprinting ~= Sprinting then
 		local MySprint = {}
@@ -29,17 +38,7 @@ function UpdateCamera(Sprinting)
 		Core.PreventCharacterRotation.Sprinting = Sprinting
 		Core.ActualSprinting = Sprinting
 		
-		if Sprinting then
-			local Weapon = Core.Selected[Plr] and next(Core.Selected[Plr])
-			if Weapon then
-				if Weapon[Humanoid.RigType.Name .. "SprintAnimation"] then
-					SprintAnimation = GetAnimation(Weapon[Humanoid.RigType.Name .. "SprintAnimation"])
-					SprintAnimation:Play()
-				end
-			end
-		elseif SprintAnimation then
-			SprintAnimation = SprintAnimation:Stop()
-		end
+		UpdateSprintAnimation(Sprinting)
 		
 		if not FOVMod or not FOVMod.Parent then
 			FOVMod = Instance.new("NumberValue")
@@ -60,22 +59,22 @@ function UpdateCamera(Sprinting)
 end
 
 function HandleChar(Char)
-	Humanoid, Animations = Char:WaitForChild("Humanoid"), {}
+	AnimationWrapper = require(Char:WaitForChild("S2"):WaitForChild("AnimationWrapper"))
 	
-	Humanoid:GetPropertyChangedSignal("Sit"):Connect(function()
-		if Humanoid.Sit then
+	AnimationWrapper.Humanoid:GetPropertyChangedSignal("Sit"):Connect(function()
+		if AnimationWrapper.Humanoid.Sit then
 			UpdateCamera()
-		elseif PU.GetPose("Sprinting") and Humanoid.MoveDirection.magnitude ~= 0 then
+		elseif PU.GetPose("Sprinting") and AnimationWrapper.Humanoid.MoveDirection.magnitude ~= 0 then
 			UpdateCamera(true)
 		else
 			UpdateCamera()
 		end
 	end)
 	
-	Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
-		if Humanoid.MoveDirection.magnitude == 0 then
+	AnimationWrapper.Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+		if AnimationWrapper.Humanoid.MoveDirection.magnitude == 0 then
 			UpdateCamera()
-		elseif PU.GetPose("Sprinting") and not Humanoid.Sit and Humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+		elseif PU.GetPose("Sprinting") and not AnimationWrapper.Humanoid.Sit and AnimationWrapper.Humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
 			UpdateCamera(true)
 		else
 			UpdateCamera()
@@ -168,18 +167,24 @@ Core.Events.AntiSprintShoot = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Conn
 end)
 
 Core.WeaponSelected.Event:Connect(function(StatObj)
-	local WeaponStats = Core.GetWeaponStats(StatObj)
-	if WeaponStats then
-		if not WeaponStats.AllowSprint then
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon then
+		if not Weapon.AllowSprint then
 			KBU.SetToggle("Sprint", false)
+		elseif Core.ActualSprinting then
+			UpdateSprintAnimation(true, Weapon)
 		end
 	elseif not Core.Config.WeaponTypeOverrides.All.AllowSprint then
 		KBU.SetToggle("Sprint", false)
+	elseif Core.ActualSprinting then
+		UpdateSprintAnimation(true, Weapon)
 	end
 end)
 
 Core.WeaponDeselected.Event:Connect(function(StatObj)
 	if not Core.Config.WeaponTypeOverrides.All.AllowSprint then
 		KBU.SetToggle("Sprint", false)
+	elseif Core.ActualSprinting then
+		UpdateSprintAnimation(true)
 	end
 end)
