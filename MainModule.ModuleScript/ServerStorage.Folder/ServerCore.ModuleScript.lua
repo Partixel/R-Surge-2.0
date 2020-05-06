@@ -11,7 +11,10 @@ return function(Core, script)
 					if Time and tick() - Time > 0.6 then
 						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Took too long to send replication packet, discarding! "  .. (tick() - Time - 0.6) .. "\n", User, StatObj, Time, tick())
 						return
-					elseif StatObj.Parent.Parent ~= User.Character then
+					elseif not StatObj:IsDescendantOf(workspace) then
+						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon is not in workspace " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
+						return
+					elseif not Weapon.NotInCharacter and StatObj.Parent.Parent ~= User.Character then
 						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon is not selected " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
 						return
 					end
@@ -38,7 +41,10 @@ return function(Core, script)
 					if Time and tick() - Time > 0.6 then
 						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Took too long to send replication packet, discarding! "  .. (tick() - Time - 0.6) .. "\n", User, StatObj, Time, tick())
 						return
-					elseif StatObj.Parent.Parent ~= User.Character then
+					elseif not StatObj:IsDescendantOf(workspace) then
+						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon is not in workspace " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
+						return
+					elseif not Weapon.NotInCharacter and StatObj.Parent.Parent ~= User.Character then
 						warn(User.Name .. " sent an invalid server S2 hold replication request " .. (tick() - Time) .. " seconds ago: Weapon is not selected " .. StatObj:GetFullName() .. "\n", User, StatObj, Time)
 						return
 					end
@@ -200,21 +206,26 @@ return function(Core, script)
 				if Weapon.Placeholder then
 					if tick() - Time > 0.6 then
 						CancelReplication = "Took too long to send replication packet, discarding! "  .. (tick() - Time - 0.6) .. " - Server tick: " .. tick()
-					elseif StatObj.Parent.Parent ~= User.Character then
-						CancelReplication = "Weapon is not selected " .. StatObj:GetFullName()
 					elseif not User.Character then
 						local Damageable = User.Character:FindFirstChildOfClass("Humanoid")
 						if Damageable and Damageable:GetState() == Enum.HumanoidStateType.Dead and tick() > Core.LastDeath[Damageable] + 0.61  then
 							CancelReplication = "User is dead"
 						end
+					elseif not StatObj:IsDescendantOf(workspace) then
+						CancelReplication = "Weapon is not in workspace " .. StatObj:GetFullName()
+					elseif not Weapon.NotInCharacter and StatObj.Parent.Parent ~= User.Character then
+						CancelReplication = "Weapon is not selected " .. StatObj:GetFullName()
 					end
 				end
+				
 				if not CancelReplication then
 					CancelReplication = Weapon.WeaponType.HandleServerReplication(Weapon, Time, ...)
 				end
+				
 				if CancelReplication then
 					warn(User.Name .. " sent an invalid server S2 replication request " .. (tick() - Time) .. " seconds ago: " .. CancelReplication .. "\n", User, StatObj, Time, ...)
 				end
+				
 				if not Weapon.WeaponType.ShouldCancelHold or Weapon.WeaponType.ShouldCancelHold(Weapon, Time, ...) then
 					Weapon.HoldStart = nil
 				end
