@@ -1,3 +1,5 @@
+local CoroutineErrorHandling = require(game:GetService("ReplicatedStorage"):WaitForChild("CoroutineErrorHandling"))
+
 Module = { }
 
 local ContextChanged = Instance.new( "BindableEvent" )
@@ -32,46 +34,27 @@ function Module.FireBind( Bind, Began, Handled, Died )
 		
 		Holding[Bind] = nil
 		
-		local Ran, Error
 		if Bind.NoHandled then
-			Ran, Error = pcall(function() return coroutine.wrap(Bind.Callback)(Began, Died) end)
+			CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Died)
 		else
-			Ran, Error = pcall(function() return coroutine.wrap(Bind.Callback)(Began, Handled, Died) end)
-		end
-		
-		if not Ran then
-			warn(Bind.Name .. " bind errored\n" .. Error .. "\n" .. debug.traceback())
+			CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Handled, Died)
 		end
 	elseif Bind.State ~= Began then
-		
 		Bind.State = Began
 		
-		local Ran, Error
-		
+		local State
 		if Bind.NoHandled then
-			
-			Ran, Error = pcall( function ( ) return coroutine.wrap( Bind.Callback )( Began, Died ) end )
-			
+			State = CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Died)
 		else
-			
-			Ran, Error = pcall( function ( ) return coroutine.wrap( Bind.Callback )( Began, Handled, Died ) end )
-			
+			State = CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Handled, Died)
 		end
 		
-		if not Ran then warn( Bind.Name .. " bind errored\n" .. Error .. "\n" .. debug.traceback( ) ) end
-		
-		if Error ~= nil then
-			
+		if State ~= nil then
 			if Bind.ToggleState then
-				
-				Bind.Toggle = Error
-				
+				Bind.Toggle = State
 			end
-			
-			Bind.State = Error
-			
+			Bind.State = State
 		end
-		
 	end
 	
 end
