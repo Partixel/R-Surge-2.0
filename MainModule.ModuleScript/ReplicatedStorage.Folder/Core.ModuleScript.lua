@@ -102,13 +102,11 @@ function Core.GetWeaponStats(StatObj)
 	
 	local WeaponStats = require(Module)
 	if not WeaponStats.Loaded then
-		local Overrides = Core.Config.WeaponTypeOverrides[Core.GetWeaponType(StatObj)]
-		if Core.Config.WeaponTypeOverrides.All then
-			if Overrides then
-				setmetatable(Overrides, {__index = Core.Config.WeaponTypeOverrides.All})
-			else
-				Overrides = Core.Config.WeaponTypeOverrides.All
-			end
+		local Overrides = Core.Config.WeaponTypeOverrides[WeaponStats.WeaponType or StatObj.Name:sub(1, StatObj.Name:find("Stat") - 1)]
+		if Overrides then
+			setmetatable(Overrides, {__index = Core.Config.WeaponTypeOverrides.All})
+		else
+			Overrides = Core.Config.WeaponTypeOverrides.All
 		end
 		setmetatable(WeaponStats, {__index = Overrides})
 		WeaponStats.Loaded = true
