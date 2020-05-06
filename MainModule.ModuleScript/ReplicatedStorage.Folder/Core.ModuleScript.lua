@@ -206,12 +206,14 @@ function Core.RunSelected()
 end
 
 function Core.Setup(StatObj, User)
+	local WeaponStats = Core.GetWeaponStats(StatObj)
+	
 	local Weapon = setmetatable({
-		WeaponType = Core.GetWeaponType(StatObj),
+		WeaponType = Core.WeaponTypes[WeaponStats.WeaponType] or Core.GetWeaponType(StatObj),
 		StatObj = StatObj,
 		User = User,
 		CurWeaponMode = 1,
-	}, {__index = Core.GetWeaponStats(StatObj)})
+	}, {__index = WeaponStats})
 	
 	Weapon.Events = {
 		StatObj.AncestryChanged:Connect(function()
