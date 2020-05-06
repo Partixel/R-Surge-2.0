@@ -92,7 +92,7 @@ function Core.FindWeaponStat(Obj)
 end
 
 function Core.GetWeaponType(StatObj)
-	return Core.WeaponTypes[StatObj.Name:sub(1, -5)]
+	return Core.WeaponTypes[StatObj.Name:sub(1, StatObj.Name:find("Stat") - 1)]
 end
 
 function Core.GetWeaponStats(StatObj)
