@@ -72,7 +72,8 @@ local Index = {
 
 local Animations = {}
 function AnimationWrapper.GetAnimation(Name, AnimProps, Priority)
-	if not Animations[AnimProps] then
+	local Key = Name .. ":" .. tostring(AnimProps)
+	if not Animations[Key] then
 		local Animation = Instance.new("Animation")
 		Animation.AnimationId = "rbxassetid://" .. AnimProps.Id
 		Animation.Name = Name
@@ -84,10 +85,10 @@ function AnimationWrapper.GetAnimation(Name, AnimProps, Priority)
 				Animation.RanPriority = nil
 			end)
 		end
-		Animations[AnimProps] = Animation
+		Animations[Key] = Animation
 	end
 	
-	return Animations[AnimProps]
+	return Animations[Key]
 end
 
 return AnimationWrapper
