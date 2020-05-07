@@ -1,6 +1,6 @@
 return {
 	--[[Uses Major.minor.patch format, if a number is specified instead of * it'll restrict the version to that number]]
-	Version = "5.*.*", -- Default - "5.*.*"
+	Version = "6.*.*", -- Default - "5.*.*"
 	
 	--[[If the name of an object S2 loads in (e.g. ["Hud"] = true) is in this table it won't load said object]]
 	Disabled = { }, -- Default - { }
@@ -57,6 +57,18 @@ return {
 			
 			Resistances = { },
 			
+			AllowSprint = true,
+			
+			SprintSpeedMultiplier = 1.35,
+			
+			AllowAtEase = true,
+			
+			AllowCrouch = true,
+			
+			CrouchSpeedMultiplier = 0.9,
+			
+			CrouchJumpPowerMultiplier = 0.6,
+			
 		},
 		
 	}, -- Default - { All = { LimbDamageMultiplier = 0.9, DistanceDamageModifier = 0.2, AllowSelfDamage = false, AllowNeutralTeamKill = true, AllowTeamKill = false, ShotKnockbackPercentage = 1, Resistances = { }, MovementAccuracyPercentage = 1, HeadDamageMultiplier = 1.75, ScreenRecoilPercentage = 1, GlobalDamageMultiplier = 1, }, }
@@ -64,21 +76,7 @@ return {
 	--[[Automatically handle arm welds]]
 	ArmWelds = true, -- Default - true
 	
-	AllowSprinting = true, -- Default - true
-	
-	SprintSpeedMultiplier = 1.35, -- Default - 1.35
-	
-	AllowCrouching = true, -- Default - true
-	
-	--[[Crouch WalkSpeed (Percentage of normal walkspeed)]]
-	CrouchSpeedMultiplier = 0.9, -- Default - 0.9
-	
-	--[[Crouch JumpPower (Percentage of normal jump power)]]
-	CrouchJumpPowerMultiplier = 0.6, -- Default - 0.6
-	
 	AllowSalute = true, -- Default - true
-	
-	AllowAtEase = true, -- Default - true
 	
 	AllowSurrender = true, -- Default - true
 	
@@ -110,5 +108,5 @@ return {
 	
 	--------[[ DO NOT TOUCH ]]--------
 	
-	SetupVersion = "1.5.0", -- DO NOT CHANGE THIS
+	SetupVersion = "1.6.0", -- DO NOT CHANGE THIS
 }
