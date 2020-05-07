@@ -3,7 +3,6 @@ local Config = require(SetupModel and SetupModel:WaitForChild("Config") or game:
 
 require(game:GetService("ServerStorage"):FindFirstChild("TimeSync") and game:GetService("ServerStorage").TimeSync:FindFirstChild("MainModule") or 4698309617) -- TimeSync
 require(game:GetService("ServerStorage"):FindFirstChild("MenuLib") and game:GetService("ServerStorage").MenuLib:FindFirstChild("MainModule") or 3717582194) -- MenuLib
-require(game:GetService("ReplicatedStorage"):FindFirstChild("CoroutineErrorHandling") and game:GetService("ReplicatedStorage").CoroutineErrorHandling:FindFirstChild("MainModule") or game:GetService("ServerStorage"):FindFirstChild("CoroutineErrorHandling") and game:GetService("ServerStorage").CoroutineErrorHandling:FindFirstChild("MainModule") or 4851605998) -- CoroutineErrorHandling
 
 local LoaderModule = require(game:GetService("ServerStorage"):FindFirstChild("LoaderModule") and game:GetService("ServerStorage").LoaderModule:FindFirstChild("MainModule") or 03593768376)("S2", Config.Disabled or {})
 LoaderModule(script:WaitForChild("ReplicatedStorage"))

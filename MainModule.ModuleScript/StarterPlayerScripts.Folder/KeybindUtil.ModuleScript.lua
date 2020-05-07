@@ -1,5 +1,3 @@
-local CoroutineErrorHandling = require(game:GetService("ReplicatedStorage"):WaitForChild("CoroutineErrorHandling"))
-
 Module = { }
 
 local ContextChanged = Instance.new( "BindableEvent" )
@@ -17,46 +15,39 @@ local Holding = { }
 local UIS = game:GetService( "UserInputService" )
 
 function Module.FireBind( Bind, Began, Handled, Died )
-	
-	if Module.Rebinding then return end
-	
-	if type( Bind ) == "string" then
-		
-		if not Binds[ Bind ] then return end
-		
-		Bind = Binds[ Bind ]
-		
-	end
-	
-	if Bind.NoHandled and Handled then return end
-	
-	if Bind.HoldFor then
-		
-		Holding[Bind] = nil
-		
-		if Bind.NoHandled then
-			CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Died)
-		else
-			CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Handled, Died)
-		end
-	elseif Bind.State ~= Began then
-		Bind.State = Began
-		
-		local State
-		if Bind.NoHandled then
-			State = CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Died)
-		else
-			State = CoroutineErrorHandling.CoroutineWithStack(Bind.Callback, Began, Handled, Died)
+	if not Module.Rebinding then
+		if type( Bind ) == "string" then
+			Bind = Binds[ Bind ]
 		end
 		
-		if State ~= nil then
-			if Bind.ToggleState then
-				Bind.Toggle = State
+		if not Bind.NoHandled or not Handled then
+			if Bind.HoldFor then
+				Holding[Bind] = nil
+				
+				if Bind.NoHandled then
+					Bind.Callback(Began, Died)
+				else
+					Bind.Callback(Began, Handled, Died)
+				end
+			elseif Bind.State ~= Began then
+				Bind.State = Began
+				
+				local State
+				if Bind.NoHandled then
+					State = Bind.Callback(Began, Died)
+				else
+					State = Bind.Callback(Began, Handled, Died)
+				end
+				
+				if State ~= nil then
+					if Bind.ToggleState then
+						Bind.Toggle = State
+					end
+					Bind.State = State
+				end
 			end
-			Bind.State = State
 		end
 	end
-	
 end
 
 UIS.WindowFocusReleased:Connect( function ( )
