@@ -8,6 +8,7 @@ Core.WeaponSelected.Event:Connect(function(StatObj)
 		HoldAnimation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "HoldAnimation"]
 		if HoldAnimation then
 			HoldAnimation = AnimationWrapper.GetAnimation("Hold", HoldAnimation, 1)
+			HoldAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Movement
 			HoldAnimation:Play()
 		end
 	end

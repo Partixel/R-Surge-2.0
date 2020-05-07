@@ -15,13 +15,14 @@ function UpdateSprintAnimation(Sprinting, Weapon)
 		Weapon = Weapon or Core.Selected[Plr] and next(Core.Selected[Plr])
 		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
 		if Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"] then
-			local MySprintAnimation = AnimationWrapper.GetAnimation("SprintAnim", Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"], 5)
+			local MySprintAnimation = AnimationWrapper.GetAnimation("Sprint", Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"], 5)
 			if SprintAnimation and SprintAnimation ~= MySprintAnimation then
 				SprintAnimation:Stop()
 			end
 			
 			SprintAnimation = MySprintAnimation
 			if not SprintAnimation.AnimationTrack.IsPlaying then
+				SprintAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 				SprintAnimation:Play()
 			end
 		end

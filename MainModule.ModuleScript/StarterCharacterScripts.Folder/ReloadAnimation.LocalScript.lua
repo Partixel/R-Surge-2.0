@@ -7,8 +7,9 @@ Core.Events.LongReloadAnimation = Core.ReloadStart.Event:Connect(function(StatOb
 	if Weapon and Weapon.LongReloadSound then
 		ReloadAnimation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "ReloadAnimation"]
 		if ReloadAnimation then
-			ReloadAnimation = AnimationWrapper.GetAnimation("ReloadAnim", ReloadAnimation, 10)
+			ReloadAnimation = AnimationWrapper.GetAnimation("Reload", ReloadAnimation, 10)
 			local Speed = ReloadAnimation.AnimationTrack.Length / (Delay + (Weapon.InitialReloadDelay or 0) + (Weapon.FinalReloadDelay or 0))
+			ReloadAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 			ReloadAnimation:Play(0.1 * Speed, nil, Speed)
 		end
 	end
@@ -24,7 +25,7 @@ Core.Events.ShortReloadAnimation = Core.ReloadStepped.Event:Connect(function(Sta
 			local MyName = UniqueNames[#UniqueNames] or tostring({})
 			UniqueNames[#UniqueNames] = nil
 			
-			ReloadAnimation = AnimationWrapper.GetAnimation("ReloadAnim" .. MyName, ReloadAnimation, 10)
+			ReloadAnimation = AnimationWrapper.GetAnimation("Reload" .. MyName, ReloadAnimation, 10)
 			if not ReloadAnimation.HandleStop then
 				ReloadAnimation.HandleStop = true
 				ReloadAnimation.AnimationTrack.Stopped:Connect(function()
@@ -38,6 +39,7 @@ Core.Events.ShortReloadAnimation = Core.ReloadStepped.Event:Connect(function(Sta
 			
 			Playing[ReloadAnimation] = true
 			local Speed = ReloadAnimation.AnimationTrack.Length / Delay
+			ReloadAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 			ReloadAnimation:Play(0.1 * Speed, nil, Speed)
 		end
 	end

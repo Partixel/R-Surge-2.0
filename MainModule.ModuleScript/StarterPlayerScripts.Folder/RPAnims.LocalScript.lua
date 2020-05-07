@@ -95,13 +95,14 @@ local function UpdateAtEaseAnimation(AtEasing, Weapon)
 	if AtEasing then
 		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
 		if Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"] then
-			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEaseAnim", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 5)
+			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEase", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 5)
 			if AtEaseAnimation and AtEaseAnimation ~= MyAtEaseAnimation then
 				AtEaseAnimation:Stop()
 			end
 			
 			AtEaseAnimation = MyAtEaseAnimation
 			if not AtEaseAnimation.AnimationTrack.IsPlaying then
+				AtEaseAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 				AtEaseAnimation:Play()
 			end
 		end
