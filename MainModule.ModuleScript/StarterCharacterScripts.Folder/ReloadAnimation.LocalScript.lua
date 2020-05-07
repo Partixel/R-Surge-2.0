@@ -44,14 +44,11 @@ Core.Events.ShortReloadAnimation = Core.ReloadStepped.Event:Connect(function(Sta
 end)
 
 Core.ReloadEnd.Event:Connect(function(StatObj)
-	local Weapon = Core.GetWeapon(StatObj)
-	if Weapon then
-		if ReloadAnimation and ReloadAnimation.AnimationTrack.IsPlaying then
-			ReloadAnimation:Stop()
-		end
-		
-		for ReloadAnimation, _ in pairs(Playing) do
-			ReloadAnimation:Stop()
-		end
+	if ReloadAnimation and ReloadAnimation.AnimationTrack.IsPlaying then
+		ReloadAnimation = ReloadAnimation:Stop()
+	end
+	
+	for ReloadAnimation, _ in pairs(Playing) do
+		ReloadAnimation:Stop()
 	end
 end)
