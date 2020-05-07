@@ -199,6 +199,12 @@ KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( B
 	
 end, Key = Enum.KeyCode.U, ToggleState = true, OffOnDeath = true, NoHandled = true }
 
+Core.Events.AntiAtEaseShoot = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(function(_, User)
+	if User == Plr and AtEaseAnimation then
+		KBU.SetToggle("At_ease", false)
+	end
+end)
+
 Core.WeaponSelected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
 	if Weapon then
