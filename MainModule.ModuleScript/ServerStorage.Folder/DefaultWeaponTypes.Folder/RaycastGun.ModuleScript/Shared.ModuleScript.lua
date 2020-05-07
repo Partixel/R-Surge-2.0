@@ -190,9 +190,7 @@ return function(Core)
 		end,
 		Attack = function(Weapon)
 			if Weapon.Clip ~= 0 and Weapon.Reloading and Weapon.Reloading ~= Weapon.MouseDown then
-		
-				Weapon.Reloading = false
-		
+				Weapon.AbortReload = true
 			end
 		
 			if ( Weapon.LastClick and Weapon.LastClick >= tick( ) ) or Weapon.Reloading ~= nil then return false end
@@ -439,14 +437,20 @@ return function(Core)
 				end
 				
 				Weapon.WeaponType.SetClip( Weapon, NewClip )
-		
-				Core.ReloadStart:Fire( Weapon.StatObj )
-		
+				
 				local Delay = Weapon.ReloadDelay / math.ceil( Weapon.ClipSize / ( Weapon.ReloadAmount or 1 ) )
+				
+				if (math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1) == 0 then
+					Core.ReloadStart:Fire( Weapon.StatObj, Delay)
+				else
+					Core.ReloadStart:Fire( Weapon.StatObj, Delay * ((math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)))
+				end
 				
 				Weapon.ReloadStart = tick( ) - Delay * Weapon.Clip / ( Weapon.ReloadAmount or 1 )
 				
-				if Weapon.InitialReloadDelay or ( Weapon.ReloadAmount or 1 ) == 1 then Core.HeartbeatWait( Weapon.InitialReloadDelay or 0.25 ) end
+				if Weapon.InitialReloadDelay then
+					Core.HeartbeatWait( Weapon.InitialReloadDelay )
+				end
 				
 				if Weapon.Reloading == ReloadTick then
 		
@@ -454,9 +458,9 @@ return function(Core)
 		
 					local TotalExtra = 0
 					
-					for i = (Weapon.Clip - (Chambered and 1 or 0)) / ( Weapon.ReloadAmount or 1 ), math.ceil( Weapon.ClipSize / ( Weapon.ReloadAmount or 1 ) ) - 1 do
+					for i = (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1), math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1 do
 		
-						Core.ReloadStepped:Fire( Weapon.StatObj )
+						Core.ReloadStepped:Fire( Weapon.StatObj, Delay )
 		
 						TotalExtra = TotalExtra + w - Delay
 		
@@ -470,17 +474,15 @@ return function(Core)
 		
 						end
 		
-						if Weapon.Reloading ~= ReloadTick then
-							
-							break
-		
-						end
-		
 						local Add = Weapon.AmmoType and math.min( ( Weapon.ReloadAmount or 1 ), WeaponType.GetStoredAmmo(Weapon) ) or ( Weapon.ReloadAmount or 1 )
 		
 						Weapon.WeaponType.SetClip( Weapon, Weapon.Clip + Add )
 		
-						if Weapon.AmmoType then
+						if Weapon.AbortReload then
+							
+							break
+		
+						elseif Weapon.AmmoType then
 		
 							Weapon.WeaponType.SetStoredAmmo( Weapon, WeaponType.GetStoredAmmo(Weapon) - Add )
 		
@@ -496,18 +498,20 @@ return function(Core)
 		
 				end
 				
-				if Weapon.LastClick and Weapon.LastClick < tick( ) then Weapon.LastClick = nil end
+				if Weapon.LastClick and Weapon.LastClick < tick( ) then
+					Weapon.LastClick = nil
+				end
 		
 				if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
+					if Weapon.FinalReloadDelay then
+						Core.HeartbeatWait( Weapon.FinalReloadDelay )
+					end
 		
 					Core.ReloadEnd:Fire( Weapon.StatObj )
 		
-					if Weapon.FinalReloadDelay then Core.HeartbeatWait( Weapon.FinalReloadDelay ) end
-		
 					Weapon.Reloading = nil
-		
+					Weapon.AbortReload = nil
 					Weapon.ReloadStart = nil
-		
 				end
 			end
 		end,
