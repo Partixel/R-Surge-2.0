@@ -1,21 +1,57 @@
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 local AnimationWrapper = require(script.Parent:WaitForChild("AnimationWrapper"))
 
-Core.ReloadStart.Event:Connect(function(StatObj)
+local ReloadAnimation
+Core.Events.LongReloadAnimation = Core.ReloadStart.Event:Connect(function(StatObj, Delay)
 	local Weapon = Core.GetWeapon(StatObj)
-	if Weapon then
-		local Animation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "ReloadAnimation"]
-		if Animation then
-			Animation = AnimationWrapper.GetAnimation("ReloadAnim", Animation, 10)
-			Weapon.ReloadAnimation = Animation
-			Animation:Play(nil, nil, Animation.Length / (Weapon.ReloadDelay + (Weapon.InitialReloadDelay or 0) + (Weapon.FinalReloadDelay or 0)))
+	if Weapon and Weapon.LongReloadSound then
+		ReloadAnimation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "ReloadAnimation"]
+		if ReloadAnimation then
+			ReloadAnimation = AnimationWrapper.GetAnimation("ReloadAnim", ReloadAnimation, 10)
+			local Speed = ReloadAnimation.AnimationTrack.Length / (Delay + (Weapon.InitialReloadDelay or 0) + (Weapon.FinalReloadDelay or 0))
+			ReloadAnimation:Play(0.1 * Speed, nil, Speed)
+		end
+	end
+end)
+
+local UniqueNames = {}
+local Playing = {}
+Core.Events.ShortReloadAnimation = Core.ReloadStepped.Event:Connect(function(StatObj, Delay)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon and not Weapon.LongReloadSound then
+		local ReloadAnimation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "ReloadAnimation"]
+		if ReloadAnimation then
+			local MyName = UniqueNames[#UniqueNames] or tostring({})
+			UniqueNames[#UniqueNames] = nil
+			
+			ReloadAnimation = AnimationWrapper.GetAnimation("ReloadAnim" .. MyName, ReloadAnimation, 10)
+			if not ReloadAnimation.HandleStop then
+				ReloadAnimation.HandleStop = true
+				ReloadAnimation.AnimationTrack.Stopped:Connect(function()
+					Playing[ReloadAnimation] = nil
+					
+					wait(0.15)
+					
+					UniqueNames[#UniqueNames + 1] = MyName
+				end)
+			end
+			
+			Playing[ReloadAnimation] = true
+			local Speed = ReloadAnimation.AnimationTrack.Length / Delay
+			ReloadAnimation:Play(0.1 * Speed, nil, Speed)
 		end
 	end
 end)
 
 Core.ReloadEnd.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
-	if Weapon and Weapon.ReloadAnimation then
-		Weapon.ReloadAnimation = Weapon.ReloadAnimation:Stop()
+	if Weapon then
+		if ReloadAnimation and ReloadAnimation.AnimationTrack.IsPlaying then
+			ReloadAnimation:Stop()
+		end
+		
+		for ReloadAnimation, _ in pairs(Playing) do
+			ReloadAnimation:Stop()
+		end
 	end
 end)
