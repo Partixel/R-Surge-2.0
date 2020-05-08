@@ -76,10 +76,10 @@ local Index = {
 
 local Animations = {}
 function AnimationWrapper.GetAnimation(Name, AnimProps, Priority)
-	local Key = Name .. ":" .. tostring(AnimProps)
+	local Key = Name .. ":" .. AnimProps
 	if not Animations[Key] then
 		local Animation = Instance.new("Animation")
-		Animation.AnimationId = "rbxassetid://" .. AnimProps.Id
+		Animation.AnimationId = "rbxassetid://" .. AnimProps
 		Animation.Name = Name
 		Animation = setmetatable({Name = Name, Priority = Priority, AnimationTrack = AnimationWrapper.Humanoid:LoadAnimation(Animation), Cache = {}}, Index)
 		if not Animation.AnimationTrack.Looped then
