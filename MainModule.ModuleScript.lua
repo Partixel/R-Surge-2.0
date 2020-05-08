@@ -1,6 +1,8 @@
 local SetupModel = game:GetService("ServerScriptService"):FindFirstChild("S2") or game:GetService("ServerScriptService"):FindFirstChild("S2.0")
 local Config = require(SetupModel and SetupModel:WaitForChild("Config") or game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config"))
 
+local CoroutineErrorHandling = require(game:GetService("ReplicatedStorage"):FindFirstChild("CoroutineErrorHandling") or game:GetService("ServerStorage"):FindFirstChild("CoroutineErrorHandling") and game:GetService("ServerStorage").CoroutineErrorHandling:FindFirstChild("MainModule") or 4851605998)
+
 require(game:GetService("ServerStorage"):FindFirstChild("TimeSync") and game:GetService("ServerStorage").TimeSync:FindFirstChild("MainModule") or 4698309617) -- TimeSync
 require(game:GetService("ServerStorage"):FindFirstChild("MenuLib") and game:GetService("ServerStorage").MenuLib:FindFirstChild("MainModule") or 3717582194) -- MenuLib
 
@@ -22,10 +24,10 @@ LoaderModule(script:WaitForChild("MenuModules"), game:GetService("ServerStorage"
 local LuaRequire = function (...) return require(...) end
 
 if Config.DebugEnabled ~= false then
-	coroutine.wrap(LuaRequire)(game:GetService("ServerStorage"):FindFirstChild("DebugUtil") and game:GetService("ServerStorage").DebugUtil:FindFirstChild("MainModule") or 953754819)
+	CoroutineErrorHandling.CoroutineWithStack(require, game:GetService("ServerStorage"):FindFirstChild("DebugUtil") and game:GetService("ServerStorage").DebugUtil:FindFirstChild("MainModule") or 953754819)
 end
 
-coroutine.wrap(LuaRequire)(game:GetService("ServerStorage"):FindFirstChild("ThemeUtil") and game:GetService("ServerStorage").ThemeUtil:FindFirstChild("MainModule") or 2230572960)
+CoroutineErrorHandling.CoroutineWithStack(require, game:GetService("ServerStorage"):FindFirstChild("ThemeUtil") and game:GetService("ServerStorage").ThemeUtil:FindFirstChild("MainModule") or 2230572960)
 
 if not game:GetService("ServerStorage"):FindFirstChild("VH_Command_Modules") then
 	local Folder = Instance.new("Folder")

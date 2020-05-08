@@ -1,4 +1,5 @@
-local LuaRequire = function(...) return require(...) end
-coroutine.wrap(LuaRequire)(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
-coroutine.wrap(LuaRequire)(script.Parent:WaitForChild("PoseUtil"))
-coroutine.wrap(LuaRequire)(script.Parent:WaitForChild("KeybindUtil"))
+local CoroutineErrorHandling = require(game:GetService("ReplicatedStorage"):FindFirstChild("CoroutineErrorHandling"))
+
+CoroutineErrorHandling.CoroutineWithStack(require, game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
+CoroutineErrorHandling.CoroutineWithStack(require, script.Parent:WaitForChild("PoseUtil"))
+CoroutineErrorHandling.CoroutineWithStack(require, script.Parent:WaitForChild("KeybindUtil"))
