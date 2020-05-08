@@ -179,13 +179,13 @@ function Module.GetBind(Name)
 end
 
 function Module.RemoveBind(Name)
-	coroutine.wrap(Module.Binds[Name].Callback)(false, false)
+	Module.Binds[Name].Callback(false, false)
 	Module.Binds[Name] = nil
 	Module.BindChanged:Fire(Name)
 end
 
 function Module.SetToggleState(Name, Val)
-	coroutine.wrap(Module.Binds[Name].Callback)(false, false)
+	Module.Binds[Name].Callback(false, false)
 	if Val then
 		Module.Binds[Name].Toggle = false
 	end
@@ -196,7 +196,7 @@ end
 function Module.SetToggle(Name, Val)
 	Module.Binds[Name].State = Val
 	Module.Binds[Name].Toggle = Val
-	coroutine.wrap(Module.Binds[Name].Callback)(Val, false)
+	Module.Binds[Name].Callback(Val, false)
 end
 
 local function NameOfKey(Key)
@@ -276,7 +276,7 @@ function Module.Rebind(Name, Type, TextObj)
 			return
 		end
 		
-		coroutine.wrap(Module.Binds[Name].Callback)(false, false)
+		Module.Binds[Name].Callback(false, false)
 		
 		if Type == "Toggle" then
 			Module.SetToggleState(Name, not Module.Binds[Name].ToggleState)
