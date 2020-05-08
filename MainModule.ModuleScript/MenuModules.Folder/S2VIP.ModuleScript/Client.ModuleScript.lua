@@ -23,7 +23,7 @@ return {
 				self.Owned = Data
 				self.Settings = Settings or {}
 				if self.Owned[4] and self.Settings[4] then
-					Core.Config.CursorImage = self.Settings[4]
+					Core.Config.WeaponTypeOverrides.All.CursorImage = self.Settings[4]
 					Core.CursorImageChanged()
 				end
 			else
@@ -66,7 +66,7 @@ return {
 							self.Tab.ScrollingFrame.CursorImage.String.PlaceholderText = ""
 							
 							self.Options.Remote:FireServer(4, "")
-							Core.Config.CursorImage = nil
+							Core.Config.WeaponTypeOverrides.All.CursorImage = nil
 							Core.CursorImageChanged()
 							return
 						end
@@ -102,7 +102,7 @@ return {
 						self.Tab.ScrollingFrame.CursorImage.String.PlaceholderText = ImageId
 						
 						self.Options.Remote:FireServer(4, ImageId)
-						Core.Config.CursorImage = ImageId
+						Core.Config.WeaponTypeOverrides.All.CursorImage = ImageId
 						Core.CursorImageChanged()
 					end
 				end)
@@ -143,7 +143,7 @@ return {
 				
 				if self.Options.Owned[4] then
 					self.Tab.ScrollingFrame.CursorImage.TextButton.AutoButtonColor = false
-					self.Tab.ScrollingFrame.CursorImage.String.Text = Core.Config.CursorImage or ""
+					self.Tab.ScrollingFrame.CursorImage.String.Text = Core.Config.WeaponTypeOverrides.All.CursorImage or ""
 					self.Tab.ScrollingFrame.CursorImage.String.PlaceholderText = self.Tab.ScrollingFrame.CursorImage.String.Text
 					self.Tab.ScrollingFrame.CursorImage.String.Visible = true
 					self.Tab.ScrollingFrame.CursorImage.TextButton.Size = UDim2.new(0.5, -12, 1, -10)

@@ -1,6 +1,7 @@
 local TweenService, HttpService, ThemeUtil = game:GetService("TweenService"), game:GetService("HttpService"), require(game:GetService("ReplicatedStorage"):WaitForChild("ThemeUtil"):WaitForChild("ThemeUtil"))
-local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 
 local EscapePatterns = {
 	["("] = "%(",
@@ -162,47 +163,38 @@ local Presets = {
 		S2_CursorDistFromCenter = 5, 	
 		S2_CursorBorderWidth = 1, 	
 		S2_CursorSwapWidthHeight = false, 	
-		S2_CursorCenterBorder = Color3.fromRGB( 46, 46, 46 ), 	
+		S2_CursorCenterBorder = Color3.fromRGB(46, 46, 46), 	
 		S2_CursorCenterBorderTransparency = 0, 	
 		S2_CursorCenterWidth = 5, 	
-		S2_CursorBorder = Color3.fromRGB( 46, 46, 46 ), 	
+		S2_CursorBorder = Color3.fromRGB(46, 46, 46), 	
 		S2_CursorDynamicMovement = false, 	
 		S2_CursorHeight = 6, 	
 		S2_CursorCenterRotateWith = false, 	
 		S2_CursorCenterRotation = 0, 	
 		S2_CursorCenterBorderWidth = 1, 	
-		S2_CursorColor = Color3.fromRGB( 255, 255, 255 ), 	
+		S2_CursorColor = Color3.fromRGB(255, 255, 255), 	
 		S2_CursorCenterTransparency = 0, 	
 		S2_CursorRotateReload = false, 	
 		S2_CursorRotate = false, 	
 		S2_CursorWidth = 2, 	
 		S2_CursorRotation = 0, 	
 		S2_CursorCenterHeight = 5, 	
-		S2_CursorCenterColor = Color3.fromRGB( 255, 255, 255 ), 	
+		S2_CursorCenterColor = Color3.fromRGB(255, 255, 255), 	
 		S2_CursorTransparency = 1,	
 	}
 }
 
 function ExportSettings()
-	
 	local Export = {}
-	
-	for a, Setting in ipairs(Keys) do
-		
+	for Order, Setting in ipairs(Keys) do
 		local Val = ThemeUtil.GetThemeFor(Setting.Name)
-		
 		if typeof(Val) == "Color3" then
-			
 			Val = {Val.r * 255, Val.g * 255, Val.b * 255}
-			
 		end
-		
-		Export[a] = Val
-		
+		Export[Order] = Val
 	end
 	
 	return HttpService:JSONEncode(Export)
-	
 end
 
 return {
@@ -244,7 +236,7 @@ return {
 				ThemeUtil.BindUpdate(self.Tab.ScrollingFrame, {ScrollBarImageColor3 = "Secondary_BackgroundColor", ScrollBarImageTransparency = "Secondary_BackgroundTransparency"})
 				ThemeUtil.BindUpdate(self.Tab.Search, {BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})
 				
-				self.Tab.ScrollingFrame.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function ()
+				self.Tab.ScrollingFrame.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 					self.Tab.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.Tab.ScrollingFrame.UIListLayout.AbsoluteContentSize.Y)
 				end)
 				
@@ -268,174 +260,110 @@ return {
 			end,
 			Redraw = function(self)
 				for _, Obj in ipairs(self.Tab.ScrollingFrame:GetChildren()) do
-					
 					if Obj:IsA("Frame") then Obj:Destroy() end
-					
 				end
 				
 				local Txt = self.Tab.Search.Text:lower():gsub(".", EscapePatterns)
-				
-				for a, Setting in ipairs(Keys) do
-					
+				for Order, Setting in ipairs(Keys) do
 					if Setting.Text:lower():find(Txt) then
+						local Type = typeof(ThemeUtil.GetThemeFor(Setting.Name))
 						
-						local b = Setting
-						
-						local Type = typeof(ThemeUtil.GetThemeFor(b.Name))
-						
-						local Inst =  script:FindFirstChild(Type):Clone()
+						local Inst = script:FindFirstChild(Type):Clone()
+						Inst.TextButton.Text = Setting.Text
 						
 						ThemeUtil.BindUpdate(Inst.TextButton, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency"})
-						
-						Inst.TextButton.Text = b.Text
-						
-						Inst.TextButton.MouseButton1Click:Connect(function ()
-							
-							self.Options.Remote:FireServer(b.Name)
-							
-							ThemeUtil.UpdateThemeFor(b.Name)
-							
-						end)
-						
+						ThemeUtil.BindUpdate(Inst, {[Setting.Name] = self.UpdateObj})
 						if Type == "Color3" then
-							
-							ThemeUtil.BindUpdate(Inst.Display, {BackgroundColor3 = b.Name})
-							
+							ThemeUtil.BindUpdate(Inst.Display, {BackgroundColor3 = Setting.Name})
 							ThemeUtil.BindUpdate({Inst.Blue, Inst.Green, Inst.Red}, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})
-							
-							
 						elseif Type == "number" then
-							
 							ThemeUtil.BindUpdate(Inst.Number, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})
-							
 						elseif Type == "boolean" then
-							
-							ThemeUtil.BindUpdate(Inst.Boolean, {BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", BackgroundColor3 = ThemeUtil.GetThemeFor(b.Name) and "Positive_Color3" or "Negative_Color3"})
-							
+							ThemeUtil.BindUpdate(Inst.Boolean, {BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", BackgroundColor3 = ThemeUtil.GetThemeFor(Setting.Name) and "Positive_Color3" or "Negative_Color3"})
 						end
 						
-						Inst.LayoutOrder = a
+						Inst.LayoutOrder = Order
 						
-						ThemeUtil.BindUpdate(Inst, {[b.Name] = self.UpdateObj})
-						
-						for c, d in pairs(Inst:GetChildren()) do
+						Inst.TextButton.MouseButton1Click:Connect(function()
+							self.Options.Remote:FireServer(Setting.Name)
 							
-							if d.Name == "Boolean" then
-								
-								d.MouseButton1Click:Connect(function ()
+							ThemeUtil.UpdateThemeFor(Setting.Name)
+						end)
+						
+						for _, Child in ipairs(Inst:GetChildren()) do
+							if Child.Name == "Boolean" then
+								Child.MouseButton1Click:Connect(function()
+									local Val = not ThemeUtil.GetThemeFor(Setting.Name)
 									
-									local Val = not ThemeUtil.GetThemeFor(b.Name)
+									self.Options.Remote:FireServer(Setting.Name, Val)
 									
-									self.Options.Remote:FireServer(b.Name, Val)
-									
-									ThemeUtil.UpdateThemeFor(b.Name, Val)
-									
+									ThemeUtil.UpdateThemeFor(Setting.Name, Val)
 									ThemeUtil.BindUpdate(Inst.Boolean, {BackgroundColor3 = Val and "Positive_Color3" or "Negative_Color3"})
-									
 								end)
-								
-							elseif d:IsA("TextBox") then
-								
-								d.FocusLost:Connect(function ()
-									
+							elseif Child:IsA("TextBox") then
+								Child.FocusLost:Connect(function()
 									if Type == "number" then
-										
 										if Inst.Number.Text == "" then
-											
 											Inst.Number.Text = Inst.Number.PlaceholderText
-											
 											return
-											
 										end
 										
 										local Num = tonumber(Inst.Number.Text)
-										
 										if Num then
-											
-											if b.Min then
-												
-												Num = math.max(Num, b.Min)
-												
+											if Setting.Min then
+												Num = math.max(Num, Setting.Min)
 											end
 											
-											if b.Max then
-												
-												Num = math.min(Num, b.Max)
-												
+											if Setting.Max then
+												Num = math.min(Num, Setting.Max)
 											end
 											
-											self.Options.Remote:FireServer(b.Name, Num)
+											self.Options.Remote:FireServer(Setting.Name, Num)
 											
-											ThemeUtil.UpdateThemeFor(b.Name, Num)
+											ThemeUtil.UpdateThemeFor(Setting.Name, Num)
 											
 										end
-										
 									elseif Type == "Color3" then
-										
 										if Inst.Red.Text == "" then
-											
 											Inst.Red.Text = Inst.Red.PlaceholderText
-											
 										end
 										
 										if Inst.Green.Text == "" then
-											
 											Inst.Green.Text = Inst.Green.PlaceholderText
-											
 										end
 										
 										if Inst.Blue.Text == "" then
-											
 											Inst.Blue.Text = Inst.Blue.PlaceholderText
-											
 										end
 										
-										local r, g, bl = tonumber(Inst.Red.Text), tonumber(Inst.Green.Text), tonumber(Inst.Blue.Text)
-										
-										if r and g and bl then
-											
-											if b.Min then
-												
-												r = math.max(r, b.Min)
-												
-												g = math.max(g, b.Min)
-												
-												bl = math.max(bl, b.Min)
-												
+										local r, g, b = tonumber(Inst.Red.Text), tonumber(Inst.Green.Text), tonumber(Inst.Blue.Text)
+										if r and g and b then
+											if Setting.Min then
+												r = math.max(r, Setting.Min)
+												g = math.max(g, Setting.Min)
+												b = math.max(b, Setting.Min)
 											end
 											
-											if b.Max then
-												
-												r = math.min(r, b.Max)
-												
-												g = math.min(g, b.Max)
-												
-												bl = math.min(bl, b.Max)
-												
+											if Setting.Max then
+												r = math.min(r, Setting.Max)
+												g = math.min(g, Setting.Max)
+												b = math.min(b, Setting.Max)
 											end
 											
-											local Col = Color3.fromRGB(r, g, bl)
+											local Col = Color3.fromRGB(r, g, b)
 											
-											self.Options.Remote:FireServer(b.Name, Col)
+											self.Options.Remote:FireServer(Setting.Name, Col)
 											
-											ThemeUtil.UpdateThemeFor(b.Name, Col)
-											
+											ThemeUtil.UpdateThemeFor(Setting.Name, Col)
 										end
-										
 									end
-									
 								end)
-								
 							end
-							
 						end
 						
 						Inst.Parent = self.Tab.ScrollingFrame
-						
 					end
-					
 				end
-				
 			end
 		},
 		{
@@ -450,7 +378,7 @@ return {
 			SetupTab = function(self)
 				ThemeUtil.BindUpdate(self.Tab.Search, {BackgroundColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency", PlaceholderColor3 = "Secondary_TextColor"})
 				
-				self.Tab.ScrollingFrame.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function ()
+				self.Tab.ScrollingFrame.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 					self.Tab.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.Tab.ScrollingFrame.UIListLayout.AbsoluteContentSize.Y)
 				end)
 				
@@ -460,71 +388,48 @@ return {
 			end,
 			Redraw = function(self)
 				for _, Obj in ipairs(self.Tab.ScrollingFrame:GetChildren()) do
-					
-					if Obj:IsA("Frame") then Obj:Destroy() end
-					
+					if Obj:IsA("Frame") then
+						Obj:Destroy()
+					end
 				end
 				
 				local Txt = self.Tab.Search.Text:lower():gsub(".", EscapePatterns)
-				
 				if ("default"):find(Txt) then
-					
 					local Preset = script.Preset:Clone()
-					
 					Preset.Name = "Default" 
-					
 					Preset.LayoutOrder = 0
-					
 					ThemeUtil.BindUpdate(Preset.TextButton, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency"})
-					
 					Preset.TextButton.Text = "Default"
 					
-					Preset.TextButton.MouseButton1Click:Connect(function ()
-						
+					Preset.TextButton.MouseButton1Click:Connect(function()
 						self.Options.Remote:FireServer({})
 						
 						for _, Settings in pairs(Keys) do
-							
 							ThemeUtil.UpdateThemeFor(Settings.Name)
-							
 						end
-						
 					end)
 					
 					Preset.Parent = self.Tab.ScrollingFrame
-					
 				end
 				
 				for Name, Settings in pairs(Presets) do
-					
 					if Name:lower():find(Txt) then
-						
 						local Preset = script.Preset:Clone()
-						
 						Preset.Name = Name
-						
 						ThemeUtil.BindUpdate(Preset.TextButton, {BackgroundColor3 = "Secondary_BackgroundColor", BorderColor3 = "Secondary_BackgroundColor", BackgroundTransparency = "Secondary_BackgroundTransparency", TextColor3 = "Primary_TextColor", TextTransparency = "Primary_TextTransparency"})
-						
 						Preset.TextButton.Text = Name
 						
-						Preset.TextButton.MouseButton1Click:Connect(function ()
-							
+						Preset.TextButton.MouseButton1Click:Connect(function()
 							self.Options.Remote:FireServer(Settings)
 							
 							for Key, Value in pairs(Settings) do
-								
 								ThemeUtil.UpdateThemeFor(Key, Value)
-								
 							end
-							
 						end)
 						
 						Preset.Parent = self.Tab.ScrollingFrame
-						
 					end
-					
 				end
-				
 			end
 		},
 		{
@@ -549,24 +454,24 @@ return {
 					self.Tab.Export.Code.SelectionStart = 1
 				end)
 				
-				self.Tab.Export.Code.Focused:Connect(function ()
+				self.Tab.Export.Code.Focused:Connect(function()
 					self.Tab.Export.Code.CursorPosition = #self.Tab.Export.Code.Text + 1
 					self.Tab.Export.Code.SelectionStart = 1
 				end)
 				
-				self.Tab.Import.Code.FocusLost:Connect(function ()
+				self.Tab.Import.Code.FocusLost:Connect(function()
 					local Ran, Import = pcall(HttpService.JSONDecode, HttpService, self.Tab.Import.Code.Text)
 					
 					if Ran and type(Import) == "table" then
-						for a, b in ipairs(Import) do
-							if type(b) == "table" then
-								b = Color3.fromRGB(b[1], b[2], b[3])
-								Import[a] = b
+						for Order, Value in ipairs(Import) do
+							if type(Value) == "table" then
+								Value = Color3.fromRGB(Value[1], Value[2], Value[3])
+								Import[Order] = Value
 							end
 							
-							ThemeUtil.UpdateThemeFor(Keys[a].Name, b)
-							Import[Keys[a].Name] = b
-							Import[a] = nil
+							ThemeUtil.UpdateThemeFor(Keys[Order].Name, Value)
+							Import[Keys[Order].Name] = Value
+							Import[Order] = nil
 						end
 						
 						self.Options.Remote:FireServer(Import)
@@ -577,7 +482,7 @@ return {
 				end)
 			end,
 			Redraw = function(self)
-				self.Tab.Export.Code.Text = ExportSettings( )
+				self.Tab.Export.Code.Text = ExportSettings()
 			end
 		},
 	},
