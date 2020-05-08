@@ -18,7 +18,7 @@ function UpdateCharacterRotation(StatObj, User)
 							SteppedEvent:Disconnect()
 							Until = nil
 						elseif not HumanoidRootPart.Anchored and (workspace.CurrentCamera.CoordinateFrame.p - workspace.CurrentCamera.Focus.p).magnitude > 0.55 and not next(Core.PreventCharacterRotation) and (Humanoid:GetState() == Enum.HumanoidStateType.FallingDown or Humanoid:GetState() == Enum.HumanoidStateType.Flying or Humanoid:GetState() == Enum.HumanoidStateType.Freefall or Humanoid:GetState() == Enum.HumanoidStateType.Jumping or Humanoid:GetState() == Enum.HumanoidStateType.Landed or Humanoid:GetState() == Enum.HumanoidStateType.Running or Humanoid:GetState() == Enum.HumanoidStateType.RunningNoPhysics or Humanoid:GetState() == Enum.HumanoidStateType.StrafingNoPhysics) then
-							HumanoidRootPart.CFrame = CFrame.new(HumanoidRootPart.Position, Vector3.new(Core.LPlrsTarget[ 2 ].X, HumanoidRootPart.Position.Y, Core.LPlrsTarget[ 2 ].Z))
+							HumanoidRootPart.CFrame = CFrame.new(HumanoidRootPart.Position, Vector3.new(Core.LPlrsTarget[2].X, HumanoidRootPart.Position.Y, Core.LPlrsTarget[2].Z))
 						end
 					end)
 				else
@@ -33,7 +33,7 @@ local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"
 Menu:AddSetting{Name = "CharacterAim", Text = "Rotate character towards target", Default = false, Update = function(Options, Val)
 	if Val then
 		if not Event then
-			Event =Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(UpdateCharacterRotation)
+			Event = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(UpdateCharacterRotation)
 		end
 	elseif Event then
 		Event:Disconnect()

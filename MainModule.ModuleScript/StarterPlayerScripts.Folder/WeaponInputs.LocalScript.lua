@@ -3,8 +3,10 @@ local LocalPlayer = game:GetService("Players").LocalPlayer
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 local KBU = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("S2"):WaitForChild("KeybindUtil"))
 
-KBU.AddBind{Name = "Fire", Category = "Surge 2.0", Callback = function(Began, Handled)
+local LastType, UserInput
+local FireBind = KBU.AddBind{Name = "Fire", Category = "Surge 2.0", Callback = function(Began, Handled, _, Input)
 	if not Began or not Handled then
+		UserInput = Input
 		local Weapons = Core.Selected[ LocalPlayer ]
 		if Weapons then
 			for a, _ in pairs( Weapons ) do
@@ -15,6 +17,15 @@ KBU.AddBind{Name = "Fire", Category = "Surge 2.0", Callback = function(Began, Ha
 		end
 	end
 end, Key = Enum.UserInputType.MouseButton1, PadKey = Enum.KeyCode.ButtonR2}
+
+local Mouse = LocalPlayer:GetMouse()
+function Core.GetLPlrsInputPos()
+	if UserInput.UserInputType == Enum.UserInputType.Touch then
+		return UserInput.Position.X, UserInput.Position.Y
+	elseif LastType ~= Enum.UserInputType.Touch then
+		return Mouse.X, Mouse.Y
+	end
+end
 
 KBU.AddBind{Name = "Reload", Category = "Surge 2.0", Callback = function(Held, Died)
 	local Weapons = Core.Selected[LocalPlayer]

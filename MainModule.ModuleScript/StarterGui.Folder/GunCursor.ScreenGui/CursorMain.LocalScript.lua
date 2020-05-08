@@ -10,12 +10,6 @@ local Last, LastC = 0, nil
 
 local ShowMode = 0
 
-Mouse.Move:Connect( function ( )
-	
-	script.Parent.Center.Position = UDim2.new( 0, Mouse.X , 0, Mouse.Y )
-	
-end )
-
 local function outCubic(t, b, c, d)
   return c*(math.pow(t/d-1,3)+1)+b
 end
@@ -201,6 +195,9 @@ function Core.RunCursorHeartbeat( )
 		end
 		
 		LastWep = Weapon
+		
+		local X, Y = Core.GetLPlrsInputPos()
+		script.Parent.Center.Position = UDim2.new( 0, X , 0, Y )
 		
 		local Humanoid = Core.GetValidDamageable( Core.LPlrsTarget[ 1 ] )
 		
