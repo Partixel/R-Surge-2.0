@@ -75,12 +75,10 @@ return {
 				for _, Obj in ipairs(self.Tab.ScrollingFrame:GetChildren()) do
 					if Obj:IsA("Frame") or Obj:IsA("TextButton") then Obj:Destroy() end
 				end
-				
-				local Binds = KBU.GetBinds()
 				local Txt = self.Tab.Search.Text:lower():gsub(".", EscapePatterns)
 				local Categories = {}
 				
-				for _, Bind in ipairs(Binds) do
+				for _, Bind in pairs(KBU.Binds) do
 					if Bind.Name:lower():find(Txt) and not Bind.NonRebindable then
 						local Base = script.Base:Clone()
 						Base.Name = Bind.Name
