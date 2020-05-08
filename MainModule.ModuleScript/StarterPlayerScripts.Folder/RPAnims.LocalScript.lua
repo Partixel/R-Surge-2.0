@@ -1,94 +1,87 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
-local Plr = game:GetService( "Players" ).LocalPlayer
-
-local StarterGui = game:GetService( "StarterGui" )
-
-local KBU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "KeybindUtil" ) )
-
-local PU = require( Plr:WaitForChild( "PlayerScripts" ):WaitForChild( "S2" ):WaitForChild( "PoseUtil" ) )
-
-local RPAnims = { [ Enum.HumanoidRigType.R6 ] = { "rbxassetid://580605334", "rbxassetid://1173354695" }, [ Enum.HumanoidRigType.R15 ] = { "rbxassetid://2225371665", "rbxassetid://2225382014" } }
+local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
+local KBU = require(LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("S2"):WaitForChild("KeybindUtil"))
+local PU = require(LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("S2"):WaitForChild("PoseUtil"))
 
 local AnimationWrapper
-
-local Salute, Surrender
-
 function Spawned(Char)
-	Char.ChildAdded:Connect(function(Obj)
-		if Obj:IsA("BackpackItem") then
-			if Salute then
-				KBU.SetToggle("Salute", false)
-			end
-			if Surrender then
-				KBU.SetToggle("Surrender", false)
+	AnimationWrapper = require(Char:WaitForChild("S2"):WaitForChild("AnimationWrapper"))
+end
+LocalPlayer.CharacterAdded:Connect(Spawned)
+Spawned(LocalPlayer.Character)
+
+local SurrenderAnimation
+KBU.AddBind{Name = "Surrender", Category = "Surge 2.0", Callback = function(Began, Died)
+	if Died then
+		Core.PreventSprint["Surrender"] = nil
+		Core.PreventCrouch["Surrender"] = nil
+		
+		Core.SetBackpackDisabled("Surrender", false)
+		
+		SurrenderAnimation = nil
+	elseif Began then
+		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("BackpackItem") or Core.Config.AllowSurrender == false or not Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SurrenderAnimation"] then
+			return false
+		end
+		
+		Core.SetBackpackDisabled("Surrender", true)
+		
+		KBU.SetToggle("Salute", false)
+		KBU.SetToggle("At_ease", false)
+		KBU.SetToggle("Crouch", false)
+		
+		PU.SetPose("Crouching", true)
+		
+		Core.PreventSprint["Surrender"] = true
+		Core.PreventCrouch["Surrender"] = true
+		
+		SurrenderAnimation = AnimationWrapper.GetAnimation("Surrender", Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SurrenderAnimation"], 15)
+		SurrenderAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
+		SurrenderAnimation:Play()
+	else
+		return true
+	end
+end, Key = Enum.KeyCode.U, ToggleState = true, OffOnDeath = true, NoHandled = true}
+
+local SDebounce, SLast, SaluteAnimation
+KBU.AddBind{Name = "Salute", Category = "Surge 2.0", Callback = function(Began, Died)
+	if not Died then
+		if Began and SDebounce then
+			return SLast
+		else
+			SLast = Began
+			if Began then
+				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead then
+					if SurrenderAnimation or not Core.Config.AllowSalute or not Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"] then
+						return false
+					end
+					
+					KBU.SetToggle("At_ease", false)
+					
+					SaluteAnimation = AnimationWrapper.GetAnimation("Salute", Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"], 15)
+					SaluteAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
+					SaluteAnimation:Play()
+					
+					SDebounce = true
+					
+					wait()
+					
+					SDebounce = false
+				end
+			elseif SaluteAnimation then
+				SaluteAnimation = SaluteAnimation:Stop()
+				
+				SDebounce = true
+				
+				wait()
+				
+				SDebounce = false
 			end
 		end
-	end)
-	
-	AnimationWrapper = require(Char:WaitForChild("S2"):WaitForChild("AnimationWrapper"))
-	
-	local SaluteAnim = Instance.new( "Animation" )
-	
-	SaluteAnim.AnimationId = RPAnims[ AnimationWrapper.Humanoid.RigType ][ 1 ]
-	
-	Salute = AnimationWrapper.Humanoid:LoadAnimation( SaluteAnim )
-	
-	local SurrenderAnim = Instance.new( "Animation" )
-	
-	SurrenderAnim.AnimationId = RPAnims[ AnimationWrapper.Humanoid.RigType ][ 2 ]
-	
-	Surrender = AnimationWrapper.Humanoid:LoadAnimation( SurrenderAnim )
-	
-end
-
-Spawned( Plr.Character or Plr.CharacterAdded:Wait( ) )
-
-Plr.CharacterAdded:Connect( Spawned )
-
-local Surrendered
-
-local SDebounce, SLast
-
-KBU.AddBind{ Name = "Salute", Category = "Surge 2.0", Callback = function ( Began, Died )
-	
-	if Died then return end
-	
-	if not Salute then return false end
-	
-	if Began and SDebounce then return SLast end
-	
-	SLast = Began
-	
-	if Began then
-		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowSalute == false or SDebounce or Surrendered ~= nil then return false end
-		
-		KBU.SetToggle( "At_ease", false )
-		
-		KBU.SetToggle( "Surrender", false )
-		
-		Salute:Play( )
-		
-		SDebounce = true
-		
-		wait( )
-		
-		SDebounce = false
-		
-	else
-		
-		Salute:Stop( )
-		
-		SDebounce = true
-		
-		wait( )
-		
-		SDebounce = false
-		
 	end
-	
-end, Key = Enum.KeyCode.T, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true }
+end, Key = Enum.KeyCode.T, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true}
 
 local ADebounce, ALast, AtEaseAnimation
 local function UpdateAtEaseAnimation(AtEasing, Weapon)
@@ -96,11 +89,13 @@ local function UpdateAtEaseAnimation(AtEasing, Weapon)
 		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
 		if Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"] then
 			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEase", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 5)
+			
 			if AtEaseAnimation and AtEaseAnimation ~= MyAtEaseAnimation then
 				AtEaseAnimation:Stop()
 			end
 			
 			AtEaseAnimation = MyAtEaseAnimation
+			
 			if not AtEaseAnimation.AnimationTrack.IsPlaying then
 				AtEaseAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 				AtEaseAnimation:Play()
@@ -118,8 +113,8 @@ KBU.AddBind{Name = "At_ease", Category = "Surge 2.0", Callback = function(Began,
 		else
 			ALast = Began
 			if Began then
-				if Plr.Character and Plr.Character:FindFirstChildOfClass("Humanoid") and Plr.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead then
-					local Weapon = Core.Selected[Plr] and next(Core.Selected[Plr])
+				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead then
+					local Weapon = Core.Selected[LocalPlayer] and next(Core.Selected[LocalPlayer])
 					if Weapon then
 						if not Weapon.AllowAtEase or Weapon.Reloading then
 							return false
@@ -127,94 +122,43 @@ KBU.AddBind{Name = "At_ease", Category = "Surge 2.0", Callback = function(Began,
 					elseif not Core.Config.WeaponTypeOverrides.All.AllowAtEase then
 						return false
 					end
-				
+					
+					if not (Weapon or Core.Config.WeaponTypeOverrides.All)[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"] then
+						return false
+					end
+					
 					KBU.SetToggle("Salute", false)
-					KBU.SetToggle("Surrender", false)
 					
 					UpdateAtEaseAnimation(true, Weapon)
 					
 					ADebounce = true
+					
 					wait()
+					
 					ADebounce = false
 				end
-			else
+			elseif AtEaseAnimation then
 				UpdateAtEaseAnimation()
 				
 				ADebounce = true
+				
 				wait()
+				
 				ADebounce = false
 			end
 		end
 	end
 end, Key = Enum.KeyCode.Y, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true}
 
-KBU.AddBind{ Name = "Surrender", Category = "Surge 2.0", Callback = function ( Began, Died )
-	
-	if Died then
-		
-		Core.PreventSprint[ "Surrender" ] = nil
-		
-		Core.PreventCrouch[ "Surrender" ] = nil
-		
-		Core.SetBackpackDisabled("Surrender", false)
-		
-		Surrendered = nil
-		
-		return
-		
-	end
-	
-	if not Surrender then
-		
-		Core.PreventSprint[ "Surrender" ] = nil
-		
-		Core.PreventCrouch[ "Surrender" ] = nil
-		
-		return false
-		
-	end
-	
-	if Surrendered ~= nil then return true end
-	
-	if Began then
-		
-		if Plr.Character and Plr.Character:FindFirstChildWhichIsA( "BackpackItem" ) or Core.Config.AllowSurrender == false then return false end
-		
-		Core.SetBackpackDisabled("Surrender", true)
-		
-		KBU.SetToggle( "Salute", false )
-		
-		KBU.SetToggle( "At_ease", false )
-		
-		KBU.SetToggle( "Crouch", false )
-		
-		PU.SetPose( "Crouching", true )
-		
-		Core.PreventSprint[ "Surrender" ] = true
-		
-		Core.PreventCrouch[ "Surrender" ] = true
-		
-		Surrender:Play( )
-		
-	end
-	
-end, Key = Enum.KeyCode.U, ToggleState = true, OffOnDeath = true, NoHandled = true }
-
 Core.Events.AntiAtEaseShoot = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(function(_, User)
-	if User == Plr and AtEaseAnimation then
+	if User == LocalPlayer and AtEaseAnimation then
 		KBU.SetToggle("At_ease", false)
 	end
 end)
 
 Core.WeaponSelected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
-	if Weapon then
-		if not Weapon.AllowAtEase then
-			KBU.SetToggle("At_ease", false)
-		elseif AtEaseAnimation then
-			UpdateAtEaseAnimation(true, Weapon)
-		end
-	elseif not Core.Config.WeaponTypeOverrides.All.AllowAtEase then
+	if not Weapon.AllowAtEase then
 		KBU.SetToggle("At_ease", false)
 	elseif AtEaseAnimation then
 		UpdateAtEaseAnimation(true, Weapon)
