@@ -4,13 +4,11 @@ local AnimationWrapper = require(script.Parent:WaitForChild("AnimationWrapper"))
 local HoldAnimation
 Core.WeaponSelected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
-	if Weapon then
-		HoldAnimation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "HoldAnimation"]
-		if HoldAnimation then
-			HoldAnimation = AnimationWrapper.GetAnimation("Hold", HoldAnimation, 1)
-			HoldAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Movement
-			HoldAnimation:Play()
-		end
+	HoldAnimation = Weapon[AnimationWrapper.Humanoid.RigType.Name .. "HoldAnimation"]
+	if HoldAnimation then
+		HoldAnimation = AnimationWrapper.GetAnimation("Hold", HoldAnimation, 1)
+		HoldAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Movement
+		HoldAnimation:Play()
 	end
 end)
 
