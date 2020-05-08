@@ -169,13 +169,7 @@ end)
 
 Core.WeaponSelected.Event:Connect(function(StatObj)
 	local Weapon = Core.GetWeapon(StatObj)
-	if Weapon then
-		if not Weapon.AllowSprint then
-			KBU.SetToggle("Sprint", false)
-		elseif Core.ActualSprinting then
-			UpdateSprintAnimation(true, Weapon)
-		end
-	elseif not Core.Config.WeaponTypeOverrides.All.AllowSprint then
+	if not Weapon.AllowSprint then
 		KBU.SetToggle("Sprint", false)
 	elseif Core.ActualSprinting then
 		UpdateSprintAnimation(true, Weapon)
