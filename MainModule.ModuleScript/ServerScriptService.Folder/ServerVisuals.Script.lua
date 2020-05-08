@@ -1,4 +1,4 @@
-local Core = require( game:GetService( "ReplicatedStorage" ):WaitForChild( "S2" ):WaitForChild( "Core" ) )
+local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 
 require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("SharedVisuals"))
 
@@ -75,32 +75,20 @@ Core.Events.DeselectedNoise = Core.WeaponDeselected.Event:Connect(function(StatO
 	end
 end)
 
-Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, _, Barrel, Hit, End )
-	
-	if not Hit or Hit.Anchored then return end
-	
-	local Weapon = Core.GetWeapon( StatObj )
-	
-	if Weapon.ShotKnockbackPercentage == 0 then return end
-	
-	local Humanoid = Core.GetValidDamageable( Hit )
-	
-	if not Humanoid and not Weapon.KnockAll then return end
-	
-	local Velocity = ( End - Barrel.Position ).Unit * math.abs( Weapon.Damage ) * ( ( Weapon.Range - ( End - Barrel.Position ).magnitude ) / Weapon.Range ) * Weapon.ShotKnockbackPercentage * Vector3.new( 1, 0, 1 )
-	
-	--Hit.Velocity = Hit.Velocity + Velocity
-	
-	local BodyVelocity = Instance.new( "BodyVelocity", Hit )
-	
-	BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-	
-	BodyVelocity.Velocity = Velocity * 0.2
-	
-	delay( 0.1, function( )
-		
-		BodyVelocity:Destroy( )
-		
-	end )
-	
-end )
+Core.Events.ShotKnockback = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(function(StatObj, _, Barrel, Hit, End)
+	if Hit and not Hit.Anchored then
+		local Weapon = Core.GetWeapon(StatObj)
+		if Weapon.ShotKnockbackPercentage ~= 0 then
+			local Humanoid = Core.GetValidDamageable(Hit)
+			if Humanoid or Weapon.KnockAll then
+				local BodyVelocity = Instance.new("BodyVelocity", Hit)
+				BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+				BodyVelocity.Velocity = ((End - Barrel.Position).Unit * math.abs(Weapon.Damage) * ((Weapon.Range - (End - Barrel.Position).magnitude) / Weapon.Range) * Weapon.ShotKnockbackPercentage * Vector3.new(1, 0, 1)) * 0.2
+				
+				delay(0.1, function()
+					BodyVelocity:Destroy()
+				end)
+			end
+		end
+	end
+end)

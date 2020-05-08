@@ -58,7 +58,7 @@ return function(Core)
 			Burst = {Shots = 3},
 			Safety = {PreventAttack = true},
 		},
-		Preload = function (Weapon, PreloadArray)
+		Preload = function(Weapon, PreloadArray)
 			if Weapon.FireSound then
 				PreloadArray[#PreloadArray + 1] = Weapon.FireSound
 			end
@@ -76,7 +76,7 @@ return function(Core)
 			
 			Weapon.CurBarrel = 1
 			Weapon.ModeShots = 0
-			Weapon.BarrelPart = Weapon.Barrels( Weapon.StatObj )
+			Weapon.BarrelPart = Weapon.Barrels(Weapon.StatObj)
 			Weapon.Ignore = Weapon.Ignores and Weapon.Ignores(Weapon.StatObj) or {}
 			
 			if typeof(Weapon.User) == "Instance" and Weapon.User:IsA("Player") then
@@ -90,7 +90,7 @@ return function(Core)
 			end
 		end,
 		Selected = function(Weapon)
-			if not Weapon.Placeholder and Weapon.ClipReloadPerSecond and Weapon.Clip < Weapon.ClipSize and ( not Weapon.AmmoType or WeaponType.GetStoredAmmo(Weapon) ~= 0 ) then
+			if not Weapon.Placeholder and Weapon.ClipReloadPerSecond and Weapon.Clip < Weapon.ClipSize and (not Weapon.AmmoType or WeaponType.GetStoredAmmo(Weapon) ~= 0) then
 				Core.WeaponTick[Weapon] = true
 			end
 		end,
@@ -102,7 +102,6 @@ return function(Core)
 		end,
 		Tick = function(Weapon, Step)
 			local Needed
-			
 			if Weapon.ClipReloadPerSecond and Weapon.Clip < Weapon.ClipSize and (not Weapon.AmmoType or WeaponType.GetStoredAmmo(Weapon) ~= 0) then
 				Needed = true
 				if not Weapon.Reloading and Weapon.LastClick and (Weapon.LastClick + (Weapon.ClipsReloadDelay or 0)) <= tick() then
@@ -131,60 +130,41 @@ return function(Core)
 			return Needed
 		end,
 		HandleClientReplication = function(StatObj, User, ToNetwork, ...)
-			if type( ToNetwork ) ~= "table" then
-				
-				ToNetwork = { { ToNetwork, ...} }
-				
+			if type(ToNetwork) ~= "table" then
+				ToNetwork = {{ToNetwork, ...}}
 			end
 			
-			local WeaponStats = Core.GetWeaponStats( StatObj )
-	
-			local Barrels = WeaponStats.Barrels( StatObj )
-			
+			local WeaponStats = Core.GetWeaponStats(StatObj)
+			local Barrels = WeaponStats.Barrels(StatObj)
 			for k, v in ipairs(ToNetwork) do
-				
-				local Barrel = type( Barrels ) == "table" and Barrels[ v[ 5 ] or 1 ] or Barrels
-		
+				local Barrel = type(Barrels) == "table" and Barrels[v[5] or 1] or Barrels
 				if Barrel then
-					
-					local Hit, Normal, Offset, BarrelNum = unpack( v )
+					local Hit, Normal, Offset, BarrelNum = unpack(v)
 					
 					local Material
-					
-					if typeof( Hit ) == "Instance" then
-						
+					if typeof(Hit) == "Instance" then
 						Material = Hit.Material
-						
 					elseif Hit then
-						
 						Material = Hit
-						
 						Hit = workspace.Terrain
-						
 					end
 					
 					local End
-					
 					if Hit then
-						
-						End = Hit.CFrame:PointToWorldSpace( Offset )
-						
+						End = Hit.CFrame:PointToWorldSpace(Offset)
 					else
-						
 						End = Offset
-						
 						Offset = nil
-									
 					end
 					
-					local Humanoids = ( WeaponType.GetBulletType( WeaponStats ) or WeaponType.BulletTypes.Kinetic )( StatObj, WeaponStats, User, Hit, Barrel, End )
+					local Humanoids = (WeaponType.GetBulletType(WeaponStats) or WeaponType.BulletTypes.Kinetic)(StatObj, WeaponStats, User, Hit, Barrel, End)
 					
 					local FirstShot
+					if #ToNetwork > 1 then
+						FirstShot = k == 1
+					end
 					
-					if #ToNetwork > 1 then FirstShot = k == 1 end
-					
-					WeaponType.AttackEvent:Fire( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids )
-					
+					WeaponType.AttackEvent:Fire(StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids)
 				end
 			end
 		end,
@@ -192,332 +172,235 @@ return function(Core)
 			if Weapon.Clip ~= 0 and Weapon.Reloading and Weapon.Reloading ~= Weapon.MouseDown then
 				Weapon.AbortReload = true
 			end
-		
-			if ( Weapon.LastClick and Weapon.LastClick >= tick( ) ) or Weapon.Reloading ~= nil then return false end
-		
-			if Weapon.Clip == 0 then
-				
-				if not Weapon.PreventManualReload then
-					
-					Core.Reload( Weapon )
-					
-				end
-		
-				return false
-		
-			end
-		
-			local ShotsPerClick = Weapon.ShotsPerClick or 1
-		
-			local OneAmmoPerClick = Weapon.OneAmmoPerClick or false
-		
-			if Weapon.ClipSize and Weapon.Clip - ( OneAmmoPerClick and 1 or ShotsPerClick ) < 0 then
-		
-				Core.Reload( Weapon )
-		
-				return false
-		
-			end
-		
-			local LastClick = 1 / Weapon.FireRate
 			
-			local Start = Weapon.LastClick or tick( )
+			if (Weapon.LastClick and Weapon.LastClick >= tick()) or Weapon.Reloading ~= nil then
+				return false
+			end
+			
+			if Weapon.Clip == 0 then
+				if not Weapon.PreventManualReload then
+					Core.Reload(Weapon)
+				end
+				return false
+			end
+			
+			local ShotsPerClick = Weapon.ShotsPerClick or 1
+			local OneAmmoPerClick = Weapon.OneAmmoPerClick or false
+			
+			if Weapon.ClipSize and Weapon.Clip - (OneAmmoPerClick and 1 or ShotsPerClick) < 0 then
+				Core.Reload(Weapon)
+				return false
+			end
+			
+			local LastClick = 1 / Weapon.FireRate
+			local Start = Weapon.LastClick or tick()
 		
 			local DelayBetweenShots = Weapon.DelayBetweenShots or 0
-		
-			Weapon.LastClick = Start + LastClick + ( DelayBetweenShots * ShotsPerClick )
-		
-			local ActualFired = 0
-		
+			Weapon.LastClick = Start + LastClick + (DelayBetweenShots * ShotsPerClick)
 			local CurWeaponMode = Weapon.CurWeaponMode
 			
-			local ToNetwork = ShotsPerClick > 1 and DelayBetweenShots == 0 and { } or nil
-			
+			local ActualFired = 0
+			local ToNetwork = ShotsPerClick > 1 and DelayBetweenShots == 0 and {} or nil
 			local OverStep = 0
-		
 			for BulNum = 1, ShotsPerClick do
-		
-				if ( not Core.Selected[ Weapon.User ] or not Core.Selected[ Weapon.User ][ Weapon ] ) or Weapon.CurWeaponMode ~= CurWeaponMode then break end
-		
-				local Barrel = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ Weapon.CurBarrel ] or Weapon.BarrelPart
-		
+				if (not Core.Selected[Weapon.User] or not Core.Selected[Weapon.User][Weapon]) or Weapon.CurWeaponMode ~= CurWeaponMode then
+					break
+				end
+				
+				local Barrel = type(Weapon.BarrelPart) == "table" and Weapon.BarrelPart[Weapon.CurBarrel] or Weapon.BarrelPart
 				if Barrel and Barrel.Parent and Barrel.Parent.Parent then
-		
-					if type( Weapon.BarrelPart ) == "table" then
-		
+					if type(Weapon.BarrelPart) == "table" then
 						if Weapon.CurBarrel >= #Weapon.BarrelPart then
-		
 							Weapon.CurBarrel = 1
-		
 						else
-		
 							Weapon.CurBarrel = Weapon.CurBarrel + 1
-		
 						end
-		
 					end
 		
 					ActualFired = ActualFired + 1
 					
 					if Core.CanAttack(Weapon) then
-						
 						local Hit, End, Normal, Material = WeaponType.CanFire(Weapon, Barrel)
-						
 						if Hit ~= false then
-			
-							local IgnoreWater = Weapon.BulletType and ( Weapon.BulletType.Name == "Fire" or Weapon.BulletType.Name == "Lightning" )
-			
+							local IgnoreWater = Weapon.BulletType and (Weapon.BulletType.Name == "Fire" or Weapon.BulletType.Name == "Lightning")
 							if IgnoreWater then
-			
-								if workspace.Terrain:ReadVoxels(Region3.new( Barrel.Position - Vector3.new( 2, 2, 2 ), Barrel.Position + Vector3.new( 2, 2, 2 ) ):ExpandToGrid(4), 4)[1][1][1] == Enum.Material.Water then
-			
+								if workspace.Terrain:ReadVoxels(Region3.new(Barrel.Position - Vector3.new(2, 2, 2), Barrel.Position + Vector3.new(2, 2, 2)):ExpandToGrid(4), 4)[1][1][1] == Enum.Material.Water then
 									Hit, End, Normal, Material = workspace.Terrain, Barrel.Position, -Barrel.CFrame.lookVector, Enum.Material.Water
-			
 								end
-			
 							end
 							
 							if not Hit then
-								
-								local Origin = not Weapon.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild( "NewHead" ) or Barrel
-								
-								local _, Target = Weapon.Target( Weapon.StatObj, Origin )
-			
+								local Origin = not Weapon.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild("NewHead") or Barrel
+								local _, Target = Weapon.Target(Weapon.StatObj, Origin)
 								if Target then
-									
-									Target = CFrame.new( Origin.Position, Target ) * CFrame.Angles( 0, 0, math.rad( math.random( 0, 3599 ) / 10 ) )
-									
-			                        Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Origin.Position, CFrame.new( Origin.Position, ( Target + Target.lookVector * 1000 + Target.UpVector * math.random( 0, 1000 / WeaponType.GetAccuracy( Weapon ) / 2 ) ).p ).lookVector * Weapon.Range ), Core.IgnoreFunction, TableCopy( Weapon.Ignore ), not IgnoreWater )
-									
+									Target = CFrame.new(Origin.Position, Target) * CFrame.Angles(0, 0, math.rad(math.random(0, 3599) / 10))
+									Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction(Ray.new(Origin.Position, CFrame.new(Origin.Position, (Target + Target.lookVector * 1000 + Target.UpVector * math.random(0, 1000 / WeaponType.GetAccuracy(Weapon) / 2)).p).lookVector * Weapon.Range), Core.IgnoreFunction, TableCopy(Weapon.Ignore), not IgnoreWater)
 								else
-			
 									Hit = false
-			
 								end
-			
 							end
 							
 							if Hit ~= false then
-			
-								if Weapon.Clip  and ( not OneAmmoPerClick or ( ShotsPerClick and ShotsPerClick > 1 and BulNum == 1 ) ) then
-			
-									WeaponType.SetClip( Weapon, Weapon.Clip - 1 )
-			
+								if Weapon.Clip  and (not OneAmmoPerClick or (ShotsPerClick and ShotsPerClick > 1 and BulNum == 1)) then
+									WeaponType.SetClip(Weapon, Weapon.Clip - 1)
 								end
-			
-								Weapon.ShotRecoil = math.min( Weapon.ShotRecoil + math.abs( Weapon.Damage ) / 50, math.abs( Weapon.Damage ) / 5 * ShotsPerClick )
 								
-								local Offset = Hit and Hit.CFrame:pointToObjectSpace( End ) or nil
+								Weapon.ShotRecoil = math.min(Weapon.ShotRecoil + math.abs(Weapon.Damage) / 50, math.abs(Weapon.Damage) / 5 * ShotsPerClick)
 								
-								local Humanoids = ( WeaponType.GetBulletType( Weapon ) or WeaponType.BulletTypes.Kinetic )( Weapon.StatObj, Weapon, Weapon.User, Hit, Barrel, End )
-			
+								local Offset = Hit and Hit.CFrame:pointToObjectSpace(End) or nil
+								
+								local Humanoids = (WeaponType.GetBulletType(Weapon) or WeaponType.BulletTypes.Kinetic)(Weapon.StatObj, Weapon, Weapon.User, Hit, Barrel, End)
+								
 								if not Core.IsServer then
-									
 									local FirstShot
+									if ShotsPerClick > 1 then
+										FirstShot = BulNum == 1
+									end
 									
-									if ShotsPerClick > 1 then FirstShot = BulNum == 1 end
-									
-									WeaponType.AttackEvent:Fire( Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, TimeSync.GetServerTime() )
-			
+									WeaponType.AttackEvent:Fire(Weapon.StatObj, Weapon.User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids, TimeSync.GetServerTime())
 								end
 								
 								if ToNetwork then
-									
-									ToNetwork[ BulNum ] = { Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil }
-									
+									ToNetwork[BulNum] = {Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil}
 								else
-									
-									coroutine.wrap(Core.HandleServerReplication)( Weapon.User, Weapon.StatObj, tick( ), Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil )
-									
+									coroutine.wrap(Core.HandleServerReplication)(Weapon.User, Weapon.StatObj, tick(), Hit == workspace.Terrain and Material or Hit, Normal, Hit == nil and End or Offset, Weapon.CurBarrel ~= 1 and Weapon.CurBarrel or nil)
 								end
-								
 							end
-			
 						end
-						
 					end
-		
+					
 					if DelayBetweenShots > 0 and ShotsPerClick > 1 and Weapon.Clip ~= 0 then
-						
 						if OverStep < DelayBetweenShots then
-							
-							OverStep = OverStep + ( Core.HeartbeatWait( DelayBetweenShots ) - DelayBetweenShots )
-							
+							OverStep = OverStep + (Core.HeartbeatWait(DelayBetweenShots) - DelayBetweenShots)
 						else
-							
 							OverStep = OverStep - DelayBetweenShots
-							
 						end
-						
 					end
-		
 				end
-		
 			end
 			
 			if ToNetwork then
-				
-				coroutine.wrap(Core.HandleServerReplication)( Weapon.User, Weapon.StatObj, tick( ), ToNetwork)
-				
+				coroutine.wrap(Core.HandleServerReplication)(Weapon.User, Weapon.StatObj, tick(), ToNetwork)
 			end
-		
+			
 			if ShotsPerClick > 1 and ShotsPerClick ~= ActualFired then
-		
-				Weapon.LastClick = Start + LastClick + ( DelayBetweenShots * ActualFired )
-		
+				Weapon.LastClick = Start + LastClick + (DelayBetweenShots * ActualFired)
 			end
-		
+			
 			Weapon.ModeShots = Weapon.ModeShots + 1
-		
-			if not Weapon.Automatic and ( not Weapon.Shots or Weapon.Shots == 1 or Weapon.ModeShots >= Weapon.Shots ) then
-				
+			
+			if not Weapon.Automatic and (not Weapon.Shots or Weapon.Shots == 1 or Weapon.ModeShots >= Weapon.Shots) then
 				Core.EndAttack(Weapon)
-		
 			end
 			
-			if Weapon.LastClick < tick( ) then
-				
+			if Weapon.LastClick < tick() then
 				if Weapon.WindupTime == nil or Weapon.WindupTime == 0 then
-					
-					Core.Attack( Weapon)
-			
+					Core.Attack(Weapon)
 				elseif not Weapon.Reloading and Weapon.Windup and Weapon.Windup >= Weapon.WindupTime then
-					
-					Core.Attack( Weapon )
-					
+					Core.Attack(Weapon)
 				end
-				
 			end
-		
 		end,
 		EndAttack = function(Weapon)
 			Weapon.ModeShots = 0
 		end,
 		EmptyAmmo = function(Weapon)
-			if not Weapon.ClipSize or Weapon.ReloadDelay < 0 or Weapon.FireRate == 0 or Weapon.Reloading then return end
-			
-			if Weapon.ClipSize > 0 and Weapon.Clip > 0 then
-				if Weapon.MouseDown and Weapon.AttackOnMouseUp then
-					Core.EndAttack(Weapon)
+			if Weapon.ClipSize and Weapon.ReloadDelay >= 0 and Weapon.FireRate ~= 0 and not Weapon.Reloading then
+				if Weapon.ClipSize > 0 and Weapon.Clip > 0 then
+					if Weapon.MouseDown and Weapon.AttackOnMouseUp then
+						Core.EndAttack(Weapon)
+					end
+					
+					Weapon.ModeShots = 0
+					
+					local NewClip = Weapon.ReloadAmount and Weapon.Clip > 0 and not Weapon.NoChambering and 1 or 0
+					if Weapon.AmmoType then
+						Weapon.WeaponType.SetStoredAmmo(Weapon, WeaponType.GetStoredAmmo(Weapon) + Weapon.Clip - NewClip)
+					end
+					
+					Weapon.WeaponType.SetClip(Weapon, NewClip)
 				end
-				
-				Weapon.ModeShots = 0
-				
-				local NewClip = Weapon.ReloadAmount and Weapon.Clip > 0 and not Weapon.NoChambering and 1 or 0
-				if Weapon.AmmoType then
-					Weapon.WeaponType.SetStoredAmmo(Weapon, WeaponType.GetStoredAmmo(Weapon) + Weapon.Clip - NewClip)
-				end
-				
-				Weapon.WeaponType.SetClip(Weapon, NewClip)
 			end
 		end,
 		Reload = function(Weapon)
-			if not Weapon.ClipSize or Weapon.ReloadDelay < 0 or Weapon.FireRate == 0 or Weapon.Reloading or ( Weapon.AmmoType and WeaponType.GetStoredAmmo(Weapon) == 0 ) then return end
+			if Weapon.ClipSize and Weapon.ReloadDelay >= 0 and Weapon.FireRate ~= 0 and not Weapon.Reloading and (not Weapon.AmmoType or WeaponType.GetStoredAmmo(Weapon) ~= 0) then
+				local Chambered = Weapon.ReloadAmount and Weapon.Clip > 0 and not Weapon.NoChambering
+				if Weapon.ClipSize > 0 and ((Chambered and Weapon.Clip <= Weapon.ClipSize) or (not Chambered and Weapon.Clip < Weapon.ClipSize)) then
+					if Weapon.MouseDown and Weapon.AttackOnMouseUp then
+						Core.EndAttack(Weapon)
+					end
 			
-			local Chambered = Weapon.ReloadAmount and Weapon.Clip > 0 and not Weapon.NoChambering
+					local ReloadTick = Weapon.MouseDown or tick()
+					Weapon.Reloading = ReloadTick
+					Weapon.ModeShots = 0
 			
-			if Weapon.ClipSize > 0 and ((Chambered and Weapon.Clip <= Weapon.ClipSize) or (not Chambered and Weapon.Clip < Weapon.ClipSize)) then
-				
-				if Weapon.MouseDown and Weapon.AttackOnMouseUp then
-					Core.EndAttack(Weapon)
-				end
-		
-				local ReloadTick = Weapon.MouseDown or tick( )
-		
-				Weapon.Reloading = ReloadTick
-		
-				Weapon.ModeShots = 0
-		
-				local NewClip = math.floor( (Weapon.Clip - (Chambered and 1 or 0)) / ( Weapon.ReloadAmount or 1 ) ) * ( Weapon.ReloadAmount or 1 ) + (Chambered and 1 or 0)
-				
-				if Weapon.AmmoType then
-		
-					Weapon.WeaponType.SetStoredAmmo( Weapon, WeaponType.GetStoredAmmo(Weapon) + Weapon.Clip - NewClip )
-		
-				end
-				
-				Weapon.WeaponType.SetClip( Weapon, NewClip )
-				
-				local Delay = Weapon.ReloadDelay / math.ceil( Weapon.ClipSize / ( Weapon.ReloadAmount or 1 ) )
-				
-				if (math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1) == 0 then
-					Core.ReloadStart:Fire( Weapon.StatObj, Delay)
-				else
-					Core.ReloadStart:Fire( Weapon.StatObj, Delay * ((math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)))
-				end
-				
-				Weapon.ReloadStart = tick( ) - Delay * Weapon.Clip / ( Weapon.ReloadAmount or 1 )
-				
-				if Weapon.InitialReloadDelay then
-					Core.HeartbeatWait( Weapon.InitialReloadDelay )
-				end
-				
-				if Weapon.Reloading == ReloadTick then
-		
-					local w = Delay
-		
-					local TotalExtra = 0
+					local NewClip = math.floor((Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)) * (Weapon.ReloadAmount or 1) + (Chambered and 1 or 0)
+					if Weapon.AmmoType then
+						Weapon.WeaponType.SetStoredAmmo(Weapon, WeaponType.GetStoredAmmo(Weapon) + Weapon.Clip - NewClip)
+					end
 					
-					for i = (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1), math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1 do
-		
-						Core.ReloadStepped:Fire( Weapon.StatObj, Delay )
-		
-						TotalExtra = TotalExtra + w - Delay
-		
-						if TotalExtra > Delay then
-		
-							TotalExtra = TotalExtra - Delay + Delay - w
-		
-						else
-		
-							w = Core.HeartbeatWait( Delay + Delay - w )
-		
-						end
-		
-						local Add = Weapon.AmmoType and math.min( ( Weapon.ReloadAmount or 1 ), WeaponType.GetStoredAmmo(Weapon) ) or ( Weapon.ReloadAmount or 1 )
-		
-						Weapon.WeaponType.SetClip( Weapon, Weapon.Clip + Add )
-		
-						if Weapon.AbortReload then
-							
-							break
-		
-						elseif Weapon.AmmoType then
-		
-							Weapon.WeaponType.SetStoredAmmo( Weapon, WeaponType.GetStoredAmmo(Weapon) - Add )
-		
-							if WeaponType.GetStoredAmmo(Weapon) == 0 then
-		
-								break
-		
+					Weapon.WeaponType.SetClip(Weapon, NewClip)
+					
+					local Delay = Weapon.ReloadDelay / math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1))
+					if (math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1) == 0 then
+						Core.ReloadStart:Fire(Weapon.StatObj, Delay)
+					else
+						Core.ReloadStart:Fire(Weapon.StatObj, Delay * ((math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)))
+					end
+					
+					Weapon.ReloadStart = tick() - Delay * Weapon.Clip / (Weapon.ReloadAmount or 1)
+					
+					if Weapon.InitialReloadDelay then
+						Core.HeartbeatWait(Weapon.InitialReloadDelay)
+					end
+					
+					if Weapon.Reloading == ReloadTick then
+						local YieldFor, TotalExtra = Delay, 0
+						for i = (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1), math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1 do
+							Core.ReloadStepped:Fire(Weapon.StatObj, Delay)
+			
+							if TotalExtra > Delay then
+								TotalExtra = TotalExtra - Delay
+							else
+								TotalExtra = TotalExtra + YieldFor - Delay
+								YieldFor = Core.HeartbeatWait(Delay + Delay - YieldFor)
 							end
-		
+			
+							local Add = Weapon.AmmoType and math.min((Weapon.ReloadAmount or 1), WeaponType.GetStoredAmmo(Weapon)) or (Weapon.ReloadAmount or 1)
+							Weapon.WeaponType.SetClip(Weapon, Weapon.Clip + Add)
+			
+							if Weapon.AbortReload then
+								break
+							elseif Weapon.AmmoType then
+								Weapon.WeaponType.SetStoredAmmo(Weapon, WeaponType.GetStoredAmmo(Weapon) - Add)
+								if WeaponType.GetStoredAmmo(Weapon) == 0 then
+									break
+								end
+							end
 						end
-		
 					end
-		
-				end
-				
-				if Weapon.LastClick and Weapon.LastClick < tick( ) then
-					Weapon.LastClick = nil
-				end
-		
-				if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
-					if Weapon.FinalReloadDelay then
-						Core.HeartbeatWait( Weapon.FinalReloadDelay )
+					
+					if Weapon.LastClick and Weapon.LastClick < tick() then
+						Weapon.LastClick = nil
 					end
-		
-					Core.ReloadEnd:Fire( Weapon.StatObj )
-		
-					Weapon.Reloading = nil
-					Weapon.AbortReload = nil
-					Weapon.ReloadStart = nil
+			
+					if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
+						if Weapon.FinalReloadDelay then
+							Core.HeartbeatWait(Weapon.FinalReloadDelay)
+						end
+			
+						Core.ReloadEnd:Fire(Weapon.StatObj)
+			
+						Weapon.Reloading = nil
+						Weapon.AbortReload = nil
+						Weapon.ReloadStart = nil
+					end
 				end
 			end
 		end,
 		BulletTypes = {
 			Kinetic = function(StatObj, Weapon, User, Hit, Barrel, End)
-				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType and Weapon.BulletType.DamageType or Core.DamageType.Kinetic, ( Barrel.Position - End ).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
+				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType and Weapon.BulletType.DamageType or Core.DamageType.Kinetic, (Barrel.Position - End).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
 				if Damageable then
 					return {{Damageable, Damage}}
 				end
@@ -525,8 +408,8 @@ return function(Core)
 			Lightning = function(StatObj, Weapon, User, Hit, Barrel, End)
 				if Hit then
 					local DamageType = Weapon.BulletType.DamageType or Core.DamageType.Electricity
-					local Type = type( Weapon.BulletType.Type ) == "function" and Weapon.BulletType.Type or Weapon.BulletType.Type == "Stun" and WeaponType.BulletTypes or Weapon.BulletType.Type == "Fire" and Core.StartFireDamage
-					local Dist = ( Barrel.Position - End ).magnitude / Weapon.Range
+					local Type = type(Weapon.BulletType.Type) == "function" and Weapon.BulletType.Type or Weapon.BulletType.Type == "Stun" and WeaponType.BulletTypes or Weapon.BulletType.Type == "Fire" and Core.StartFireDamage
+					local Dist = (Barrel.Position - End).magnitude / Weapon.Range
 					
 					local Damageables = {}
 						
@@ -572,7 +455,7 @@ return function(Core)
 				end
 			end,
 			Fire = function(StatObj, Weapon, User, Hit, Barrel, End)
-				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Fire, ( Barrel.Position - End ).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
+				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Fire, (Barrel.Position - End).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
 				if Damageable then
 					if Core.IsServer then
 						Core.StartFireDamage(StatObj, Weapon, User, Hit, Damageable, Hit and Hit.CFrame:PointToObjectSpace(End))
@@ -582,7 +465,7 @@ return function(Core)
 				end
 			end,
 			Stun = function(StatObj, Weapon, User, Hit, Barrel, End)
-				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Electricity, ( Barrel.Position - End ).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
+				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Electricity, (Barrel.Position - End).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
 				if Damageable then
 					if Core.IsServer then
 						Core.StartStun(StatObj, Weapon, User, Hit, Damageable)
@@ -617,7 +500,7 @@ return function(Core)
 				return Weapon.BulletType
 			end
 		end,
-		GetStoredAmmo = function ( Weapon )
+		GetStoredAmmo = function(Weapon)
 			return WeaponType.StoredAmmo[Weapon.AmmoType]
 		end,
 		SetStoredAmmo = function(Weapon, Value)
@@ -630,24 +513,22 @@ return function(Core)
 				end
 			end
 		end,
-		SetClip = function ( Weapon, Value )
-		
-			if not Weapon.Clip or Weapon.Clip == Value then return end
-		
-			Weapon.Clip = Value
-		
-			WeaponType.ClipChanged:Fire( Weapon.StatObj, Value )
-		
+		SetClip = function(Weapon, Value)
+			if Weapon.Clip and Weapon.Clip ~= Value then
+				Weapon.Clip = Value
+				WeaponType.ClipChanged:Fire(Weapon.StatObj, Value)
+			end
 		end,
-		CanFire = function (Weapon, Barrel)
-			if not Weapon.StatObj or Weapon.UseBarrelAsOrigin or Weapon.NoAntiWall or not Weapon.User.Character then return end
-			local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction( Ray.new( Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position ), Core.IgnoreFunction, Weapon.Ignore )
-			if Hit then
-				if Weapon.PreventFireWithoutSnap then
-					return false
-				else
-					return Hit, End, Normal, Material
-				end 
+		CanFire = function(Weapon, Barrel)
+			if Weapon.StatObj and not Weapon.UseBarrelAsOrigin and not Weapon.NoAntiWall and Weapon.User.Character then
+				local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction(Ray.new(Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position), Core.IgnoreFunction, Weapon.Ignore)
+				if Hit then
+					if Weapon.PreventFireWithoutSnap then
+						return false
+					else
+						return Hit, End, Normal, Material
+					end 
+				end
 			end
 		end,
 	}

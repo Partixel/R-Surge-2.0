@@ -1,9 +1,9 @@
-local Plr = game:GetService("Players").LocalPlayer
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local CurCC
 workspace.DescendantAdded:Connect(function(Explosion)
-	if Explosion:IsA("Explosion") and Explosion.Visible and Plr and Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") and (Plr.Character.HumanoidRootPart.Position - Explosion.Position).magnitude < Explosion.BlastRadius then
-		local Dist = math.min(1.4 - (Plr.Character.HumanoidRootPart.Position - Explosion.Position).magnitude / (Explosion.BlastRadius + 10), 1)
+	if Explosion:IsA("Explosion") and Explosion.Visible and LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and (LocalPlayer.Character.HumanoidRootPart.Position - Explosion.Position).magnitude < Explosion.BlastRadius then
+		local Dist = math.min(1.4 - (LocalPlayer.Character.HumanoidRootPart.Position - Explosion.Position).magnitude / (Explosion.BlastRadius + 10), 1)
 		
 		local Sound = Instance.new("Sound")
 		Sound.SoundId = "rbxassetid://3262620486"
