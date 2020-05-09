@@ -111,10 +111,10 @@ function Core.RunCursorHeartbeat()
 		
 		LastWep = Weapon
 		
-		local X, Y = Core.GetLLocalPlayersInputPos()
+		local X, Y = Core.GetLPlrsInputPos()
 		script.Parent.Center.Position = UDim2.new(0, X , 0, Y)
 		
-		local Humanoid = Core.GetValidDamageable(Core.LLocalPlayersTarget[1])
+		local Humanoid = Core.GetValidDamageable(Core.LPlrsTarget[1])
 		local Color = (not Humanoid or CollectionService:HasTag(Humanoid, "s2_silent")) or Core.CheckTeamkill(Weapon, LocalPlayer, Humanoid) and ThemeUtil.GetThemeFor("Negative_Color3") or ThemeUtil.GetThemeFor("Positive_Color3")
 		local CenterColor
 		if Color == true then
