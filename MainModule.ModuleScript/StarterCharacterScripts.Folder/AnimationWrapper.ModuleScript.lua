@@ -7,7 +7,7 @@ end
 
 local function Add(Animation, FadeTime)
 	Animation.RanPriority = Animation.AnimationTrack.Priority
-	local PriorityTable = RunningAnimations[Animation.AnimationTrack.Priority]
+	local PriorityTable = RunningAnimations[Animation.RanPriority]
 	if PriorityTable then
 		if #PriorityTable == 0 then
 			PriorityTable[1] = Animation
