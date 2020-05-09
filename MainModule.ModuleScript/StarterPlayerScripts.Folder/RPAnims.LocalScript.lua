@@ -59,7 +59,8 @@ KBU.AddBind{Name = "Salute", Category = "Surge 2.0", Callback = function(Began, 
 			SLast = Began
 			if Began then
 				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead then
-					if SurrenderAnimation or not Core.Config.AllowSalute or not Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"] then
+					local Weapon = Core.Selected[LocalPlayer] and next(Core.Selected[LocalPlayer])
+					if Weapon or SurrenderAnimation or not Core.Config.AllowSalute or not Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"] then
 						return false
 					end
 					
