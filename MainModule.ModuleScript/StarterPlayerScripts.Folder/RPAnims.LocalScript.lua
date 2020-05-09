@@ -65,7 +65,7 @@ KBU.AddBind{Name = "Salute", Category = "Surge 2.0", Callback = function(Began, 
 					
 					KBU.SetToggle("At_ease", false)
 					
-					SaluteAnimation = AnimationWrapper.GetAnimation("Salute", Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"], 15)
+					SaluteAnimation = AnimationWrapper.GetAnimation("Salute", Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"], 10)
 					SaluteAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 					SaluteAnimation:Play()
 					
@@ -129,7 +129,7 @@ local function UpdateAtEaseAnimation(AtEasing, Weapon)
 	if AtEasing then
 		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
 		if Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"] then
-			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEase", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 5)
+			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEase", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 10)
 			
 			if AtEaseAnimation and AtEaseAnimation ~= MyAtEaseAnimation then
 				AtEaseAnimation:Stop()
