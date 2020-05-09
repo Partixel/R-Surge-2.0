@@ -12,6 +12,8 @@ end
 LocalPlayer.CharacterAdded:Connect(Spawned)
 Spawned(LocalPlayer.Character)
 
+local InspectAnimation
+
 local SurrenderAnimation
 KBU.AddBind{Name = "Surrender", Category = "Surge 2.0", Callback = function(Began, Died)
 	if Died then
@@ -31,6 +33,9 @@ KBU.AddBind{Name = "Surrender", Category = "Surge 2.0", Callback = function(Bega
 		KBU.SetToggle("Salute", false)
 		KBU.SetToggle("At_ease", false)
 		KBU.SetToggle("Crouch", false)
+		if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
+			InspectAnimation:Stop()
+		end
 		
 		PU.SetPose("Crouching", true)
 		
@@ -83,6 +88,42 @@ KBU.AddBind{Name = "Salute", Category = "Surge 2.0", Callback = function(Began, 
 	end
 end, Key = Enum.KeyCode.T, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true}
 
+local Debounce
+KBU.AddBind{Name = "Inspect", Category = "Surge 2.0", Callback = function(Began, Died)
+	if not Died and Began then
+		if Debounce then
+			return false
+		else
+			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead then
+				local Weapon = Core.Selected[LocalPlayer] and next(Core.Selected[LocalPlayer])
+				if Weapon then
+					if not Weapon.AllowInspect or Weapon.Reloading then
+						return false
+					end
+				else
+					return false
+				end
+				
+				if not Weapon[AnimationWrapper.Humanoid.RigType.Name .. "InspectAnimation"] then
+					return false
+				end
+				
+				KBU.SetToggle("At_ease", false)
+				
+				InspectAnimation = AnimationWrapper.GetAnimation("Inspect", Weapon[AnimationWrapper.Humanoid.RigType.Name .. "InspectAnimation"], 10)
+				InspectAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
+				InspectAnimation:Play(0.4)
+				
+				Debounce = true
+				
+				wait()
+				
+				Debounce = false
+			end
+		end
+	end
+end, Key = Enum.KeyCode.G, NoHandled = true}
+
 local ADebounce, ALast, AtEaseAnimation
 local function UpdateAtEaseAnimation(AtEasing, Weapon)
 	if AtEasing then
@@ -128,6 +169,9 @@ KBU.AddBind{Name = "At_ease", Category = "Surge 2.0", Callback = function(Began,
 					end
 					
 					KBU.SetToggle("Salute", false)
+					if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
+						InspectAnimation:Stop()
+					end
 					
 					UpdateAtEaseAnimation(true, Weapon)
 					
@@ -150,13 +194,29 @@ KBU.AddBind{Name = "At_ease", Category = "Surge 2.0", Callback = function(Began,
 	end
 end, Key = Enum.KeyCode.Y, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true}
 
-Core.Events.AntiAtEaseShoot = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(function(_, User)
-	if User == LocalPlayer and AtEaseAnimation then
-		KBU.SetToggle("At_ease", false)
+Core.Events.AntiInspectReload = Core.ReloadStart.Event:Connect(function(StatObj, Delay)
+	if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
+		InspectAnimation:Stop()
+	end
+end)
+
+Core.Events.AntiRPShoot = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(function(_, User)
+	if User == LocalPlayer then
+		if AtEaseAnimation then
+			KBU.SetToggle("At_ease", false)
+		end
+		
+		if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
+			InspectAnimation:Stop()
+		end
 	end
 end)
 
 Core.WeaponSelected.Event:Connect(function(StatObj)
+	if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
+		InspectAnimation:Stop()
+	end
+	
 	local Weapon = Core.GetWeapon(StatObj)
 	if not Weapon.AllowAtEase then
 		KBU.SetToggle("At_ease", false)
@@ -166,6 +226,10 @@ Core.WeaponSelected.Event:Connect(function(StatObj)
 end)
 
 Core.WeaponDeselected.Event:Connect(function(StatObj)
+	if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
+		InspectAnimation:Stop()
+	end
+	
 	if not Core.Config.WeaponTypeOverrides.All.AllowAtEase then
 		KBU.SetToggle("At_ease", false)
 	elseif AtEaseAnimation then
