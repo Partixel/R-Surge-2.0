@@ -20,7 +20,7 @@ end, Key = Enum.UserInputType.MouseButton1, PadKey = Enum.KeyCode.ButtonR2}
 
 local Mouse = LocalPlayer:GetMouse()
 function Core.GetLPlrsInputPos()
-	if UserInput.UserInputType == Enum.UserInputType.Touch then
+	if UserInput and UserInput.UserInputType == Enum.UserInputType.Touch then
 		return UserInput.Position.X, UserInput.Position.Y
 	elseif LastType ~= Enum.UserInputType.Touch then
 		return Mouse.X, Mouse.Y
