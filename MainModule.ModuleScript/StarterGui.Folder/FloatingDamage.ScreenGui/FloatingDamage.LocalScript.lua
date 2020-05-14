@@ -24,7 +24,7 @@ Core.Events.FloatingDamage = Core.ClientDamage.OnClientEvent:Connect(function(Da
 			TotalDamage = TotalDamage + DamageSplit[2]
 		end
 		
-		local Pos = workspace.CurrentCamera:WorldToScreenPoint(Vector3.new( Hit.Position.X + (RelativePosition and RelativePosition.X or 0), math.max(Hit.CFrame:PointToWorldSpace(Vector3.new(Hit.Size.X, Hit.Size.Y, Hit.Size.Z)).Y, Hit.CFrame:PointToWorldSpace(Vector3.new(-Hit.Size.X, -Hit.Size.Y, -Hit.Size.Z)).Y) + (RelativePosition and RelativePosition.Z or 0), Hit.Position.Z + (RelativePosition and RelativePosition.Z or 0)))
+		local Pos = workspace.CurrentCamera:WorldToScreenPoint(Vector3.new(Hit.Position.X + (RelativePosition and RelativePosition.X or 0), math.max(Hit.CFrame:PointToWorldSpace(Vector3.new(Hit.Size.X, Hit.Size.Y, Hit.Size.Z)).Y, Hit.CFrame:PointToWorldSpace(Vector3.new(-Hit.Size.X, -Hit.Size.Y, -Hit.Size.Z)).Y) + (RelativePosition and RelativePosition.Z or 0), Hit.Position.Z + (RelativePosition and RelativePosition.Z or 0)))
 		Pos = UDim2.new(0, Pos.X, 0, Pos.Y)
 		
 		local Floater = script.Floater:Clone()
