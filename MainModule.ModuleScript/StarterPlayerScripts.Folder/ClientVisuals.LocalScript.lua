@@ -597,25 +597,15 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 		Bullet.Adornee = workspace.Terrain
 		
-		local Col = User.TeamColor.Color
-		
-		if WeaponStats.BulletColor or Core.BulletColor then
-			
-			Col = WeaponStats.BulletColor or Core.BulletColor
-			
-		elseif type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) then
-			
-			Col = User.S2Color.Value.Color
-			
-		end
+		local Col = WeaponStats.BulletColor or (type(User) == "userdata" and User:FindFirstChild("S2") and User.S2:FindFirstChild("VIPColor") and User.S2.VIPColor.Value.Color) or User.TeamColor.Color
 		
 		Bullet.Color3 = Color3.new( Col.r * 3, Col.g * 3, Col.b * 3 )
 		
-		Bullet.Transparency = WeaponStats.BulletTransparency or Core.BulletTransparency or 0.4
+		Bullet.Transparency = WeaponStats.BulletTransparency or 0.4
 		
 		Debris:AddItem( Bullet, 3 )
 		
-		local Size = WeaponStats.BulletSize or Core.BulletSize or 0.25
+		local Size = WeaponStats.BulletSize or 0.25
 		
 		Bullet.Size = Vector3.new( Size, Size, ( Barrel.Position - End ).magnitude )
 		
@@ -629,7 +619,7 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 		for a = 1, WeaponStats.BulletType.VisibleFrames or 3 do
 			
-			RunService.Heartbeat:wait( )
+			RunService.Heartbeat:Wait( )
 			
 		end
 		
@@ -639,11 +629,11 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 	else
 		
-		local Size = WeaponStats.BulletSize or Core.Config.BulletSize or 0.27
+		local Size = WeaponStats.BulletSize or 0.27
 		
-		local Speed = WeaponStats.BulletSpeed or Core.Config.BulletSpeed or 3200
+		local Speed = WeaponStats.BulletSpeed or 3200
 		
-		local Length = math.min(  Speed / ( 60 + math.abs( WeaponStats.BulletLengthMod or Core.Config.BulletLengthMod or 0 ) ), Speed / 60 )
+		local Length = math.min(WeaponStats.BulletLength or ((Speed / 60) * (WeaponStats.BulletLengthMod or 1)), Speed / 60)
 		
 		local CF = CFrame.new( Barrel.Position, End )
 		
@@ -657,11 +647,11 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 		Bullet.Adornee = workspace.Terrain
 		
-		Bullet.Color3 = WeaponStats.BulletColor or ( type( User ) == "userdata" and User:FindFirstChild( "S2Color" ) and User.S2Color.Value ~= User.TeamColor and User.S2Color.Value.Color ) or Core.Config.BulletColor or User.TeamColor.Color
+		Bullet.Color3 = WeaponStats.BulletColor or (type(User) == "userdata" and User:FindFirstChild("S2") and User.S2:FindFirstChild("VIPColor") and User.S2.VIPColor.Value.Color) or User.TeamColor.Color
 		
 		Bullet.Color3 = Color3.new( Bullet.Color3.r * 3, Bullet.Color3.g * 3, Bullet.Color3.b * 3 )
 		
-		Bullet.Transparency = WeaponStats.BulletTransparency or Core.Config.BulletTransparency or 0.05
+		Bullet.Transparency = WeaponStats.BulletTransparency or 0.05
 		
 		Debris:AddItem( Bullet, 3 )
 		
