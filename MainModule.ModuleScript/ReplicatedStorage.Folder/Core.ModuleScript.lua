@@ -234,7 +234,7 @@ function Core.Preload(Weapon)
 	coroutine.wrap(LuaPreload)(PreloadArray)
 end
 
-function Core.Setup(StatObj, User)
+function Core.Setup(StatObj, User, Placeholder)
 	local WeaponStats = Core.GetWeaponStats(StatObj)
 	
 	local Weapon = setmetatable({
@@ -253,16 +253,24 @@ function Core.Setup(StatObj, User)
 	}
 	
 	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
-		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Equipped:Connect(function()
-			Core.WeaponSelected:Fire(StatObj)
+		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.AncestryChanged:Connect(function()
+			if StatObj.Parent and StatObj.Parent.Parent == workspace then
+				Core.DestroyWeapon(Weapon)
+			end
 		end)
-
-		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Unequipped:Connect(function()
-			Core.WeaponDeselected:Fire(StatObj)
-		end)
+		
+		if not Placeholder then
+			Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Equipped:Connect(function()
+				Core.WeaponSelected:Fire(StatObj)
+			end)
+	
+			Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Unequipped:Connect(function()
+				Core.WeaponDeselected:Fire(StatObj)
+			end)
+		end
 	end
 	
-	if Weapon.WeaponType.ServerSided or not Core.IsServer then
+	if not Placeholder and (Weapon.WeaponType.ServerSided or not Core.IsServer) then
 		if Weapon.WeaponModes then
 			Core.SetWeaponMode(Weapon, 1)
 		end
@@ -272,7 +280,7 @@ function Core.Setup(StatObj, User)
 		if not Core.IsServer then
 			Core.Preload(Weapon)
 		end
-	elseif Core.IsServer then
+	elseif Core.IsServer or Placeholder then
 		Weapon.Placeholder = true
 		
 		if Weapon.WeaponType.PlaceholderSetup then
@@ -939,22 +947,8 @@ else
 			if WeaponType then
 				local Weapon = Core.GetWeapon(StatObj)
 				if not Weapon then
-					Weapon = setmetatable({
-						Placeholder = true,
-						StatObj = StatObj,
-						User = User,
-						WeaponType = WeaponType
-					}, {__index = Core.GetWeaponStats(StatObj)})
+					Core.Setup(StatObj, User, true)
 					
-					Weapon.Events = {
-						StatObj.AncestryChanged:Connect(function()
-							if not StatObj:IsDescendantOf(game) then
-								Core.DestroyWeapon(Weapon)
-							end
-						end)
-					}
-					
-					Core.Weapons[StatObj] = Weapon
 					Core.WeaponTick[Weapon] = true
 					
 					Core.Selected[User] = Core.Selected[User] or {}
