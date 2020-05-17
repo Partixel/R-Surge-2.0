@@ -629,7 +629,7 @@ function Core.StartStun(StatObj, WeaponStats, User, Hit, Damageable)
 	end
 end
 
-function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, RelativePosition)
+function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, StartPos, RelativeEndPosition)
 	local Doused
 	local Fire = Instance.new("Fire" , Hit)
 	
@@ -648,7 +648,7 @@ function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, Relat
 			break
 		end
 		
-		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, WeaponStats.BulletType.DamageType or Core.DamageType.Fire, nil, RelativePosition)
+		local Damageable, Damage = Core.DamageHelper(User, StatObj, WeaponStats.BulletType.DamageType or Core.DamageType.Fire, Hit, nil, {StartPos = StartPos, RelativeEndPosition = RelativeEndPosition})
 		if not Damageable then break end
 		
 		wait(0.3)
@@ -672,8 +672,8 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 		Dist = Dist / BlastRadius
 		local Damageable = Core.GetValidDamageable(Part)
 		if Damageable then
-			if Core.CanDamage(User, Damageable, Part, WeaponStat, Dist) then
-				local Damage = Core.CalculateDamageFor(Part, WeaponStat, Dist)
+			if Core.CanDamage(User, WeaponStat, Part, Dist, Damageable) then
+				local Damage = Core.CalculateDamageFor(WeaponStat, Part, Dist)
 				if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
 					Damageables[Damageable] = {Part, Dist, Damage}
 				end
@@ -691,9 +691,9 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 		for Damageable, Info in pairs(Damageables) do
 			if Core.IsServer then
 				local ClosestPoint = Core.ClosestPoint(Info[1], Position)
-				Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], WeaponStat, DamageType, Info[2], Info[3], ClosestPoint)
+				Core.ApplyDamage(User, WeaponStat, DamageType, Info[1], Info[2], {StartPosition = Position, RelativeEndPosition = ClosestPoint}, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[3])
 				if Type then
-					Type(WeaponStat, WeaponStats, User, Info[1], Damageable, ClosestPoint)
+					Type(WeaponStat, WeaponStats, User, Info[1], Damageable, Position, ClosestPoint)
 				end
 			end
 			EstimatedDamageables[#EstimatedDamageables + 1] = {Damageable, Info[3]}
@@ -811,12 +811,12 @@ function Core.GetValidDamageable(Obj)
 	end
 end
 
-function Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance)
+function Core.CanDamage(Attacker, WeaponStat, Hit, DistancePercent, Damageable)
 	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
-	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(WeaponStats, Attacker, Damageable) and (not Distance or Distance < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
+	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(WeaponStats, Attacker, Damageable) and (not DistancePercent or DistancePercent < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
 end
 
-function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
+function Core.CalculateDamageFor(WeaponStat, Hit, DistancePercent)
 	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
 	local Damage = WeaponStats.Damage
 	
@@ -831,12 +831,12 @@ function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
 	if WeaponStats.HeldDamagePctIncreasePerSecond then
 		Damage = Damage + (Damage * math.min(math.max(tick() - WeaponStats.HoldStart - (WeaponStats.MinHoldTime or 0), 0) * WeaponStats.HeldDamagePctIncreasePerSecond, (WeaponStats.MaxHeldDamagePct or math.huge)))
 	end
-
-	if Distance then
+	
+	if DistancePercent then
 		if WeaponStats.InvertDistanceModifier then
-			Damage = Damage * (1 - Distance) * WeaponStats.DistanceDamageModifier
+			Damage = Damage * (1 - DistancePercent) * WeaponStats.DistanceDamageModifier
 		else
-			Damage = Damage * (1 - Distance * WeaponStats.DistanceDamageModifier)
+			Damage = Damage * (1 - DistancePercent * WeaponStats.DistanceDamageModifier)
 		end
 	end
 	
@@ -868,13 +868,22 @@ if not Core.IsServer then
 		end
 	end)
 end
--- returns Damageable if one is found, on server will also do damage
-function Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance, RelativePosition)
+--	returns Damageable if one is found, on server will also do damage
+--	Attacker = User
+--	WeaponStat
+--	DamageType
+--	Hit = BasePart
+--	DistancePercent = Percentage (Distance/MaxRange)
+--	ExtraInformation = {
+--		StartPosition = Vector3,
+--		RelativeEndPosition = Vector3,
+--	}
+function Core.DamageHelper(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation)
 	local Damageable = Core.GetValidDamageable(Hit)
-	if Damageable and Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance) then
-		local Damage = Core.CalculateDamageFor(Hit, WeaponStat, Distance)
+	if Damageable and Core.CanDamage(Attacker, WeaponStat, Hit, DistancePercent, Damageable) then
+		local Damage = Core.CalculateDamageFor(WeaponStat, Hit, DistancePercent)
 		if Core.IsServer then
-			Core.ApplyDamage(Attacker, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Hit, WeaponStat, DamageType, Distance, Damage, RelativePosition)
+			Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Damage)
 		end
 		return Damageable, Damage
 	end

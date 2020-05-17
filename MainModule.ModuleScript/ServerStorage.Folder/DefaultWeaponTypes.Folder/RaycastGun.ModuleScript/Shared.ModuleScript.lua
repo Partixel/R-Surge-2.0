@@ -400,7 +400,7 @@ return function(Core)
 		end,
 		BulletTypes = {
 			Kinetic = function(StatObj, Weapon, User, Hit, Barrel, End)
-				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType and Weapon.BulletType.DamageType or Core.DamageType.Kinetic, (Barrel.Position - End).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
+				local Damageable, Damage = Core.DamageHelper(User, StatObj, Weapon.BulletType and Weapon.BulletType.DamageType or Core.DamageType.Kinetic, Hit, (Barrel.Position - End).magnitude / Weapon.Range, {StartPosition = Barrel.Position, RelativeEndPosition = Hit and Hit.CFrame:PointToObjectSpace(End)})
 				if Damageable then
 					return {{Damageable, Damage}}
 				end
@@ -420,8 +420,8 @@ return function(Core)
 						Core.FakeExplosion({Position = End, BlastRadius = Radius, BlastPressure = 0, ExplosionType = Enum.ExplosionType.NoCraters}, function(Part, ExpDist)
 							ExpDist = Dist + ExpDist / Radius * 0.75
 							local Damageable = Core.GetValidDamageable(Part)
-							if Damageable and Damageable:GetState() == Enum.HumanoidStateType.Swimming and Core.CanDamage(User, Damageable, Part, StatObj, Dist) then
-								local Damage = Core.CalculateDamageFor(Hit, StatObj, Dist)
+							if Damageable and Damageable:GetState() == Enum.HumanoidStateType.Swimming and Core.CanDamage(User, StatObj, Part, Dist, Damageable) then
+								local Damage = Core.CalculateDamageFor(StatObj, Hit, Dist)
 								if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
 									Damageables[Damageable] = {Part, Dist, Damage}
 								end
@@ -430,8 +430,8 @@ return function(Core)
 					end
 					
 					local Damageable = Core.GetValidDamageable(Hit)
-					if Damageable and Core.CanDamage(User, Damageable, Hit, StatObj, Dist) then
-						local Damage = Core.CalculateDamageFor(Hit, StatObj, Dist)
+					if Damageable and Core.CanDamage(User, StatObj, Hit, Dist, Damageable) then
+						local Damage = Core.CalculateDamageFor(StatObj, Hit, Dist)
 						if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
 							Damageables[Damageable] = {Hit, Dist, Damage}
 						end
@@ -442,9 +442,9 @@ return function(Core)
 						for Damageable, Info in pairs(Damageables) do
 							if Core.IsServer then
 								local ClosestPoint = Core.ClosestPoint(Info[1], End)
-								Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], StatObj, DamageType, Info[2], Info[3], ClosestPoint)
+								Core.ApplyDamage(User, StatObj, DamageType, Info[1], Info[2], {StartPosition = Barrel.Position, RelativeEndPosition = ClosestPoint}, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[3])
 								if Type then
-									Type(StatObj, Weapon, User, Hit, Damageable, ClosestPoint)
+									Type(StatObj, Weapon, User, Hit, Damageable, Barrel.StartPosition, ClosestPoint)
 								end
 							end
 							EstimatedDamageables[#EstimatedDamageables + 1] = {Damageable, Info[3]}
@@ -455,17 +455,17 @@ return function(Core)
 				end
 			end,
 			Fire = function(StatObj, Weapon, User, Hit, Barrel, End)
-				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Fire, (Barrel.Position - End).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
+				local Damageable, Damage = Core.DamageHelper(User, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Fire, Hit, (Barrel.Position - End).magnitude / Weapon.Range, {StartPosition = Barrel.Position, RelativeEndPosition = Hit and Hit.CFrame:PointToObjectSpace(End)})
 				if Damageable then
 					if Core.IsServer then
-						Core.StartFireDamage(StatObj, Weapon, User, Hit, Damageable, Hit and Hit.CFrame:PointToObjectSpace(End))
+						Core.StartFireDamage(StatObj, Weapon, User, Hit, Damageable, Barrel.Position, Hit and Hit.CFrame:PointToObjectSpace(End))
 					end
 					
 					return {{Damageable, Damage}}
 				end
 			end,
 			Stun = function(StatObj, Weapon, User, Hit, Barrel, End)
-				local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Electricity, (Barrel.Position - End).magnitude / Weapon.Range, Hit and Hit.CFrame:PointToObjectSpace(End))
+				local Damageable, Damage = Core.DamageHelper(User, StatObj, Weapon.BulletType.DamageType or Core.DamageType.Electricity, Hit, (Barrel.Position - End).magnitude / Weapon.Range, {StartPosition = Barrel.Position, RelativeEndPosition = Hit and Hit.CFrame:PointToObjectSpace(End)})
 				if Damageable then
 					if Core.IsServer then
 						Core.StartStun(StatObj, Weapon, User, Hit, Damageable)

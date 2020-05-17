@@ -275,7 +275,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 						}, 
 						NoFeed = CollectionService:HasTag(Damageable, "s2nofeed")
 					}
-				}
+				},
 			}
 			script.Killed:Fire(DeathInfo)
 			RemoteKilled:FireAllClients(DeathInfo)
@@ -295,11 +295,11 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				end
 			end
 		else
-			local Killer, WeaponName, TypeName = Core.DamageInfos[Damageable].LastDamageInfo[1], Core.DamageInfos[Damageable].LastDamageInfo[3].Value, Core.DamageInfos[Damageable].LastDamageInfo[4]
+			local Killer, WeaponName, TypeName = Core.DamageInfos[Damageable].LastDamageInfo[1], Core.DamageInfos[Damageable].LastDamageInfo[2].Value, Core.DamageInfos[Damageable].LastDamageInfo[3]
 			if Kills[Killer] and Kills[Killer][WeaponName .. TypeName] and not Kills[Killer][WeaponName .. TypeName][Damageable] then
-				Kills[Killer][WeaponName .. TypeName][Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[2]
+				Kills[Killer][WeaponName .. TypeName][Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[4]
 			else
-				local Killed = {[Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[2]}
+				local Killed = {[Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[4]}
 				Kills[Killer] = Kills[Killer] or {}
 				Kills[Killer][WeaponName .. TypeName] = Killed
 				
@@ -320,7 +320,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				
 				local Kills = 0
 				local Assisters = {}
-				for Damageable, Hit in pairs(Killed) do
+				for Damageable, ExtraInformation in pairs(Killed) do
 					if Damageable.Parent then
 						if not CollectionService:HasTag(Damageable, "s2nokos") then
 							Kills = Kills + 1
@@ -334,7 +334,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 								TeamColor = Damageable:FindFirstChild("TeamColor") and Damageable.TeamColor.Value or nil
 							},
 							NoFeed = CollectionService:HasTag(Damageable, "s2nofeed"),
-							Hit = Hit.Name
+							ExtraInformation = ExtraInformation
 						}
 						
 						if Core.DamageInfos[Damageable] then
@@ -401,9 +401,9 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 	end
 end)
 
-Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits, RelativePosition)
+Core.ObjDamaged.Event:Connect(function(Attacker, WeaponStat, DamageType, ExtraInformation)
 	local TotalDamage = 0
-	for _, DamageSplit in ipairs(DamageSplits) do
+	for _, DamageSplit in ipairs(ExtraInformation.DamageSplits) do
 		if not CollectionService:HasTag(DamageSplit[1], "s2nokos") then
 			TotalDamage = TotalDamage + DamageSplit[2]
 		end
@@ -422,10 +422,10 @@ Core.ObjDamaged.Event:Connect(function(Attacker, Hit, WeaponStat, DamageType, Di
 		end
 		
 		if TotalDamage > 0 then
-			for _, DamageSplit in ipairs(DamageSplits) do
+			for _, DamageSplit in ipairs(ExtraInformation.DamageSplits) do
 				Core.DamageInfos[DamageSplit[1]] = Core.DamageInfos[DamageSplit[1]] or {}
 				Core.DamageInfos[DamageSplit[1]][Attacker] = (Core.DamageInfos[DamageSplit[1]][Attacker] or 0) + DamageSplit[2]
-				Core.DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplit}
+				Core.DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, WeaponStat, DamageType, ExtraInformation}
 				
 				wait(30)
 				

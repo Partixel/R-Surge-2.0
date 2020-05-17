@@ -63,9 +63,9 @@ function HeartbeatWait(num)
 	return t
 end
 
-Core.Events.FloatingDamage = Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, Hit, RelativePosition)
-	if type(Hit) ~= "string" then
-		local Headshot, Noise = Hit.Name:lower( ):find( "head" ), nil
+Core.Events.DamageMarkerSound = Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, ExtraInformation)
+	if type(ExtraInformation) ~= "string" then
+		local Headshot, Noise = ExtraInformation.HitName:lower( ):find( "head" ), nil
 		for _, DamageSplit in ipairs(DamageSplits) do
 			if DamageSplit[1].Parent and not CollectionService:HasTag(DamageSplit[1], "s2_silent") then
 				Noise = true

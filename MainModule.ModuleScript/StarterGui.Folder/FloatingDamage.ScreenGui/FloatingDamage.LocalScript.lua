@@ -17,14 +17,14 @@ local function UpdateGradientMain(Obj, Color)
 	Obj.Color = ColorSequence.new(Color, Obj.Color.Keypoints[2].Value)
 end
 
-Core.Events.FloatingDamage = Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, Hit, RelativePosition)
-	if type(Hit) ~= "string" and Enabled then
+Core.Events.FloatingDamage = Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, ExtraInformation)
+	if type(ExtraInformation) ~= "string" and Enabled then
 		local TotalDamage = 0
 		for _, DamageSplit in ipairs(DamageSplits) do
 			TotalDamage = TotalDamage + DamageSplit[2]
 		end
 		
-		local Pos = workspace.CurrentCamera:WorldToScreenPoint(Vector3.new(Hit.Position.X + (RelativePosition and RelativePosition.X or 0), math.max(Hit.CFrame:PointToWorldSpace(Vector3.new(Hit.Size.X, Hit.Size.Y, Hit.Size.Z)).Y, Hit.CFrame:PointToWorldSpace(Vector3.new(-Hit.Size.X, -Hit.Size.Y, -Hit.Size.Z)).Y) + (RelativePosition and RelativePosition.Z or 0), Hit.Position.Z + (RelativePosition and RelativePosition.Z or 0)))
+		local Pos = workspace.CurrentCamera:WorldToScreenPoint(Vector3.new(ExtraInformation.Hit.Position.X + (ExtraInformation.RelativeEndPosition and ExtraInformation.RelativeEndPosition.X or 0), math.max(ExtraInformation.Hit.CFrame:PointToWorldSpace(Vector3.new(ExtraInformation.Hit.Size.X, ExtraInformation.Hit.Size.Y, ExtraInformation.Hit.Size.Z)).Y, ExtraInformation.Hit.CFrame:PointToWorldSpace(Vector3.new(-ExtraInformation.Hit.Size.X, -ExtraInformation.Hit.Size.Y, -ExtraInformation.Hit.Size.Z)).Y) + (ExtraInformation.RelativeEndPosition and ExtraInformation.RelativeEndPosition.Z or 0), ExtraInformation.Hit.Position.Z + (ExtraInformation.RelativeEndPosition and ExtraInformation.RelativeEndPosition.Z or 0)))
 		Pos = UDim2.new(0, Pos.X, 0, Pos.Y)
 		
 		local Floater = script.Floater:Clone()

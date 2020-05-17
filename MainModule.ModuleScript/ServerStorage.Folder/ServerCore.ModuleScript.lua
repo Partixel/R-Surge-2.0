@@ -1,7 +1,6 @@
 local Players, CollectionService = game:GetService("Players"), game:GetService("CollectionService")
 
 return function(Core, script)
-	
 	----[[WEAPONS]]----
 	function Core.HandleHoldReplication(User, StatObj, Time)
 		if StatObj and StatObj.Parent then
@@ -87,13 +86,6 @@ return function(Core, script)
 	----[[DAMAGE]]----
 	local ClientDamage = Instance.new("RemoteEvent")
 	ClientDamage.Name = "ClientDamage"
-	--[[ClientDamage.OnServerEvent:Connect(function(Attacker, Time, Hit, WeaponStat, DamageType, Distance)
-		if tick() - Time > 1 then
-			warn(Attacker.Name .. " took too long to send shot packet, discarding! - " .. (tick() - Time))
-		else
-			Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance)
-		end
-	end)]]
 	ClientDamage.Parent = script
 	
 	local function CalculateResistances(Attacker, WeaponStat, DamageType, Resistances, Instances)
@@ -117,11 +109,11 @@ return function(Core, script)
 		end
 		return Resistance
 	end
-	
-	--Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits{Damageable, Damage}
+	--Attacker, Hit, WeaponStat, DamageType, DamageSplits{Damageable, Damage}
 	Core.ObjDamaged = Instance.new("BindableEvent")
 	Core.DamageInfos = setmetatable({}, {__mode = "k"})
-	function Core.ApplyDamage(Attacker, Damageable, Hit, WeaponStat, DamageType, Distance, Dmg, RelativePosition, DamageSplits, RemainingDamage, DamageSplits)
+	
+	function Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, Damageable, Dmg, DamageSplits, RemainingDamage)
 		local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
 		local Damage = Dmg * (RemainingDamage or 1) * ((Damageable:FindFirstChild("Resistances") and CalculateResistances(Attacker, WeaponStat, DamageType, Damageable.Resistances:GetChildren(), true) or 1) * CalculateResistances(Attacker, WeaponStat, DamageType, WeaponStats.Resistances))
 		
@@ -168,27 +160,33 @@ return function(Core, script)
 				local NextDamageable = Damageable.Parent
 				
 				if NextDamageable and not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") and ((NextDamageable:IsA("Humanoid") and NextDamageable.Health > 0) or (NextDamageable.Name == "Health" and NextDamageable.Value > 0)) then
-					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, RelativePosition, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
+					
+					Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, NextDamageable, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
 				end
 			else
 				local NextDamageable = Damageable:FindFirstChild("Health")
 				
 				if NextDamageable and NextDamageable.Value > 0 and not CollectionService:HasTag(NextDamageable, "s2norecursivedamage") then
-					Core.ApplyDamage(Attacker, NextDamageable, Hit, WeaponStat, DamageType, Distance, Dmg, RelativePosition, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
+					Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, NextDamageable, Dmg, DamageSplits, (RemainingDamage or 1) - (Damage / Dmg))
 				end
 			end
 		end
 		
 		if First and next(DamageSplits) then
+			ExtraInformation.Hit = Hit
+			ExtraInformation.HitName = Hit.Name
+			ExtraInformation.DistancePercent = DistancePercent
+			ExtraInformation.DamageSplits = DamageSplits
+			
 			if Players:GetPlayerFromCharacter(Damageable.Parent) then
-				ClientDamage:FireClient(Players:GetPlayerFromCharacter(Core.GetTopDamageable(Damageable).Parent), DamageSplits, Attacker.Name)
+				ClientDamage:FireClient(Players:GetPlayerFromCharacter(Core.GetTopDamageable(Damageable).Parent), DamageSplits, Attacker.Name, ExtraInformation)
 			end
 			
 			if typeof(Attacker) == "Instance" then
-				ClientDamage:FireClient(Attacker, DamageSplits, Hit, RelativePosition)
+				ClientDamage:FireClient(Attacker, DamageSplits, ExtraInformation)
 			end
 			
-			Core.ObjDamaged:Fire(Attacker, Hit, WeaponStat, DamageType, Distance, DamageSplits, RelativePosition)
+			Core.ObjDamaged:Fire(Attacker, WeaponStat, DamageType, ExtraInformation)
 		end
 	end
 	
