@@ -23,7 +23,7 @@ local DirectionNames = {
 local Degrees = 5.625
 local AngleToShow = 30
 
-ThemeUtil.BindUpdate({script.Parent.CompassFrame.BottomArrow, script.Parent.CompassFrame.TopArrow}, {TextColor3 = "Primary_BackgroundColor", TextStrokeColor3 = "Inverted_BackgroundColor"})
+ThemeUtil.BindUpdate({script.Parent.CompassFrame.TopArrow, script.Parent.CompassFrame.BottomArrow}, {TextColor3 = "Primary_BackgroundColor", TextStrokeColor3 = "Inverted_BackgroundColor"})
 ThemeUtil.BindUpdate(script.Parent.CompassFrame.Bar, {ImageColor3 = "Primary_BackgroundColor"})
 ThemeUtil.BindUpdate(script.Parent.CompassFrame.BackBar, {ImageColor3 = "Inverted_BackgroundColor"})
 
@@ -65,33 +65,13 @@ local function AddPOI(Part)
 	POI[Part] = ObjPoint
 end
 
+CollectionService:GetInstanceAddedSignal("S2_POI"):Connect(AddPOI)
 for _, Part in ipairs(CollectionService:GetTagged("S2_POI")) do
 	AddPOI(Part)
 end
-CollectionService:GetInstanceAddedSignal("S2_POI"):Connect(AddPOI)
 CollectionService:GetInstanceRemovedSignal("S2_POI"):Connect(function(Part)
 	POI[Part] = POI[Part]:Destroy()
 end)
-
-for i = 1, 2 do
-	local Part = Instance.new("Part")
-	Part.Name = "Part" .. i
-	Part.Color = BrickColor.Random().Color
-	Part.Anchored = true
-	Part.CanCollide = false
-	Part.Size = Vector3.new(0.5, 0.5, 0.5)
-	Part.Parent = workspace
-	
-	CollectionService:AddTag(Part, "S2_POI")
-	
-	spawn(function()
-		local Angle = (i - 1) * 45
-		while game["Run Service"].RenderStepped:Wait() do
-			Part.CFrame = workspace.CurrentCamera.Focus * CFrame.Angles(0, math.rad(180), 0) * CFrame.Angles(0, math.rad(Angle), 0) * CFrame.new(0, 0, 5)
-			Angle = Angle + (i % 2 == 0 and -0.1 or 0.1)
-		end
-	end)
-end
 
 while game["Run Service"].Heartbeat:Wait() do
 	local CameraLookVector = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
