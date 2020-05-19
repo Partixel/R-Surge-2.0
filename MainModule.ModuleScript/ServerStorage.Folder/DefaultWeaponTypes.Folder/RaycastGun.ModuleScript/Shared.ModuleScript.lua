@@ -342,11 +342,7 @@ return function(Core)
 					Weapon.WeaponType.SetClip(Weapon, NewClip)
 					
 					local Delay = Weapon.ReloadDelay / math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1))
-					if (math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1) == 0 then
-						Core.ReloadStart:Fire(Weapon.StatObj, Delay)
-					else
-						Core.ReloadStart:Fire(Weapon.StatObj, Delay * ((math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)))
-					end
+					Core.ReloadStart:Fire(Weapon.StatObj, Delay * ((math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1))) - (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)))
 					
 					Weapon.ReloadStart = tick() - Delay * Weapon.Clip / (Weapon.ReloadAmount or 1)
 					
