@@ -255,7 +255,7 @@ function Core.Setup(StatObj, User, Placeholder)
 	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
 		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.AncestryChanged:Connect(function()
 			if StatObj.Parent and StatObj.Parent.Parent == workspace then
-				Core.DestroyWeapon(Weapon)
+				Core.DestroyWeapon(Weapon, true)
 			end
 		end)
 		
@@ -293,7 +293,7 @@ function Core.Setup(StatObj, User, Placeholder)
 	return Weapon
 end
 
-function Core.DestroyWeapon(Weapon)
+function Core.DestroyWeapon(Weapon, Partial)
 	if Weapon.StatObj then
 		Core.WeaponDeselected:Fire(Weapon.StatObj)
 		Core.Weapons[Weapon.StatObj] = nil
@@ -308,7 +308,7 @@ function Core.DestroyWeapon(Weapon)
 			Weapon[a] = nil
 		end
 		
-		if not Placeholder then
+		if not Placeholder and not Partial then
 			if StatObj.Parent then
 				StatObj.Parent:Destroy()
 			end
