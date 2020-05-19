@@ -273,7 +273,8 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 							UserId = Damageable:FindFirstChild("UserId") and Damageable.UserId.Value or nil,
 							TeamColor = Damageable:FindFirstChild("TeamColor") and Damageable.TeamColor.Value or nil
 						}, 
-						NoFeed = CollectionService:HasTag(Damageable, "s2nofeed")
+						NoFeed = CollectionService:HasTag(Damageable, "s2nofeed"),
+						ExtraInformation = {}
 					}
 				},
 			}
