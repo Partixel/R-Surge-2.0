@@ -21,7 +21,7 @@ local DirectionNames = {
 	[337.5] = "NNW",
 }
 local Degrees = 5.625
-local AngleToShow = 30
+local AngleToShow = 25
 
 ThemeUtil.BindUpdate({script.Parent.CompassFrame.TopArrow, script.Parent.CompassFrame.BottomArrow}, {TextColor3 = "Primary_BackgroundColor", TextStrokeColor3 = "Inverted_BackgroundColor"})
 ThemeUtil.BindUpdate(script.Parent.CompassFrame.Bar, {ImageColor3 = "Primary_BackgroundColor"})
