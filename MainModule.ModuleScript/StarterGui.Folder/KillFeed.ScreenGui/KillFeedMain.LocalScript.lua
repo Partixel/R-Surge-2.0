@@ -140,6 +140,9 @@ local function UpdateCorners(Feed)
 	end
 end
 
+script.Parent.Container.UIListLayout.VerticalAlignment = Enum.VerticalAlignment[Core.Config.KillFeedVerticalAlign]
+script.Parent.Container.UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment[Core.Config.KillFeedHorizontalAlign]
+
 local Zero = UDim2.new(0, 0, 0, 0)
 local CurLayoutOrder = 0
 local function UpdateLayoutOrder()
@@ -164,6 +167,10 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 		
 		for _, Info in ipairs(DeathInfo.VictimInfos) do
 			if not Info.NoFeed then
+				if not DeathInfo.Killer then
+					DeathInfo.Killer = Info.User
+				end
+				
 				local VictimFrame = script.Victim:Clone()
 				
 				VictimFrame.Name = "Victim" .. #NewFeed.RightFrame.Container.List:GetChildren() - 1
@@ -187,7 +194,7 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 				else
 					VictimFrame.VictimType:Destroy()
 				end
-				print(Info.ExtraInformation.StartPosition, Info.ExtraInformation.RelativeEndPosition, Info.ExtraInformation.Hit)
+				
 				if Info.ExtraInformation.StartPosition and Info.ExtraInformation.RelativeEndPosition and Info.ExtraInformation.Hit then
 					VictimFrame.Distance.Text = math.ceil((Info.ExtraInformation.StartPosition - Info.ExtraInformation.Hit.CFrame:PointToWorldSpace(Info.ExtraInformation.RelativeEndPosition)).magnitude * 10) / 10
 					
@@ -238,35 +245,32 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 			AutoSizeFrame(KillerFrame)
 			AutoSizeText(KillerFrame.KillerName)
 			
-			KillerFrame.KillerName.Text = DeathInfo.Killer and DeathInfo.Killer.Name or NewFeed["Victim1"].VictimName.Text
-			KillerFrame.KillerName.TextColor3 = DeathInfo.Killer and DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or NewFeed["Victim1"].VictimName.TextColor3
+			KillerFrame.KillerName.Text = DeathInfo.Killer.Name
+			KillerFrame.KillerName.TextColor3 = DeathInfo.Killer.TeamColor and DeathInfo.Killer.TeamColor.Color or ThemeUtil.GetThemeFor("Primary_TextColor")
 			
 			ThemeUtil.BindUpdate(KillerFrame.KillerName, {TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
-			ThemeUtil.BindUpdate(KillerFrame.Percent, {TextColor3 = "Negative_Color3", TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
 			
 			if DeathInfo.Assister then
-				NewFeed.LeftFrame.Container.BackgroundBottom.ImageRectOffset = Vector2.new(936, 977.5)
-				NewFeed.LeftFrame.Container.BackgroundBottom.ImageRectSize = Vector2.new(83, 41.5)
-				NewFeed.LeftFrame.Container.BackgroundBottom.SliceCenter = Rect.new(41.5, 41.5, 41.5, 41.5)
-				
 				AutoSizeText(KillerFrame.Percent)
 				
---				UDim2.new(0, X, 0.6, 0)
---				local Assister = script.Assister:Clone()
---				ThemeUtil.BindUpdate(Assister, {ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency"})
---				ThemeUtil.BindUpdate(Assister.Frame, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
---				Assister.AssisterName.Text = DeathInfo.Assister.Name
---				Assister.AssisterName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor("Primary_TextColor")
---				ThemeUtil.BindUpdate(Assister.AssisterName, {Primary_BackgroundTransparency = UpdateContrastTextStroke})
---				Assister.AssisterPct.Text = PctStr(DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0) .. "%"
---				if Core.Config.KillFeedVerticalAlign == "Bottom" then
---					Assister.Frame.Position = UDim2.new(1, 0, 0.25, 0)
---					Assister.Position = UDim2.new(1, 0, 0, 0)
---				end
---				Assister.Parent = NewFeed.Killer
---				local KillPct = script.KillerPct:Clone()
---				KillPct.Text = PctStr(DeathInfo.KillerDamage / DeathInfo.TotalDamage * 100, 0) .. "%"
---				KillPct.Parent = NewFeed.Killer
+				KillerFrame.Percent.Text = PctStr(DeathInfo.KillerDamage / DeathInfo.TotalDamage * 100, 0) .. "%"
+				
+				ThemeUtil.BindUpdate(KillerFrame.Percent, {TextColor3 = "Negative_Color3", TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
+				
+				local AssisterFrame = script.Killer:Clone()
+				
+				AssisterFrame.Name = "Assister"
+				AssisterFrame.LayoutOrder = 1
+				
+				AutoSizeFrame(AssisterFrame)
+				AutoSizeText(AssisterFrame.KillerName)
+				
+				AssisterFrame.KillerName.Text = DeathInfo.Assister.Name
+				AssisterFrame.KillerName.TextColor3 = DeathInfo.Assister.TeamColor and DeathInfo.Assister.TeamColor.Color or ThemeUtil.GetThemeFor("Primary_TextColor")
+				AssisterFrame.Percent.Text = PctStr(DeathInfo.AssisterDamage / DeathInfo.TotalDamage * 100, 0) .. "%"
+				
+				ThemeUtil.BindUpdate(AssisterFrame.KillerName, {TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
+				ThemeUtil.BindUpdate(AssisterFrame.Percent, {TextColor3 = "Negative_Color3", TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
 			else
 				KillerFrame.Percent:Destroy()
 			end
@@ -276,7 +280,6 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 			ThemeUtil.BindUpdate(NewFeed.Type, {ImageColor3 = "Primary_TextColor", ImageTransparency = "Primary_TextTransparency", BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
 			ThemeUtil.BindUpdate({NewFeed.LeftFrame.Container.BackgroundMiddle, NewFeed.RightFrame.Container.BackgroundMiddle}, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
 			ThemeUtil.BindUpdate({NewFeed.LeftFrame.Container.BackgroundBottom, NewFeed.LeftFrame.Container.BackgroundTop, NewFeed.RightFrame.Container.BackgroundBottom, NewFeed.RightFrame.Container.BackgroundTop}, {ImageColor3 = "Primary_BackgroundColor", ImageTransparency = "Primary_BackgroundTransparency"})
---			ThemeUtil.BindUpdate(NewFeed.Killer.KillerName, {Primary_BackgroundTransparency = UpdateContrastTextStroke})
 			
 			CurLayoutOrder = CurLayoutOrder + (script.Parent.Container.UIListLayout.VerticalAlignment == Enum.VerticalAlignment.Bottom and 1 or -1)
 			NewFeed.LayoutOrder = CurLayoutOrder
