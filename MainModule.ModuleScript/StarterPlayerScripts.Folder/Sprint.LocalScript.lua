@@ -30,6 +30,8 @@ function UpdateSprintAnimation(Sprinting, Weapon)
 					SprintAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 					SprintAnimation:Play()
 				end
+			elseif SprintAnimation then
+				SprintAnimation = SprintAnimation:Stop()
 			end
 		end
 	elseif SprintAnimation then

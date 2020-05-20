@@ -142,6 +142,8 @@ local function UpdateAtEaseAnimation(AtEasing, Weapon)
 				AtEaseAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
 				AtEaseAnimation:Play()
 			end
+		elseif AtEaseAnimation then
+			AtEaseAnimation = AtEaseAnimation:Stop()
 		end
 	elseif AtEaseAnimation then
 		AtEaseAnimation = AtEaseAnimation:Stop()
