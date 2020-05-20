@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local RunService = game:GetService("RunService")
 
 local ThemeUtil = require(game:GetService("ReplicatedStorage"):WaitForChild("ThemeUtil"):WaitForChild("ThemeUtil"))
 
@@ -73,32 +74,49 @@ CollectionService:GetInstanceRemovedSignal("S2_POI"):Connect(function(Part)
 	POI[Part] = POI[Part]:Destroy()
 end)
 
-while game["Run Service"].Heartbeat:Wait() do
-	local CameraLookVector = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
-	
-	for Angle, Point in pairs(Angles) do
-		Angle = GetAngle(CFrame.new(Vector3.new(), CameraLookVector), Angle)
-		script.Parent.PositionalFrame.Rotation = Angle
-		Point.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
-		if Point.Visible then
-			Point.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.5, 0)
-			local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
-			Point.Degrees.TextStrokeTransparency = 0.05 + Pct * 0.95
-			Point.Degrees.TextTransparency = Pct
-			Point.DirectionName.TextStrokeTransparency = 0.05 + Pct * 0.95
-			Point.DirectionName.TextTransparency = Pct
+local CompassLoop
+local function RunCompassLoop()
+	CompassLoop = RunService.Heartbeat:Connect(function()
+		local CameraLookVector = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
+		
+		for Angle, Point in pairs(Angles) do
+			Angle = GetAngle(CFrame.new(Vector3.new(), CameraLookVector), Angle)
+			script.Parent.PositionalFrame.Rotation = Angle
+			Point.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
+			if Point.Visible then
+				Point.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.5, 0)
+				local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
+				Point.Degrees.TextStrokeTransparency = 0.05 + Pct * 0.95
+				Point.Degrees.TextTransparency = Pct
+				Point.DirectionName.TextStrokeTransparency = 0.05 + Pct * 0.95
+				Point.DirectionName.TextTransparency = Pct
+			end
 		end
-	end
-	
-	for Part, ObjPoint in pairs(POI) do
-		local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part.Position)
-		script.Parent.PositionalFrame.Rotation = Angle
-		ObjPoint.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
-		if ObjPoint.Visible then
-			ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.485, 0)
-			local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
-			ObjPoint.TextStrokeTransparency = 0.35 + Pct * 0.65
-			ObjPoint.TextTransparency = Pct
+		
+		for Part, ObjPoint in pairs(POI) do
+			local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part.Position)
+			script.Parent.PositionalFrame.Rotation = Angle
+			ObjPoint.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
+			if ObjPoint.Visible then
+				ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.485, 0)
+				local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
+				ObjPoint.TextStrokeTransparency = 0.35 + Pct * 0.65
+				ObjPoint.TextTransparency = Pct
+			end
 		end
-	end
+	end)
 end
+
+
+
+local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("S2"))
+Menu:AddSetting{Name = "Compass", Text = "Enables/disables the compass", Default = true, Update = function(Options, Val)
+	script.Parent.CompassFrame.Visible = Val
+	if Val then
+		if not CompassLoop then
+			RunCompassLoop()
+		end
+	elseif CompassLoop then
+		CompassLoop = CompassLoop:Disconnect()
+	end
+end}
