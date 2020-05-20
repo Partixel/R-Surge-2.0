@@ -141,29 +141,31 @@ function Core.RunSelected()
 		end
 		
 		for Weapon, _ in pairs(Core.WeaponTick) do
-			if not Core.IsServer and Weapon.Placeholder then
-				if Weapon.ReplicatedWindupState ~= nil then
-					local Step = Step
-					if Weapon.ReplicatedWindupTime then
-						Step = TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
-						Weapon.ReplicatedWindupTime = nil
-					end
-					if Weapon.ReplicatedWindupState then
-						if Weapon.WindupTime and Weapon.WindupTime ~= 0 then
-							if Weapon.Reloading then
-								if Weapon.Windup then
-									Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
-								end
-							elseif not Weapon.Windup or Weapon.Windup < Weapon.WindupTime then
-								Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step, true)
-							end
+			if Weapon.Placeholder then
+				if not Core.IsServer then
+					if Weapon.ReplicatedWindupState ~= nil then
+						local Step = Step
+						if Weapon.ReplicatedWindupTime then
+							Step = TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
+							Weapon.ReplicatedWindupTime = nil
 						end
-					else
-						if Weapon.Windup then
-							Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+						if Weapon.ReplicatedWindupState then
+							if Weapon.WindupTime and Weapon.WindupTime ~= 0 then
+								if Weapon.Reloading then
+									if Weapon.Windup then
+										Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+									end
+								elseif not Weapon.Windup or Weapon.Windup < Weapon.WindupTime then
+									Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step, true)
+								end
+							end
 						else
-							Core.WeaponTick[Weapon] = nil
-							Core.DestroyWeapon(Weapon)
+							if Weapon.Windup then
+								Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+							else
+								Core.WeaponTick[Weapon] = nil
+								Core.DestroyWeapon(Weapon)
+							end
 						end
 					end
 				end
@@ -270,7 +272,7 @@ function Core.Setup(StatObj, User, Placeholder)
 		end
 	end
 	
-	if not Placeholder and (Weapon.WeaponType.ServerSided or not Core.IsServer) then
+	if not Placeholder and (not Weapon.WeaponType.ServerSided or Core.IsServer) then
 		if Weapon.WeaponModes then
 			Core.SetWeaponMode(Weapon, 1)
 		end
@@ -956,7 +958,7 @@ else
 			if WeaponType then
 				local Weapon = Core.GetWeapon(StatObj)
 				if not Weapon then
-					Core.Setup(StatObj, User, true)
+					Weapon = Core.Setup(StatObj, User, true)
 					
 					Core.WeaponTick[Weapon] = true
 					
