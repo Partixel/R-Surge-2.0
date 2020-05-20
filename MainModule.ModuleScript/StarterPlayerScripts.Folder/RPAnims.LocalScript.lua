@@ -130,7 +130,7 @@ local function UpdateAtEaseAnimation(AtEasing, Weapon)
 	if AtEasing then
 		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
 		if Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"] then
-			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEase", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 10)
+			local MyAtEaseAnimation = AnimationWrapper.GetAnimation("AtEase", Config[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"], 5)
 			
 			if AtEaseAnimation and AtEaseAnimation ~= MyAtEaseAnimation then
 				AtEaseAnimation:Stop()
@@ -217,6 +217,7 @@ Core.WeaponSelected.Event:Connect(function(StatObj)
 	if InspectAnimation and InspectAnimation.AnimationTrack.IsPlaying then
 		InspectAnimation:Stop()
 	end
+	KBU.SetToggle("Salute", false)
 	
 	local Weapon = Core.GetWeapon(StatObj)
 	if not Weapon.AllowAtEase then
