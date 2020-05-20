@@ -4,12 +4,12 @@ local TextService = game:GetService("TextService")
 
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 local ThemeUtil = require(game:GetService("ReplicatedStorage"):WaitForChild("ThemeUtil"):WaitForChild("ThemeUtil"))
-local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("S2"))
 
 local VictimTypes = {Head = {"rbxassetid://1693819171", "Negative_Color3"}, NewHead = {"rbxassetid://1693819171", "Negative_Color3"}}
 -- Need suicide dmgtype
 local DmgTypes = {Kinetic = "rbxassetid://4263457339", Explosive = "rbxassetid://4263473278", Slash = "rbxassetid://4263464121", Fire = "rbxassetid://4263480827", Electricity = "rbxassetid://4263484727"}
 
+local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("S2"))
 Menu:AddSetting{Name = "KillFeed", Text = "Enables/disables the killfeed", Default = true, Update = function(Options, Val)
 	script.Parent.Container.Visible = Val
 end}
@@ -30,7 +30,7 @@ local function UpdateContrastTextStroke(Obj)
 end
 
 local function Scale(Feed)
-	local Y = math.ceil((workspace.CurrentCamera.ViewportSize.Y * 0.02) / 2) * 2
+	local Y = math.ceil((workspace.CurrentCamera.ViewportSize.Y * 0.0295) / 2) * 2
 	
 	Feed.Size = UDim2.new(0, 1000, 0, Y)
 	
