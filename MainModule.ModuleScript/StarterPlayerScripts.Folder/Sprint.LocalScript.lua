@@ -12,18 +12,24 @@ local AnimationWrapper
 local FOVMod, ActSprint, SprintAnimation
 function UpdateSprintAnimation(Sprinting, Weapon)
 	if Sprinting then
-		Weapon = Weapon or Core.Selected[Plr] and next(Core.Selected[Plr])
-		local Config = Weapon or Core.Config.WeaponTypeOverrides.All
-		if Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"] then
-			local MySprintAnimation = AnimationWrapper.GetAnimation("Sprint", Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"], 5)
-			if SprintAnimation and SprintAnimation ~= MySprintAnimation then
-				SprintAnimation:Stop()
+		if Weapon == false then
+			if SprintAnimation then
+				SprintAnimation = SprintAnimation:Stop()
 			end
-			
-			SprintAnimation = MySprintAnimation
-			if not SprintAnimation.AnimationTrack.IsPlaying then
-				SprintAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
-				SprintAnimation:Play()
+		else
+			Weapon = Weapon or Core.Selected[Plr] and next(Core.Selected[Plr])
+			local Config = Weapon or Core.Config.WeaponTypeOverrides.All
+			if Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"] then
+				local MySprintAnimation = AnimationWrapper.GetAnimation("Sprint", Config[AnimationWrapper.Humanoid.RigType.Name .. "SprintAnimation"], 7)
+				if SprintAnimation and SprintAnimation ~= MySprintAnimation then
+					SprintAnimation:Stop()
+				end
+				
+				SprintAnimation = MySprintAnimation
+				if not SprintAnimation.AnimationTrack.IsPlaying then
+					SprintAnimation.AnimationTrack.Priority = Enum.AnimationPriority.Action
+					SprintAnimation:Play()
+				end
 			end
 		end
 	elseif SprintAnimation then
@@ -180,6 +186,6 @@ Core.WeaponDeselected.Event:Connect(function(StatObj)
 	if not Core.Config.WeaponTypeOverrides.All.AllowSprint then
 		KBU.SetToggle("Sprint", false)
 	elseif Core.ActualSprinting then
-		UpdateSprintAnimation(true)
+		UpdateSprintAnimation(true, false)
 	end
 end)
