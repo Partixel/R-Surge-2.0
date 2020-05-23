@@ -329,11 +329,11 @@ return function(Core)
 					if Weapon.MouseDown and Weapon.AttackOnMouseUp then
 						Core.EndAttack(Weapon)
 					end
-			
+					
 					local ReloadTick = Weapon.MouseDown or tick()
 					Weapon.Reloading = ReloadTick
 					Weapon.ModeShots = 0
-			
+					
 					local NewClip = math.floor((Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1)) * (Weapon.ReloadAmount or 1) + (Chambered and 1 or 0)
 					if Weapon.AmmoType then
 						Weapon.WeaponType.SetStoredAmmo(Weapon, WeaponType.GetStoredAmmo(Weapon) + Weapon.Clip - NewClip)
@@ -354,17 +354,21 @@ return function(Core)
 						local YieldFor, TotalExtra = Delay, 0
 						for i = (Weapon.Clip - (Chambered and 1 or 0)) / (Weapon.ReloadAmount or 1), math.ceil(Weapon.ClipSize / (Weapon.ReloadAmount or 1)) - 1 do
 							Core.ReloadStepped:Fire(Weapon.StatObj, Delay)
-			
+							
 							if TotalExtra > Delay then
 								TotalExtra = TotalExtra - Delay
 							else
 								TotalExtra = TotalExtra + YieldFor - Delay
 								YieldFor = Core.HeartbeatWait(Delay + Delay - YieldFor)
 							end
-			
+							
+							if Weapon.Reloading ~= ReloadTick then
+								break
+							end
+							
 							local Add = Weapon.AmmoType and math.min((Weapon.ReloadAmount or 1), WeaponType.GetStoredAmmo(Weapon)) or (Weapon.ReloadAmount or 1)
 							Weapon.WeaponType.SetClip(Weapon, Weapon.Clip + Add)
-			
+							
 							if Weapon.AbortReload then
 								break
 							elseif Weapon.AmmoType then
@@ -379,14 +383,14 @@ return function(Core)
 					if Weapon.LastClick and Weapon.LastClick < tick() then
 						Weapon.LastClick = nil
 					end
-			
+					
 					if Weapon.Reloading == false or Weapon.Reloading == ReloadTick then
 						if Weapon.FinalReloadDelay then
 							Core.HeartbeatWait(Weapon.FinalReloadDelay)
 						end
-			
+						
 						Core.ReloadEnd:Fire(Weapon.StatObj)
-			
+						
 						Weapon.Reloading = nil
 						Weapon.AbortReload = nil
 						Weapon.ReloadStart = nil
