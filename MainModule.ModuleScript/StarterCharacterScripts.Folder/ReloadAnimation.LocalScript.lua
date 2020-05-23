@@ -54,3 +54,17 @@ Core.ReloadEnd.Event:Connect(function(StatObj)
 		ReloadAnimation:Stop()
 	end
 end)
+
+
+Core.WeaponDeselected.Event:Connect(function(StatObj)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon.Reloading then
+		if ReloadAnimation and ReloadAnimation.AnimationTrack.IsPlaying then
+			ReloadAnimation = ReloadAnimation:Stop()
+		end
+		
+		for ReloadAnimation, _ in pairs(Playing) do
+			ReloadAnimation:Stop()
+		end
+	end
+end)
