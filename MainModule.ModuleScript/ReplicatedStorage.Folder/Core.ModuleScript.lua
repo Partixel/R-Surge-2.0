@@ -272,7 +272,7 @@ function Core.Setup(StatObj, User, Placeholder)
 		end
 	end
 	
-	if not Placeholder and (not Weapon.WeaponType.ServerSided or Core.IsServer) then
+	if not Placeholder then
 		if Weapon.WeaponModes then
 			Core.SetWeaponMode(Weapon, 1)
 		end
@@ -282,7 +282,7 @@ function Core.Setup(StatObj, User, Placeholder)
 		if not Core.IsServer then
 			Core.Preload(Weapon)
 		end
-	elseif Core.IsServer or Placeholder then
+	else
 		Weapon.Placeholder = true
 		
 		if Weapon.WeaponType.PlaceholderSetup then
@@ -367,7 +367,10 @@ Core.WeaponDeselected.Event:Connect(function(StatObj)
 		end
 		
 		if not Weapon.ReloadWhileUnequipped then
-			Weapon.Reloading = false
+			if Weapon.Reloading then
+				Weapon.Reloading = false
+				Core.ReloadEnd:Fire(Weapon.StatObj)
+			end
 		end
 	
 		if Weapon.ReloadDelay then
@@ -895,7 +898,12 @@ end
 local function ToolAdded(Plr, Tool)
 	local StatObj = Core.FindWeaponStat(Tool)
 	if StatObj and not Core.Weapons[StatObj] then
-		Core.Setup(StatObj, Plr)
+		local WeaponType = Core.WeaponTypes[Core.GetWeaponStats(StatObj).WeaponType] or Core.GetWeaponType(StatObj)
+		if WeaponType.ServerSided then
+			Core.Setup(StatObj, Plr, not Core.IsServer)
+		else
+			Core.Setup(StatObj, Plr, Core.IsServer)
+		end
 	end
 end
 
