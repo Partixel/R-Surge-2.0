@@ -161,7 +161,7 @@ KBU.AddBind{Name = "Sprint", Category = "Surge 2.0", Callback = function(Began, 
 			end
 		end
 	end
-end, Key = Enum.KeyCode.F, PadKey = Enum.KeyCode.ButtonL3, ToggleState = false, CanToggle = true, OffOnDeath = true, NoHandled = true}
+end, Key = Enum.KeyCode.F, PadKey = Enum.KeyCode.ButtonL3, ToggleState = true, CanToggle = true, OffOnDeath = true, NoHandled = true}
 
 Core.Events.AntiSprintReload = Core.ReloadStart.Event:Connect(function(StatObj)
 	if Core.ActualSprinting then
