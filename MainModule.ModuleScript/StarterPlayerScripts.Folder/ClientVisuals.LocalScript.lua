@@ -117,47 +117,51 @@ local function PlaySoundAtPos( Position, Sound )
 	
 end
 
-Core.Events.ReloadSound = Core.ReloadStepped.Event:Connect( function ( StatObj )
-	
-	local Weapon = Core.GetWeapon( StatObj )
-	
-	if not Weapon.ReloadSound then return end
-	
-	local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
-	
-	local ReloadSound = Part:FindFirstChild( "ReloadSound" ) or Weapon.ReloadSound:Clone( )
-	
-	ReloadSound.Name = "ReloadSound"
-	
-	ReloadSound.Parent = Part
-	
-	if Weapon.LongReloadSound then
+Core.Events.LongReloadSound = Core.ReloadStart.Event:Connect(function(StatObj, Delay)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon.ReloadSound and Weapon.LongReloadSound then
+		local Part = type(Weapon.BarrelPart) == "table" and Weapon.BarrelPart[1] or Weapon.BarrelPart
 		
-		if ReloadSound.Playing then return end
+		local ReloadSound = Part:FindFirstChild("ReloadSound") 
+		if not ReloadSound then
+			ReloadSound = Weapon.ReloadSound:Clone()
+			ReloadSound.Name = "ReloadSound"
+			ReloadSound.Parent = Part
+		end
 		
-		--ReloadSound.PlaybackSpeed =  ReloadSound.TimeLength / ( Weapon.ReloadDelay * ( Weapon.ReloadAmount / Weapon.ClipSize ) )
-		
-		ReloadSound.Looped = true
-		
+		ReloadSound.PlaybackSpeed = ReloadSound.TimeLength / (Delay + (Weapon.InitialReloadDelay or 0) + (Weapon.FinalReloadDelay or 0))
+		ReloadSound:Play()
 	end
-	
-	ReloadSound:Play( )
-	
-end )
+end)
 
-Core.Events.EndReloadSound = Core.ReloadEnd.Event:Connect( function ( StatObj )
-	
-	local Weapon = Core.GetWeapon( StatObj )
-	
-	if not Weapon.ReloadSound then return end
-	
-	local Part = type( Weapon.BarrelPart ) == "table" and Weapon.BarrelPart[ 1 ] or Weapon.BarrelPart
-	
-	local ReloadSound = Part:FindFirstChild( "ReloadSound" )
-	
-	if ReloadSound then ReloadSound:Stop( ) end
-	
-end )
+Core.Events.ShortReloadSound = Core.ReloadStepped.Event:Connect(function(StatObj, Delay)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon.ReloadSound and not Weapon.LongReloadSound then
+		local Part = type(Weapon.BarrelPart) == "table" and Weapon.BarrelPart[1] or Weapon.BarrelPart
+		
+		local ReloadSound = Part:FindFirstChild("ReloadSound") 
+		if not ReloadSound then
+			ReloadSound = Weapon.ReloadSound:Clone()
+			ReloadSound.Name = "ReloadSound"
+			ReloadSound.Parent = Part
+		end
+		
+		ReloadSound.PlaybackSpeed = ReloadSound.TimeLength / Delay
+		ReloadSound:Play()
+	end
+end)
+
+Core.Events.EndReloadSound = Core.ReloadEnd.Event:Connect(function(StatObj)
+	local Weapon = Core.GetWeapon(StatObj)
+	if Weapon.ReloadSound then
+		local Part = type(Weapon.BarrelPart) == "table" and Weapon.BarrelPart[1] or Weapon.BarrelPart
+		
+		local ReloadSound = Part:FindFirstChild("ReloadSound") 
+		if ReloadSound and ReloadSound.IsPlaying then
+			ReloadSound:Stop()
+		end
+	end
+end)
 
 Core.Events.WindupSound = Core.WindupChanged.Event:Connect( function ( StatObj, Windup, State )
 	

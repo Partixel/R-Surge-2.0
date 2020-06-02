@@ -102,13 +102,11 @@ function Core.GetWeaponStats(StatObj)
 	
 	local WeaponStats = require(Module)
 	if not WeaponStats.Loaded then
-		local Overrides = Core.Config.WeaponTypeOverrides[Core.GetWeaponType(StatObj)]
-		if Core.Config.WeaponTypeOverrides.All then
-			if Overrides then
-				setmetatable(Overrides, {__index = Core.Config.WeaponTypeOverrides.All})
-			else
-				Overrides = Core.Config.WeaponTypeOverrides.All
-			end
+		local Overrides = Core.Config.WeaponTypeOverrides[WeaponStats.WeaponType or StatObj.Name:sub(1, StatObj.Name:find("Stat") - 1)]
+		if Overrides then
+			setmetatable(Overrides, {__index = Core.Config.WeaponTypeOverrides.All})
+		else
+			Overrides = Core.Config.WeaponTypeOverrides.All
 		end
 		setmetatable(WeaponStats, {__index = Overrides})
 		WeaponStats.Loaded = true
@@ -124,7 +122,7 @@ end
 Core.Selected = setmetatable({}, {__mode = 'k'})
 Core.WeaponTick = setmetatable({}, {__mode = 'k'})
 function Core.UpdateLPlrsTarget()
-	local UnitRay = Players.LocalPlayer:GetMouse().UnitRay
+	local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
 	Core.LPlrsTarget = {Core.FindPartOnRayWithIgnoreFunction(Ray.new(UnitRay.Origin, UnitRay.Direction * 5000), Core.IgnoreFunction, {Players.LocalPlayer.Character})}
 end
 
@@ -143,29 +141,31 @@ function Core.RunSelected()
 		end
 		
 		for Weapon, _ in pairs(Core.WeaponTick) do
-			if not Core.IsServer and Weapon.Placeholder then
-				if Weapon.ReplicatedWindupState ~= nil then
-					local Step = Step
-					if Weapon.ReplicatedWindupTime then
-						Step = TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
-						Weapon.ReplicatedWindupTime = nil
-					end
-					if Weapon.ReplicatedWindupState then
-						if Weapon.WindupTime and Weapon.WindupTime ~= 0 then
-							if Weapon.Reloading then
-								if Weapon.Windup then
-									Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
-								end
-							elseif not Weapon.Windup or Weapon.Windup < Weapon.WindupTime then
-								Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step, true)
-							end
+			if Weapon.Placeholder then
+				if not Core.IsServer then
+					if Weapon.ReplicatedWindupState ~= nil then
+						local Step = Step
+						if Weapon.ReplicatedWindupTime then
+							Step = TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
+							Weapon.ReplicatedWindupTime = nil
 						end
-					else
-						if Weapon.Windup then
-							Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+						if Weapon.ReplicatedWindupState then
+							if Weapon.WindupTime and Weapon.WindupTime ~= 0 then
+								if Weapon.Reloading then
+									if Weapon.Windup then
+										Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+									end
+								elseif not Weapon.Windup or Weapon.Windup < Weapon.WindupTime then
+									Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step, true)
+								end
+							end
 						else
-							Core.WeaponTick[Weapon] = nil
-							Core.DestroyWeapon(Weapon)
+							if Weapon.Windup then
+								Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0), true)
+							else
+								Core.WeaponTick[Weapon] = nil
+								Core.DestroyWeapon(Weapon)
+							end
 						end
 					end
 				end
@@ -205,13 +205,46 @@ function Core.RunSelected()
 	end)
 end
 
-function Core.Setup(StatObj, User)
+local ContentProvider = game:GetService("ContentProvider")
+local LuaPreload = function(...) return ContentProvider:PreloadAsync(...) end
+function Core.Preload(Weapon)
+	local PreloadArray = {}
+	
+	if Weapon.SelectionSound then
+		PreloadArray[#PreloadArray + 1] = Weapon.SelectionSound
+	end
+	
+	local AnimationsToLoad = {"HoldAnimation", "SprintAnimation", "ReloadAnimation", "AtEaseAnimation", "InspectAnimation"}
+	for _, Name in ipairs(AnimationsToLoad) do
+		if Weapon["R6" .. Name] then
+			local R6Animation = Instance.new("Animation")
+			R6Animation.AnimationId = "rbxassetid://" .. Weapon["R6" .. Name]
+			PreloadArray[#PreloadArray + 1] = R6Animation
+		end
+		
+		if Weapon["R15" .. Name] then
+			local R15Animation = Instance.new("Animation")
+			R15Animation.AnimationId = "rbxassetid://" .. Weapon["R15" .. Name]
+			PreloadArray[#PreloadArray + 1] = R15Animation
+		end
+	end
+	
+	if Weapon.WeaponType.Preload then
+		Weapon.WeaponType.Preload(Weapon, PreloadArray)
+	end
+	
+	coroutine.wrap(LuaPreload)(PreloadArray)
+end
+
+function Core.Setup(StatObj, User, Placeholder)
+	local WeaponStats = Core.GetWeaponStats(StatObj)
+	
 	local Weapon = setmetatable({
-		WeaponType = Core.GetWeaponType(StatObj),
+		WeaponType = Core.WeaponTypes[WeaponStats.WeaponType] or Core.GetWeaponType(StatObj),
 		StatObj = StatObj,
 		User = User,
 		CurWeaponMode = 1,
-	}, {__index = Core.GetWeaponStats(StatObj)})
+	}, {__index = WeaponStats})
 	
 	Weapon.Events = {
 		StatObj.AncestryChanged:Connect(function()
@@ -221,28 +254,48 @@ function Core.Setup(StatObj, User)
 		end)
 	}
 	
-	Core.Weapons[StatObj] = Weapon
-	if Weapon.WeaponModes then
-		Core.SetWeaponMode(Weapon, 1)
-	end
-	if Weapon.WeaponType.Setup then
-		Weapon.WeaponType.Setup(Weapon)
+	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
+		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.AncestryChanged:Connect(function()
+			if StatObj.Parent and StatObj.Parent.Parent == workspace then
+				Core.DestroyWeapon(Weapon, true)
+			end
+		end)
+		
+		if not Placeholder then
+			Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Equipped:Connect(function()
+				Core.WeaponSelected:Fire(StatObj)
+			end)
+	
+			Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Unequipped:Connect(function()
+				Core.WeaponDeselected:Fire(StatObj)
+			end)
+		end
 	end
 	
-	if StatObj.Parent and StatObj.Parent:IsA("Tool") then
-		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Equipped:Connect(function()
-			Core.WeaponSelected:Fire(StatObj)
-		end)
-
-		Weapon.Events[#Weapon.Events + 1] = StatObj.Parent.Unequipped:Connect(function()
-			Core.WeaponDeselected:Fire(StatObj)
-		end)
+	if not Placeholder then
+		if Weapon.WeaponModes then
+			Core.SetWeaponMode(Weapon, 1)
+		end
+		if Weapon.WeaponType.Setup then
+			Weapon.WeaponType.Setup(Weapon)
+		end
+		if not Core.IsServer then
+			Core.Preload(Weapon)
+		end
+	else
+		Weapon.Placeholder = true
+		
+		if Weapon.WeaponType.PlaceholderSetup then
+			Weapon.WeaponType.PlaceholderSetup(Weapon)
+		end
 	end
+	
+	Core.Weapons[StatObj] = Weapon
 	
 	return Weapon
 end
 
-function Core.DestroyWeapon(Weapon)
+function Core.DestroyWeapon(Weapon, Partial)
 	if Weapon.StatObj then
 		Core.WeaponDeselected:Fire(Weapon.StatObj)
 		Core.Weapons[Weapon.StatObj] = nil
@@ -257,7 +310,7 @@ function Core.DestroyWeapon(Weapon)
 			Weapon[a] = nil
 		end
 		
-		if not Placeholder then
+		if not Placeholder and not Partial then
 			if StatObj.Parent then
 				StatObj.Parent:Destroy()
 			end
@@ -314,7 +367,10 @@ Core.WeaponDeselected.Event:Connect(function(StatObj)
 		end
 		
 		if not Weapon.ReloadWhileUnequipped then
-			Weapon.Reloading = false
+			if Weapon.Reloading then
+				Weapon.Reloading = false
+				Core.ReloadEnd:Fire(Weapon.StatObj)
+			end
 		end
 	
 		if Weapon.ReloadDelay then
@@ -578,7 +634,7 @@ function Core.StartStun(StatObj, WeaponStats, User, Hit, Damageable)
 	end
 end
 
-function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, RelativePosition)
+function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, StartPos, RelativeEndPosition)
 	local Doused
 	local Fire = Instance.new("Fire" , Hit)
 	
@@ -597,7 +653,7 @@ function Core.StartFireDamage(StatObj, WeaponStats, User, Hit, Damageable, Relat
 			break
 		end
 		
-		local Damageable, Damage = Core.DamageHelper(User, Hit, StatObj, WeaponStats.BulletType.DamageType or Core.DamageType.Fire, nil, RelativePosition)
+		local Damageable, Damage = Core.DamageHelper(User, StatObj, WeaponStats.BulletType.DamageType or Core.DamageType.Fire, Hit, nil, {StartPos = StartPos, RelativeEndPosition = RelativeEndPosition})
 		if not Damageable then break end
 		
 		wait(0.3)
@@ -621,8 +677,8 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 		Dist = Dist / BlastRadius
 		local Damageable = Core.GetValidDamageable(Part)
 		if Damageable then
-			if Core.CanDamage(User, Damageable, Part, WeaponStat, Dist) then
-				local Damage = Core.CalculateDamageFor(Part, WeaponStat, Dist)
+			if Core.CanDamage(User, WeaponStat, Part, Dist, Damageable) then
+				local Damage = Core.CalculateDamageFor(WeaponStat, Part, Dist)
 				if not Damageables[Damageable] or Damage > Damageables[Damageable][3] then
 					Damageables[Damageable] = {Part, Dist, Damage}
 				end
@@ -640,9 +696,9 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 		for Damageable, Info in pairs(Damageables) do
 			if Core.IsServer then
 				local ClosestPoint = Core.ClosestPoint(Info[1], Position)
-				Core.ApplyDamage(User, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[1], WeaponStat, DamageType, Info[2], Info[3], ClosestPoint)
+				Core.ApplyDamage(User, WeaponStat, DamageType, Info[1], Info[2], {StartPosition = Position, RelativeEndPosition = ClosestPoint}, Info[3] > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Info[3])
 				if Type then
-					Type(WeaponStat, WeaponStats, User, Info[1], Damageable, ClosestPoint)
+					Type(WeaponStat, WeaponStats, User, Info[1], Damageable, Position, ClosestPoint)
 				end
 			end
 			EstimatedDamageables[#EstimatedDamageables + 1] = {Damageable, Info[3]}
@@ -760,12 +816,12 @@ function Core.GetValidDamageable(Obj)
 	end
 end
 
-function Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance)
+function Core.CanDamage(Attacker, WeaponStat, Hit, DistancePercent, Damageable)
 	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
-	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(WeaponStats, Attacker, Damageable) and (not Distance or Distance < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
+	return not Core.IgnoreFunction(Hit) and Core.CheckTeamkill(WeaponStats, Attacker, Damageable) and (not DistancePercent or DistancePercent < 1) and not Damageable.Parent:FindFirstChildOfClass("ForceField")
 end
 
-function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
+function Core.CalculateDamageFor(WeaponStat, Hit, DistancePercent)
 	local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
 	local Damage = WeaponStats.Damage
 	
@@ -780,12 +836,12 @@ function Core.CalculateDamageFor(Hit, WeaponStat, Distance)
 	if WeaponStats.HeldDamagePctIncreasePerSecond then
 		Damage = Damage + (Damage * math.min(math.max(tick() - WeaponStats.HoldStart - (WeaponStats.MinHoldTime or 0), 0) * WeaponStats.HeldDamagePctIncreasePerSecond, (WeaponStats.MaxHeldDamagePct or math.huge)))
 	end
-
-	if Distance then
+	
+	if DistancePercent then
 		if WeaponStats.InvertDistanceModifier then
-			Damage = Damage * (1 - Distance) * WeaponStats.DistanceDamageModifier
+			Damage = Damage * (1 - DistancePercent) * WeaponStats.DistanceDamageModifier
 		else
-			Damage = Damage * (1 - Distance * WeaponStats.DistanceDamageModifier)
+			Damage = Damage * (1 - DistancePercent * WeaponStats.DistanceDamageModifier)
 		end
 	end
 	
@@ -817,13 +873,22 @@ if not Core.IsServer then
 		end
 	end)
 end
--- returns Damageable if one is found, on server will also do damage
-function Core.DamageHelper(Attacker, Hit, WeaponStat, DamageType, Distance, RelativePosition)
+--	returns Damageable if one is found, on server will also do damage
+--	Attacker = User
+--	WeaponStat
+--	DamageType
+--	Hit = BasePart
+--	DistancePercent = Percentage (Distance/MaxRange)
+--	ExtraInformation = {
+--		StartPosition = Vector3,
+--		RelativeEndPosition = Vector3,
+--	}
+function Core.DamageHelper(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation)
 	local Damageable = Core.GetValidDamageable(Hit)
-	if Damageable and Core.CanDamage(Attacker, Damageable, Hit, WeaponStat, Distance) then
-		local Damage = Core.CalculateDamageFor(Hit, WeaponStat, Distance)
+	if Damageable and Core.CanDamage(Attacker, WeaponStat, Hit, DistancePercent, Damageable) then
+		local Damage = Core.CalculateDamageFor(WeaponStat, Hit, DistancePercent)
 		if Core.IsServer then
-			Core.ApplyDamage(Attacker, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Hit, WeaponStat, DamageType, Distance, Damage, RelativePosition)
+			Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, Damage > 0 and Core.GetBottomDamageable(Damageable) or Damageable, Damage)
 		end
 		return Damageable, Damage
 	end
@@ -833,43 +898,11 @@ end
 local function ToolAdded(Plr, Tool)
 	local StatObj = Core.FindWeaponStat(Tool)
 	if StatObj and not Core.Weapons[StatObj] then
-		local WeaponType = Core.GetWeaponType(StatObj)
-		if WeaponType.ServerSided or not Core.IsServer then
-			local Weapon = Core.Setup(StatObj, Plr)
-			if Core.IsServer and not Weapon.ManualFire then
-				Tool.Activated:Connect(function()
-					Core.SetMouseDown(Weapon)
-				end)
-				
-				Tool.Deactivated:Connect(function()
-					Core.SetMouseUp(Weapon)
-				end)
-			end
-		elseif Core.IsServer then
-			local Weapon = setmetatable({
-				Placeholder = true,
-				StatObj = StatObj,
-				User = Plr,
-				WeaponType = WeaponType,
-				CurWeaponMode = 1,
-			}, {__index = Core.GetWeaponStats(StatObj)})
-			
-			Weapon.Events = {
-				StatObj.AncestryChanged:Connect(function()
-					if not StatObj:IsDescendantOf(game) then
-						Core.DestroyWeapon(Weapon)
-					end
-				end)
-			}
-			
-			Core.Weapons[StatObj] = Weapon
-			
-			Tool.Equipped:Connect(function()
-				Core.WeaponSelected:Fire(StatObj)
-			end)
-			Tool.Unequipped:Connect(function()
-				Core.WeaponDeselected:Fire(StatObj)
-			end)
+		local WeaponType = Core.WeaponTypes[Core.GetWeaponStats(StatObj).WeaponType] or Core.GetWeaponType(StatObj)
+		if WeaponType.ServerSided then
+			Core.Setup(StatObj, Plr, not Core.IsServer)
+		else
+			Core.Setup(StatObj, Plr, Core.IsServer)
 		end
 	end
 end
@@ -933,22 +966,8 @@ else
 			if WeaponType then
 				local Weapon = Core.GetWeapon(StatObj)
 				if not Weapon then
-					Weapon = setmetatable({
-						Placeholder = true,
-						StatObj = StatObj,
-						User = User,
-						WeaponType = WeaponType
-					}, {__index = Core.GetWeaponStats(StatObj)})
+					Weapon = Core.Setup(StatObj, User, true)
 					
-					Weapon.Events = {
-						StatObj.AncestryChanged:Connect(function()
-							if not StatObj:IsDescendantOf(game) then
-								Core.DestroyWeapon(Weapon)
-							end
-						end)
-					}
-					
-					Core.Weapons[StatObj] = Weapon
 					Core.WeaponTick[Weapon] = true
 					
 					Core.Selected[User] = Core.Selected[User] or {}

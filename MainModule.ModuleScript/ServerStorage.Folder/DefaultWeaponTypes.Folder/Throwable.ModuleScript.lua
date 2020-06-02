@@ -3,6 +3,19 @@ return function(Core)
 		WeaponModes = {
 			Drop = {Drop = true},
 		},
+		Setup = function(Weapon)
+			Weapon.Events[#Weapon.Events + 1] = Weapon.StatObj.Parent.Activated:Connect(function()
+				if not Weapon.ManualFire then
+					Core.SetMouseDown(Weapon)
+				end
+			end)
+			
+			Weapon.Events[#Weapon.Events + 1] = Weapon.StatObj.Parent.Deactivated:Connect(function()
+				if not Weapon.ManualFire then
+					Core.SetMouseUp(Weapon)
+				end
+			end)
+		end,
 		Attack = function(Weapon)
 			if Weapon.LastClick and Weapon.LastClick >= tick( ) then return false end
 			

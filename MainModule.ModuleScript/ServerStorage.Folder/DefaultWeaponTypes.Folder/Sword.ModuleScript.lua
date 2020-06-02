@@ -28,7 +28,7 @@ return function(Core)
 						Parts = Parts[PartIndex or 1]
 					end
 					
-					Core.DamageHelper(Weapon.User, Part, Weapon.StatObj, Weapon.DamageType and Weapon.DamageType or Core.DamageType.Slash, nil, Core.ClosestPoint(Part, Parts.Position))
+					Core.DamageHelper(Weapon.User, Weapon.StatObj, Weapon.DamageType and Weapon.DamageType or Core.DamageType.Slash, Part, nil, {StartPosition = Parts.Position, RelativeEndPosition = Core.ClosestPoint(Part, Parts.Position)})
 				else
 					local Type = string.byte(Part)
 					

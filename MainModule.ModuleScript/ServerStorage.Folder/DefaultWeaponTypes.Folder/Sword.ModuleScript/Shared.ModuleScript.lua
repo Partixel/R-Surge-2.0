@@ -17,12 +17,24 @@ return function(Core)
 			Safety = {PreventAttack = true},
 		},
 		OnHit = function(Weapon, Part, PartIndex)
+			print("Sword hit", Part, (not Weapon.DamageCooldown or tick() >= Weapon.DamageCooldown), Core.CanAttack(Weapon))
 			if (not Weapon.DamageCooldown or tick() >= Weapon.DamageCooldown) and Core.CanAttack(Weapon) then
 				local Damageable = Core.GetValidDamageable(Part)
-				if Damageable and Core.CanDamage(Weapon.User, Damageable, Part, Weapon) then
+				local Dmgable = Part:FindFirstChild("Health") or Part.Parent:FindFirstChildOfClass("Humanoid") or Part.Parent:FindFirstChild("Health") or Part.Parent.Parent:FindFirstChildOfClass("Humanoid") or Part.Parent.Parent:FindFirstChild("Health")
+				print("Sword finding damageable", Dmgable, Dmgable and Dmgable.Health, Damageable, Damageable and Core.CanDamage(Weapon.User, Weapon, Part, nil, Damageable))
+				if Damageable and Core.CanDamage(Weapon.User, Weapon, Part, nil, Damageable) then
+					print("Sword is doing damage")
 					Weapon.DamageCooldown = tick() + 1/30
 					coroutine.wrap(Core.HandleServerReplication)(Weapon.User, Weapon.StatObj, tick(), Part, PartIndex)
 				end
+			end
+		end,
+		Preload = function (Weapon, PreloadArray)
+			if Weapon.SlashSound then
+				PreloadArray[#PreloadArray + 1] = Weapon.SlashSound
+			end
+			if Weapon.LungeSound then
+				PreloadArray[#PreloadArray + 1] = Weapon.LungeSound
 			end
 		end,
 		Setup = function(Weapon)
