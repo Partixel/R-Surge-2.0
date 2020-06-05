@@ -8,9 +8,9 @@ return function(Main, ModFolder, VH_Events)
 		Core.Config.SwordFloat = Value
 	end)
 	
-	Core.Config.AllowAtEase = ModFolder:WaitForChild("AtEase").Value
+	Core.Config.WeaponTypeOverrides.All.AllowAtEase = ModFolder:WaitForChild("AtEase").Value
 	Main.Events[#Main.Events + 1] = ModFolder.AtEase.Changed:Connect(function(Value)
-		Core.Config.AllowAtEase = Value
+		Core.Config.WeaponTypeOverrides.All.AllowAtEase = Value
 		if not Value then
 			KeybindUtil.SetToggle("At_ease", false)
 		end
@@ -31,17 +31,17 @@ return function(Main, ModFolder, VH_Events)
 		end
 	end)
 	
-	Core.Config.AllowSprinting = ModFolder:WaitForChild("Sprint").Value
+	Core.Config.WeaponTypeOverrides.All.AllowSprint = ModFolder:WaitForChild("Sprint").Value
 	Main.Events[#Main.Events + 1] = ModFolder.Sprint.Changed:Connect(function(Value)
-		Core.Config.AllowSprinting = Value
+		Core.Config.WeaponTypeOverrides.All.AllowSprint = Value
 		if not Value then
 			PoseUtil.SetPose("Sprinting", false)
 		end
 	end)
 	
-	Core.Config.AllowCrouching = ModFolder:WaitForChild("Crouch").Value
+	Core.Config.WeaponTypeOverrides.All.AllowCrouch = ModFolder:WaitForChild("Crouch").Value
 	Main.Events[#Main.Events + 1] = ModFolder.Crouch.Changed:Connect(function(Value)
-		Core.Config.AllowCrouching = Value
+		Core.Config.WeaponTypeOverrides.All.AllowCrouch = Value
 		if not Value then
 			PoseUtil.SetPose("Crouching", false)
 		end
