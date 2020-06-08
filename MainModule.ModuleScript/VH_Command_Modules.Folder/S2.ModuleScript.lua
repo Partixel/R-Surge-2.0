@@ -24,7 +24,7 @@ return function(Main, ModFolder, VH_Events)
 	}
 	
 	local AtEase = ModFolder:FindFirstChild("AtEase") or Instance.new("BoolValue")
-	AtEase.Value = Core.Config.AllowAtEase ~= false
+	AtEase.Value = Core.Config.WeaponTypeOverrides.All.AllowAtEase == true
 	AtEase.Name = "AtEase"
 	AtEase.Parent = ModFolder
 	Main.Commands["AtEase"] = {
@@ -41,7 +41,7 @@ return function(Main, ModFolder, VH_Events)
 	}
 	
 	local Tools = ModFolder:FindFirstChild("Tools") or Instance.new("BoolValue")
-	Tools.Value = Core.Config.AllowSprinting ~= false
+	Tools.Value = true
 	Tools.Name = "Tools"
 	Tools.Parent = ModFolder
 	Main.Commands["Tools"] = {
@@ -57,7 +57,7 @@ return function(Main, ModFolder, VH_Events)
 	}
 	
 	local Sprint = ModFolder:FindFirstChild("Sprint") or Instance.new("BoolValue")
-	Sprint.Value = Core.Config.AllowSprinting ~= false
+	Sprint.Value = Core.Config.WeaponTypeOverrides.All.AllowSprint == true
 	Sprint.Name = "Sprint"
 	Sprint.Parent = ModFolder
 	Main.Commands["Sprint"] = {
@@ -74,7 +74,7 @@ return function(Main, ModFolder, VH_Events)
 	}
 	
 	local Crouch = ModFolder:FindFirstChild("Crouch") or Instance.new("BoolValue")
-	Crouch.Value =Core.Config.AllowCrouching ~= false
+	Crouch.Value = Core.Config.WeaponTypeOverrides.All.AllowCrouch == true
 	Crouch.Name = "Crouch"
 	Crouch.Parent = ModFolder
 	Main.Commands["Crouch"] = {
