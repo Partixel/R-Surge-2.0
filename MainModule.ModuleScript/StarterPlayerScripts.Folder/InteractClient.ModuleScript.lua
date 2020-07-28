@@ -1,4 +1,4 @@
-local UserInputService, CollectionService = game:GetService("UserInputService"), game:GetService("CollectionService")
+local CollectionService = game:GetService("CollectionService")
 local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local TimeSync = require(LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
@@ -31,16 +31,13 @@ Interactables.UpdateCooldown = UpdateCooldown.Event
 local UpdateProgress = Instance.new("BindableEvent")
 Interactables.UpdateProgress = UpdateProgress.Event
 
-local Mouse = LocalPlayer:GetMouse()
-local MouseDown, KeyDown
-Mouse.Button1Down:Connect(function()
-	MouseDown = true
+game:GetService("UserInputService").InputEnded:Connect(function(Input)
+	if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+		Interactables.ClickingOn = nil
+	end
 end)
 
-Mouse.Button1Up:Connect(function()
-	MouseDown = nil
-end)
-
+local KeyDown
 KBU.AddBind{Name = "Interact", Category = "Surge 2.0", Callback = function(Began, Handled, Died)
 	if not Began or not Handled then
 		KeyDown = not Died and Began or nil
@@ -128,64 +125,65 @@ function StartInteractables()
 				
 				for _, InteractObj in ipairs(InteractObjs) do
 					if InteractObj:IsDescendantOf(workspace) then
-						if InteractObj ~= Nearest then
-							local Options = Interactables.GetOptions(InteractObj)
-							if not Options.CharacterOnly or Subject == Humanoid.RootPart then	
-								local InteractPart = GetPart(InteractObj, Options)				
-								local Dist = (InteractPart.Position - Subject.Position).magnitude
-								if Dist <= (Options.Distance or 16) and select(2, workspace.CurrentCamera:WorldToViewportPoint(InteractPart.Position)) and not Obscured(InteractPart, InteractObj.Parent, Options.Ignore) and (Options.ShouldOpen or DefaultShouldOpen)(InteractObj, Options, LocalPlayer, DefaultShouldOpen) then
-									if not InteractObj:FindFirstChild("Disabled") and not Interactables.LocalDisabled[InteractObj] then
-										if Mouse.Target and (Mouse.Target == InteractObj.Parent or Mouse.Target:IsDescendantOf(InteractObj.Parent)) then
-											Nearest, NearestDist, NearestOptions = InteractObj, -1, Options
-										elseif not NearestDist or Dist < NearestDist then
-											Nearest, NearestDist, NearestOptions = InteractObj, Dist, Options
-										end
+						local Options = Interactables.GetOptions(InteractObj)
+						if not Options.CharacterOnly or Subject == Humanoid.RootPart then	
+							local InteractPart = GetPart(InteractObj, Options)				
+							local Dist = (InteractPart.Position - Subject.Position).magnitude
+							if Dist <= (Options.Distance or 16) and select(2, workspace.CurrentCamera:WorldToViewportPoint(InteractPart.Position)) and not Obscured(InteractPart, InteractObj.Parent, Options.Ignore) and (Options.ShouldOpen or DefaultShouldOpen)(InteractObj, Options, LocalPlayer, DefaultShouldOpen) then
+								if not InteractObj:FindFirstChild("Disabled") and not Interactables.LocalDisabled[InteractObj] then
+									if Interactables.ClickingOn == InteractObj then
+										Nearest, NearestDist, NearestOptions = InteractObj, -1, Options
+									elseif not NearestDist or Dist < NearestDist then
+										Nearest, NearestDist, NearestOptions = InteractObj, Dist, Options
 									end
-									
-									if Interactables.Guis[InteractObj] and InteractPart ~= Interactables.Guis[InteractObj].Adornee then
-										Interactables.Guis[InteractObj].Adornee = InteractPart
-									end
-									
-									if not Interactables.Guis[InteractObj] or Interactables.Guis[InteractObj].Name == "Destroying" then
-										OpenGui:Fire(InteractObj, Interactables.Guis[InteractObj], KBU.GetKeyInContext("Interact"))
-									elseif InteractObj:FindFirstChild("Disabled") then
-										if Interactables.Guis[InteractObj].Name ~= "Disabled" then
-											local CooldownLeft = InteractObj.Disabled.Value == 0 and true or math.ceil(math.max(InteractObj.Disabled.Value - tick() - TimeSync.ServerOffset, 0))
-											if CooldownLeft ~= true then
-												Cooldowns[InteractObj] = CooldownLeft
-											end
-											
-											MinimiseGui:Fire(InteractObj, Interactables.Guis[InteractObj], CooldownLeft)
-											
-											Interactables.Guis[InteractObj].Name = "Disabled"
-										elseif InteractObj.Disabled.Value ~= 0 then
-											local CooldownLeft = math.ceil(math.max(InteractObj.Disabled.Value - tick() - TimeSync.ServerOffset, 0))
-											if Cooldowns[InteractObj] ~= CooldownLeft then
-												Cooldowns[InteractObj] = CooldownLeft
-												
-												UpdateCooldown:Fire(InteractObj, Interactables.Guis[InteractObj], CooldownLeft)
-											end
+								end
+								
+								if Interactables.Guis[InteractObj] and InteractPart ~= Interactables.Guis[InteractObj].Adornee then
+									Interactables.Guis[InteractObj].Adornee = InteractPart
+								end
+								
+								if not Interactables.Guis[InteractObj] or Interactables.Guis[InteractObj].Name == "Destroying" then
+									OpenGui:Fire(InteractObj, Interactables.Guis[InteractObj], KBU.GetKeyInContext("Interact"))
+								elseif InteractObj:FindFirstChild("Disabled") then
+									if Interactables.Guis[InteractObj].Name ~= "Disabled" then
+										local CooldownLeft = InteractObj.Disabled.Value == 0 and true or math.ceil(math.max(InteractObj.Disabled.Value - tick() - TimeSync.ServerOffset, 0))
+										if CooldownLeft ~= true then
+											Cooldowns[InteractObj] = CooldownLeft
 										end
-									elseif not InteractObj:FindFirstChild("Disabled") and not Interactables.LocalDisabled[InteractObj] and Interactables.Guis[InteractObj].Name == "Disabled" then
-										Interactables.Guis[InteractObj].Name = "InteractGui"
-										Cooldowns[InteractObj] = nil
 										
-										EnableGui:Fire(InteractObj, Interactables.Guis[InteractObj], KBU.GetKeyInContext("Interact"))
+										MinimiseGui:Fire(InteractObj, Interactables.Guis[InteractObj], CooldownLeft)
+										
+										Interactables.Guis[InteractObj].Name = "Disabled"
+									elseif InteractObj.Disabled.Value ~= 0 then
+										local CooldownLeft = math.ceil(math.max(InteractObj.Disabled.Value - tick() - TimeSync.ServerOffset, 0))
+										if Cooldowns[InteractObj] ~= CooldownLeft then
+											Cooldowns[InteractObj] = CooldownLeft
+											
+											UpdateCooldown:Fire(InteractObj, Interactables.Guis[InteractObj], CooldownLeft)
+										end
 									end
-								elseif Interactables.Guis[InteractObj] and Interactables.Guis[InteractObj].Name ~= "Destroying" then
-									Interactables.Guis[InteractObj].Name = "Destroying"
+								elseif not InteractObj:FindFirstChild("Disabled") and not Interactables.LocalDisabled[InteractObj] and Interactables.Guis[InteractObj].Name == "Disabled" then
+									Interactables.Guis[InteractObj].Name = "InteractGui"
 									Cooldowns[InteractObj] = nil
 									
-									CloseGui:Fire(InteractObj, Interactables.Guis[InteractObj])
+									EnableGui:Fire(InteractObj, Interactables.Guis[InteractObj], KBU.GetKeyInContext("Interact"))
 								end
-							elseif Interactables.Guis[InteractObj] then
-								Interactables.Guis[InteractObj]:Destroy()
-								Interactables.Guis[InteractObj] = nil
+							elseif Interactables.Guis[InteractObj] and Interactables.Guis[InteractObj].Name ~= "Destroying" then
+								if Interactables.ClickingOn == InteractObj then
+									Interactables.ClickingOn = nil
+								end
+								Interactables.Guis[InteractObj].Name = "Destroying"
+								Cooldowns[InteractObj] = nil
 								
-								if LastNearest == InteractObj then
-									LastNearest = nil
-									HoldStart = nil
-								end
+								CloseGui:Fire(InteractObj, Interactables.Guis[InteractObj])
+							end
+						elseif Interactables.Guis[InteractObj] then
+							Interactables.Guis[InteractObj]:Destroy()
+							Interactables.Guis[InteractObj] = nil
+							
+							if LastNearest == InteractObj then
+								LastNearest = nil
+								HoldStart = nil
 							end
 						end
 					else
@@ -211,7 +209,7 @@ function StartInteractables()
 					
 					if Nearest then
 						if not NearestOptions.HoldTime or NearestOptions.HoldTime <= 0 then
-							MouseDown, KeyDown = nil, nil
+							Interactables.ClickingOn, KeyDown = nil, nil
 						end
 						MaximiseGui:Fire(Nearest, Interactables.Guis[Nearest])
 					end
@@ -220,7 +218,7 @@ function StartInteractables()
 				end
 				
 				if Nearest then
-					if HoldStart and not MouseDown and not KeyDown then
+					if HoldStart and not Interactables.ClickingOn and not KeyDown then
 						HoldStart = nil
 						
 						if Interactables.Guis[Nearest].Name ~= "Destroying" then
@@ -228,7 +226,7 @@ function StartInteractables()
 						end
 					end
 					
-					if not HoldStart and (KeyDown or (MouseDown and Mouse.Target and (Mouse.Target == Nearest.Parent or Mouse.Target:IsDescendantOf(Nearest.Parent)))) then
+					if not HoldStart and (KeyDown or Interactables.ClickingOn == Nearest) then
 						HoldStart = tick()
 						
 						StartHold:Fire(Nearest, Interactables.Guis[Nearest])
@@ -269,7 +267,7 @@ function StartInteractables()
 								Nearest:Fire(LocalPlayer)
 							end
 							
-							HoldStart, MouseDown, KeyDown = nil
+							HoldStart, Interactables.ClickingOn, KeyDown = nil, nil, nil
 						else
 							UpdateProgress:Fire(Nearest, Interactables.Guis[Nearest], HoldTime <= 0 and 1 or (math.min(tick() - HoldStart, HoldTime) / HoldTime))
 						end

@@ -86,6 +86,10 @@ Interactables.OpenGui:Connect(function(InteractObj, Gui, Key)
 				Gui.KeyBack.KeyText.Font = Options.Font
 			end
 			
+			Gui.KeyBack.MouseButton1Down:Connect(function()
+				Interactables.ClickingOn = InteractObj
+			end)
+			
 			Interactables.Guis[InteractObj] = Gui
 		end
 		
