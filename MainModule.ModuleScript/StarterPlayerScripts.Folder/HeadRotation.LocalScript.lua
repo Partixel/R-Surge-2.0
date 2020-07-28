@@ -43,21 +43,13 @@ function UpdateHead()
 			Neck.C0 = CFrame.new(Neck.C0.p) * CFrame.Angles(math.asin(CameraDirection.y), -math.asin(CameraDirection.x), 0)
 		end
 	end
-	for _, LocalPlayer in ipairs(Players:GetPlayers()) do
-		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head") then
-			local Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-			if Humanoid and Humanoid.Health ~= 0 then
-				LocalPlayer.Character.Head.CanCollide = false
-			end
-		end
-	end
 end
 
 local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
 Menu:AddSetting{Name = "HeadRotation", Text = "Head Rotation", Default = true, Update = function(Options, Val)
 	if Val then
 		if not Event then
-			Event = game:GetService("RunService").Stepped:Connect(UpdateHead)
+			Event = game:GetService("RunService").Heartbeat:Connect(UpdateHead)
 		end
 	elseif Event then
 		Event:Disconnect()

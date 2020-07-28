@@ -1,7 +1,11 @@
 local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
+local PhysicsService = game:GetService("PhysicsService")
 
 local UpdateRate = 1/20
+
+PhysicsService:CreateCollisionGroup("S2_HeadCollisions")
+PhysicsService:CollisionGroupSetCollidable("S2_HeadCollisions", "Default", false)
 
 local Mode = {__mode = "k"}
 local Excluded, Rotations = setmetatable({}, Mode), setmetatable({}, Mode)
@@ -34,6 +38,8 @@ function HandleCharacter(Character)
 	local NewWeld = OldWeld:Clone()
 	NewWeld.Part1 = NewHead
 	NewWeld.Name = "NewNeck"
+	
+	PhysicsService:SetPartCollisionGroup(OldHead, "S2_HeadCollisions")
 	
 	NewHead.Parent = OldHead.Parent
 	NewWeld.Parent = OldWeld.Parent
