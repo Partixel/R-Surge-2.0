@@ -1,3 +1,4 @@
+
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 local DataStore2 = require(3913891878)
 
@@ -250,6 +251,10 @@ for _, Plr in ipairs(Players:GetPlayers()) do
 	PlayerAdded(Plr)
 end
 
+local KilledBindable = Instance.new("BindableEvent")
+KilledBindable.Name = "Killed"
+KilledBindable.Parent = script
+
 local RemoteKilled = Instance.new("RemoteEvent")
 RemoteKilled.Name = "RemoteKilled"
 RemoteKilled.Parent = game:GetService("ReplicatedStorage"):WaitForChild("S2")
@@ -278,7 +283,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 					}
 				},
 			}
-			script.Killed:Fire(DeathInfo)
+			KilledBindable:Fire(DeathInfo)
 			RemoteKilled:FireAllClients(DeathInfo)
 			
 			if Core.Config.SupportLegacyKOs then
@@ -296,7 +301,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				end
 			end
 		else
-			local Killer, WeaponName, TypeName = Core.DamageInfos[Damageable].LastDamageInfo[1], Core.DamageInfos[Damageable].LastDamageInfo[2].Value, Core.DamageInfos[Damageable].LastDamageInfo[3]
+			local Killer, WeaponName, TypeName = Core.DamageInfos[Damageable].LastDamageInfo[1], Core.DamageInfos[Damageable].LastDamageInfo[4].WeaponName or Core.DamageInfos[Damageable].LastDamageInfo[2].Value, Core.DamageInfos[Damageable].LastDamageInfo[3]
 			if Kills[Killer] and Kills[Killer][WeaponName .. TypeName] and not Kills[Killer][WeaponName .. TypeName][Damageable] then
 				Kills[Killer][WeaponName .. TypeName][Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[4]
 			else
@@ -349,7 +354,9 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				end
 				
 				DeathInfo.KillerDamage = Assisters[Killer]
-				
+				if not DeathInfo.KillerDamage then
+					warn("SHOW PARTIXEL THIS: No killer damage")
+				end
 				local Assister, AssisterDamage
 				for a, b in pairs(Assisters) do
 					DeathInfo.TotalDamage = DeathInfo.TotalDamage + b
@@ -395,7 +402,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 					end
 				end
 				
-				script.Killed:Fire(DeathInfo)
+				KilledBindable:Fire(DeathInfo)
 				RemoteKilled:FireAllClients(DeathInfo)
 			end
 		end

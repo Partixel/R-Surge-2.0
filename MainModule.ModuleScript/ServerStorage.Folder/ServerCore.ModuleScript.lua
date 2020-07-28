@@ -115,7 +115,7 @@ return function(Core, script)
 	
 	function Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, Damageable, Dmg, DamageSplits, RemainingDamage)
 		local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
-		local Damage = Dmg * (RemainingDamage or 1) * ((Damageable:FindFirstChild("Resistances") and CalculateResistances(Attacker, WeaponStat, DamageType, Damageable.Resistances:GetChildren(), true) or 1) * ((Hit:FindFirstChild("Resistances") and CalculateResistances(Attacker, WeaponStat, DamageType, Hit.Resistances:GetChildren(), true) or 1) * CalculateResistances(Attacker, WeaponStat, DamageType, WeaponStats.Resistances))
+		local Damage = Dmg * (RemainingDamage or 1) * ((Damageable:FindFirstChild("Resistances") and CalculateResistances(Attacker, WeaponStat, DamageType, Damageable.Resistances:GetChildren(), true) or 1) * (Hit:FindFirstChild("Resistances") and CalculateResistances(Attacker, WeaponStat, DamageType, Hit.Resistances:GetChildren(), true) or 1) * CalculateResistances(Attacker, WeaponStat, DamageType, WeaponStats.Resistances))
 		
 		if Damage == 0 then return end
 		
@@ -175,6 +175,7 @@ return function(Core, script)
 		if First and next(DamageSplits) then
 			ExtraInformation.Hit = Hit
 			ExtraInformation.HitName = Hit.Name
+			ExtraInformation.Distance = (ExtraInformation.StartPosition - ExtraInformation.Hit.CFrame:PointToWorldSpace(ExtraInformation.RelativeEndPosition)).magnitude
 			ExtraInformation.DistancePercent = DistancePercent
 			ExtraInformation.DamageSplits = DamageSplits
 			

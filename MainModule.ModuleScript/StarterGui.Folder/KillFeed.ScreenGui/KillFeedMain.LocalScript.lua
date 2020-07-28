@@ -195,8 +195,8 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 					VictimFrame.VictimType:Destroy()
 				end
 				
-				if Info.ExtraInformation.StartPosition and Info.ExtraInformation.RelativeEndPosition and Info.ExtraInformation.Hit then
-					VictimFrame.Distance.Text = math.ceil((Info.ExtraInformation.StartPosition - Info.ExtraInformation.Hit.CFrame:PointToWorldSpace(Info.ExtraInformation.RelativeEndPosition)).magnitude * 10) / 10
+				if Info.ExtraInformation.Distancet then
+					VictimFrame.Distance.Text = math.ceil(Info.ExtraInformation.Distance * 10) / 10
 					
 					ThemeUtil.BindUpdate(VictimFrame.Distance, {TextColor3 = "Negative_Color3", TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
 				else
