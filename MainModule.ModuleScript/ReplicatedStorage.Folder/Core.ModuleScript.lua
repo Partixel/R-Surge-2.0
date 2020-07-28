@@ -121,11 +121,6 @@ end
 
 Core.Selected = setmetatable({}, {__mode = 'k'})
 Core.WeaponTick = setmetatable({}, {__mode = 'k'})
-function Core.UpdateLPlrsTarget()
-	local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
-	Core.LPlrsTarget = {Core.FindPartOnRayWithIgnoreFunction(Ray.new(UnitRay.Origin, UnitRay.Direction * 5000), Core.IgnoreFunction, {Players.LocalPlayer.Character})}
-end
-
 function Core.RunSelected()
 	Core.SelectedHB = Heartbeat:Connect(function (Step)
 		if Core.IsServer then
@@ -136,8 +131,6 @@ function Core.RunSelected()
 		elseif not Core.Selected[Players.LocalPlayer] then
 			Core.SelectedHB:Disconnect()
 			Core.SelectedHB = nil
-		else
-			Core.UpdateLPlrsTarget()
 		end
 		
 		for Weapon, _ in pairs(Core.WeaponTick) do
@@ -849,6 +842,30 @@ function Core.CalculateDamageFor(WeaponStat, Hit, DistancePercent)
 end
 
 if not Core.IsServer then
+	Core.CurrentFrame = 0
+	game:GetService("RunService").RenderStepped:Connect(function()
+		Core.CurrentFrame += 1
+	end)
+	
+	function Core.UpdateLPlrsTarget()
+		local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
+		Core.LPlrsTarget = {Core.FindPartOnRayWithIgnoreFunction(Ray.new(UnitRay.Origin, UnitRay.Direction * 5000), Core.IgnoreFunction, {Players.LocalPlayer.Character})}
+	end
+	
+	local TargetFrame
+	function Core.GetLPlrsTarget()
+		if TargetFrame ~= Core.CurrentFrame then
+			Core.UpdateLPlrsTarget()
+			TargetFrame = Core.CurrentFrame
+		end
+		
+		return Core.LPlrsTarget
+	end
+	
+	function Core.GetLPlrsTargetForRaycast()
+		return nil, Core.GetLPlrsTarget()[2]
+	end
+	
 	Core.ClientDamage = script:WaitForChild("ClientDamage")
 	Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, Attacker)
 		if type(Attacker) == "string" then
@@ -936,11 +953,6 @@ else
 	
 	function Core.HandleServerReplication(User, StatObj, Time, ...)
 		Core.WeaponReplication:FireServer(StatObj, Time + TimeSync.ServerOffset, ...)
-	end
-	
-	Core.LPlrsTarget = {}
-	function Core.GetLPlrsTarget()
-		return nil, Core.LPlrsTarget[2]
 	end
 	
 	Core.WeaponReplication = script:WaitForChild("WeaponReplication")

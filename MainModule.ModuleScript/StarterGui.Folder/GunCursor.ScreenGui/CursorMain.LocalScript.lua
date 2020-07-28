@@ -78,6 +78,12 @@ end})
 local Kids = script.Parent.Center.Middle:GetDescendants()
 ThemeUtil.BindUpdate(Kids, {BorderColor3 = "S2_CursorBorder"})
 
+local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("Performance"))
+local DoColouring = true
+Menu:AddSetting{Name = "CursorColour", Text = "Colour cursor based on target", Default = true, Update = function(Options, Val)
+	DoColouring = Val
+end}
+
 local ForceWeapon, LastWep = {
 	Clip = 10,
 	WeaponStats = {
@@ -114,19 +120,24 @@ function Core.RunCursorHeartbeat()
 		local X, Y = Core.GetLPlrsInputPos()
 		script.Parent.Center.Position = UDim2.new(0, X , 0, Y)
 		
-		local Humanoid = Core.GetValidDamageable(Core.LPlrsTarget[1])
-		local Color = (not Humanoid or CollectionService:HasTag(Humanoid, "s2_silent")) or Core.CheckTeamkill(Weapon, LocalPlayer, Humanoid) and ThemeUtil.GetThemeFor("Negative_Color3") or ThemeUtil.GetThemeFor("Positive_Color3")
-		local CenterColor
-		if Color == true then
-			if tick() - Last <= 0.25 then
-				Color = LastC
+		local Color, CenterColor
+		if DoColouring then
+			local Humanoid = Core.GetValidDamageable(Core.GetLPlrsTarget()[1])
+			Color = (not Humanoid or CollectionService:HasTag(Humanoid, "s2_silent")) or Core.CheckTeamkill(Weapon, LocalPlayer, Humanoid) and ThemeUtil.GetThemeFor("Negative_Color3") or ThemeUtil.GetThemeFor("Positive_Color3")
+			if Color == true then
+				if tick() - Last <= 0.25 then
+					Color = LastC
+				else
+					Color = ThemeUtil.GetThemeFor("S2_CursorColor")
+					CenterColor = ThemeUtil.GetThemeFor("S2_CursorCenterColor")
+				end
 			else
-				Color = ThemeUtil.GetThemeFor("S2_CursorColor")
-				CenterColor = ThemeUtil.GetThemeFor("S2_CursorCenterColor")
+				LastC = Color
+				Last = tick()
 			end
 		else
-			LastC = Color
-			Last = tick()
+			Color = ThemeUtil.GetThemeFor("S2_CursorColor")
+			CenterColor = ThemeUtil.GetThemeFor("S2_CursorCenterColor")
 		end
 		
 		script.Parent.Center.BackgroundColor3 = CenterColor or Color

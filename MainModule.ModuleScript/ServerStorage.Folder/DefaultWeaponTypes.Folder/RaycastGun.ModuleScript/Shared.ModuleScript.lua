@@ -44,7 +44,7 @@ return function(Core)
 		elseif Weapon.PreventFireWithoutSnap then
 			return nil
 		else
-			return Core.GetLPlrsTarget()
+			return Core.GetLPlrsTargetForRaycast()
 		end
 	end
 	
@@ -80,7 +80,7 @@ return function(Core)
 			Weapon.Ignore = Weapon.Ignores and Weapon.Ignores(Weapon.StatObj) or {}
 			
 			if typeof(Weapon.User) == "Instance" and Weapon.User:IsA("Player") then
-				Weapon.Target = Weapon.Target or Weapon.SnapTo and SnapTarget or Core.GetLPlrsTarget
+				Weapon.Target = Weapon.Target or Weapon.SnapTo and SnapTarget or Core.GetLPlrsTargetForRaycast
 				
 				Weapon.Ignore[#Weapon.Ignore + 1] = Weapon.User.Character
 				
