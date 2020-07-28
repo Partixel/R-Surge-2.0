@@ -31,7 +31,7 @@ function UpdateCharacterRotation(StatObj, User)
 end
 
 local Menu = require(game:GetService("ReplicatedStorage"):WaitForChild("MenuLib"):WaitForChild("S2"))
-Menu:AddSetting{Name = "CharacterAim", Text = "Rotate character towards target", Default = false, Update = function(Options, Val)
+Menu:AddSetting{Name = "CharacterAim", Text = "Rotate character towards target (May lag)", Default = false, Update = function(Options, Val)
 	if Val then
 		if not Event then
 			Event = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect(UpdateCharacterRotation)
