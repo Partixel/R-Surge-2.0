@@ -58,10 +58,22 @@ local POI = {}
 local function AddPOI(Part)
 	local ObjPoint = script.ObjPoint:Clone()
 	ObjPoint.Name = Part.Name
-	ObjPoint.TextColor3 = Part.Color
+	ObjPoint.TextColor3 = Part:FindFirstChild("Color") and Part.Color.Value or Part.Color
 	ObjPoint.Parent = script.Parent.CompassFrame
 	
 	ThemeUtil.BindUpdate(ObjPoint, {TextStrokeColor3 = "Inverted_BackgroundColor"})
+	
+	local CameraLookVector = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
+	
+	local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part:IsA("Vector3Value") and Part.Value or Part.Position)
+	script.Parent.PositionalFrame.Rotation = Angle
+	ObjPoint.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
+	if ObjPoint.Visible then
+		ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.45, 0)
+		local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
+		ObjPoint.TextStrokeTransparency = 0.35 + Pct * 0.65
+		ObjPoint.TextTransparency = Pct
+	end
 	
 	POI[Part] = ObjPoint
 end
@@ -94,11 +106,11 @@ local function RunCompassLoop()
 		end
 		
 		for Part, ObjPoint in pairs(POI) do
-			local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part.Position)
+			local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part:IsA("Vector3Value") and Part.Value or Part.Position)
 			script.Parent.PositionalFrame.Rotation = Angle
 			ObjPoint.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
 			if ObjPoint.Visible then
-				ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.485, 0)
+				ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.45, 0)
 				local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
 				ObjPoint.TextStrokeTransparency = 0.35 + Pct * 0.65
 				ObjPoint.TextTransparency = Pct
