@@ -38,6 +38,10 @@ function GetAngle(CFrameA, VectorB)
 	end
 end
 
+local function Rotate(angle)
+     return math.cos(angle) * 0 - math.sin(angle) * -1 + 1
+end
+
 local Angles = {}
 for i = 0, 360 - Degrees, Degrees do
 	local Angle = i == 0 and 0 or 360 - i
@@ -65,11 +69,10 @@ local function AddPOI(Part)
 	
 	local CameraLookVector = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
 	
-	local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part:IsA("Vector3Value") and Part.Value or Part.Position)
-	script.Parent.PositionalFrame.Rotation = Angle
+	local Angle = GetAngle(CFrame.new(Vector3.new(), CameraLookVector), Part:IsA("Vector3Value") and Part.Value or Part.Position)
 	ObjPoint.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
 	if ObjPoint.Visible then
-		ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.45, 0)
+		ObjPoint.Position = UDim2.new(0, Rotate(math.rad(Angle)) * script.Parent.CompassFrame.AbsoluteSize.X - script.Parent.CompassFrame.AbsoluteSize.X / 2, 0.45, 0)
 		local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
 		ObjPoint.TextStrokeTransparency = 0.35 + Pct * 0.65
 		ObjPoint.TextTransparency = Pct
@@ -91,12 +94,12 @@ local function RunCompassLoop()
 	CompassLoop = RunService.Heartbeat:Connect(function()
 		local CameraLookVector = workspace.CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
 		
+		local CenterPoint = CFrame.new(Vector3.new(), CameraLookVector)
 		for Angle, Point in pairs(Angles) do
-			Angle = GetAngle(CFrame.new(Vector3.new(), CameraLookVector), Angle)
-			script.Parent.PositionalFrame.Rotation = Angle
+			Angle = GetAngle(CenterPoint, Angle)
 			Point.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
 			if Point.Visible then
-				Point.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.5, 0)
+				Point.Position = UDim2.new(0, Rotate(math.rad(Angle)) * script.Parent.CompassFrame.AbsoluteSize.X - script.Parent.CompassFrame.AbsoluteSize.X / 2, 0.5, 0)
 				local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
 				Point.Degrees.TextStrokeTransparency = 0.05 + Pct * 0.95
 				Point.Degrees.TextTransparency = Pct
@@ -105,12 +108,12 @@ local function RunCompassLoop()
 			end
 		end
 		
+		CenterPoint = CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector)
 		for Part, ObjPoint in pairs(POI) do
-			local Angle = GetAngle(CFrame.new(workspace.CurrentCamera.Focus.p, workspace.CurrentCamera.Focus.p + CameraLookVector), Part:IsA("Vector3Value") and Part.Value or Part.Position)
-			script.Parent.PositionalFrame.Rotation = Angle
+			local Angle = GetAngle(CenterPoint, Part:IsA("Vector3Value") and Part.Value or Part.Position)
 			ObjPoint.Visible = Angle <= AngleToShow or Angle >= 360 - AngleToShow - 1
 			if ObjPoint.Visible then
-				ObjPoint.Position = UDim2.new(0, script.Parent.PositionalFrame.TextLabel.AbsolutePosition.X - (workspace.CurrentCamera.ViewportSize.X - script.Parent.CompassFrame.AbsoluteSize.X) / 2, 0.45, 0)
+				ObjPoint.Position = UDim2.new(0, Rotate(math.rad(Angle)) * script.Parent.CompassFrame.AbsoluteSize.X - script.Parent.CompassFrame.AbsoluteSize.X / 2, 0.45, 0)
 				local Pct = (Angle <= AngleToShow and Angle / AngleToShow or (360 - Angle) / AngleToShow)
 				ObjPoint.TextStrokeTransparency = 0.35 + Pct * 0.65
 				ObjPoint.TextTransparency = Pct
