@@ -4,8 +4,7 @@ local PhysicsService = game:GetService("PhysicsService")
 
 local UpdateRate = 1/20
 
-PhysicsService:CreateCollisionGroup("S2_HeadCollisions")
-PhysicsService:CollisionGroupSetCollidable("S2_HeadCollisions", "Default", false)
+local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 
 local Mode = {__mode = "k"}
 local Excluded, Rotations = setmetatable({}, Mode), setmetatable({}, Mode)
@@ -22,7 +21,6 @@ function HandleCharacter(Character)
 	local OldHead = Character:WaitForChild("Head")
 	
 	local NewHead = OldHead:Clone()
-	CollectionService:AddTag(OldHead, "forcepen")
 	CollectionService:AddTag(NewHead, "nopen")
 	CollectionService:AddTag(NewHead, "s2headdamage")
 	NewHead:ClearAllChildren()
@@ -39,7 +37,7 @@ function HandleCharacter(Character)
 	NewWeld.Part1 = NewHead
 	NewWeld.Name = "NewNeck"
 	
-	PhysicsService:SetPartCollisionGroup(OldHead, "S2_HeadCollisions")
+	PhysicsService:SetPartCollisionGroup(OldHead, "S2_NoCollide")
 	
 	NewHead.Parent = OldHead.Parent
 	NewWeld.Parent = OldWeld.Parent

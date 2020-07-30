@@ -1,6 +1,26 @@
-local Players, CollectionService = game:GetService("Players"), game:GetService("CollectionService")
+local Players, CollectionService, PhysicsService = game:GetService("Players"), game:GetService("CollectionService"), game:GetService("PhysicsService")
 
 return function(Core, script)
+	if not pcall(PhysicsService.GetCollisionGroupId, PhysicsService, "S2") then
+		
+		PhysicsService:CreateCollisionGroup("S2")
+		
+		PhysicsService:CreateCollisionGroup("S2_ForcePenetration")
+		PhysicsService:CollisionGroupSetCollidable("S2_ForcePenetration", "S2", false)
+		
+		PhysicsService:CreateCollisionGroup("S2_NoPenetration")
+		for _, Group in ipairs(PhysicsService:GetCollisionGroups()) do
+			if Group.Name ~= "S2" then
+				PhysicsService:CollisionGroupSetCollidable("S2_NoPenetration", Group.name, false)
+			end
+		end
+		
+		PhysicsService:CreateCollisionGroup("S2_NoCollide")
+		for _, Group in ipairs(PhysicsService:GetCollisionGroups()) do
+			PhysicsService:CollisionGroupSetCollidable("S2_NoCollide", Group.name, false)
+		end
+	end
+	
 	----[[WEAPONS]]----
 	function Core.HandleHoldReplication(User, StatObj, Time)
 		if StatObj and StatObj.Parent then

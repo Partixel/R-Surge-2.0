@@ -234,7 +234,7 @@ return function(Core)
 								local _, Target = Weapon.Target(Weapon.StatObj, Origin)
 								if Target then
 									Target = CFrame.new(Origin.Position, Target) * CFrame.Angles(0, 0, math.rad(math.random(0, 3599) / 10))
-									Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction(Ray.new(Origin.Position, CFrame.new(Origin.Position, (Target + Target.lookVector * 1000 + Target.UpVector * math.random(0, 1000 / WeaponType.GetAccuracy(Weapon) / 2)).p).lookVector * Weapon.Range), Core.IgnoreFunction, TableCopy(Weapon.Ignore), not IgnoreWater)
+									Hit, End, Normal, Material = Core.Raycast(Origin.Position, CFrame.new(Origin.Position, (Target + Target.lookVector * 1000 + Target.UpVector * math.random(0, 1000 / WeaponType.GetAccuracy(Weapon) / 2)).p).LookVector * Weapon.Range, Core.IgnoreFunction, TableCopy(Weapon.Ignore), not IgnoreWater)
 								else
 									Hit = false
 								end
@@ -521,7 +521,7 @@ return function(Core)
 		end,
 		CanFire = function(Weapon, Barrel)
 			if Weapon.StatObj and not Weapon.UseBarrelAsOrigin and not Weapon.NoAntiWall and Weapon.User.Character then
-				local Hit, End, Normal, Material = Core.FindPartOnRayWithIgnoreFunction(Ray.new(Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position), Core.IgnoreFunction, Weapon.Ignore)
+				local Hit, End, Normal, Material = Core.Raycast(Weapon.User.Character.HumanoidRootPart.Position, Barrel.Position - Weapon.User.Character.HumanoidRootPart.Position, Core.IgnoreFunction, Weapon.Ignore)
 				if Hit then
 					if Weapon.PreventFireWithoutSnap then
 						return false

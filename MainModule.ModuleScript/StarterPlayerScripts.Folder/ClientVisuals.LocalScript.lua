@@ -61,13 +61,14 @@ Core.WeaponTypes.RaycastGun.BulletArrived = Instance.new( "BindableEvent" )
 
 coroutine.wrap( function ( ) game:GetService( "ContentProvider" ):PreloadAsync( { script } ) end )
 
+local PhysicsService = game:GetService("PhysicsService")
 local function AtPos( Position )
 	
 	local Part = Instance.new( "Part" )
 	
-	Part.Name = "AtPos"
+	PhysicsService:SetPartCollisionGroup(Part, "S2_NoCollide")
 	
-	Part.CanCollide = false
+	Part.Name = "AtPos"
 	
 	Part.Transparency = 1
 	

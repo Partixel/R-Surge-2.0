@@ -549,34 +549,28 @@ function Core.IgnoreFunction(Part)
     return not CollectionService:HasTag(Part, "nopen") and (not Part.Parent or Part.Name == "HumanoidRootPart" or CollectionService:HasTag(Part, "forcepen") or Part:FindFirstAncestorWhichIsA("Accoutrement") or Part.Transparency >= 1 or (Core.GetValidDamageable(Part) == nil and Part.CanCollide == false) or (Core.GetValidDamageable(Part) and Part:FindFirstAncestorOfClass("Tool"))) or false
 end
 
-function Core.FindPartOnRayWithIgnoreFunction(R, IgnoreFunction, Ignore, IgnoreWater)
-	local UnitDirection = R.Unit.Direction
-	local Hit, Pos, Normal, Material
+local WarnedFor = setmetatable({}, {__mode = "k"})
+function Core.Raycast(Origin, Direction, IgnoreFunction, Ignore, IgnoreWater)
+	local UnitDirection = Direction.Unit
+	local Result
 	while true do
-		Hit, Pos, Normal, Material = workspace:FindPartOnRayWithIgnoreList(R, Ignore, false, IgnoreWater == nil and true or IgnoreWater)
-		--[[if IgnoreWater == true then
-			local Color = BrickColor.Random()
-			local C = Instance.new("ConeHandleAdornment")
-			C.Adornee = workspace.Terrain
-			C.CFrame = CFrame.new(R.Origin, Pos)
-			C.Radius = 0.3
-			C.Height = 0.3
-			C.Color3 = Color.Color
-			C.Parent = workspace
-			game.Debris:AddItem(C, 10)
-			local L = Instance.new("BoxHandleAdornment")
-			L.Adornee = workspace.Terrain
-			L.CFrame = CFrame.new(R.Origin + (Pos - R.Origin) / 2, Pos)
-			L.Size = Vector3.new(.1, .1, (Pos - R.Origin).magnitude)
-			L.Color3 = Color.Color
-			L.Parent = workspace
-			game.Debris:AddItem(L, 10)
-		end]]
-		if not Hit or not IgnoreFunction(Hit) then
-			return Hit, Pos, Normal, Material
+		local Params = RaycastParams.new()
+		Params.IgnoreWater = IgnoreWater == nil and true or IgnoreWater
+		Params.CollisionGroup = "S2"
+		Params.FilterDescendantsInstances = Ignore
+		
+		Result = workspace:Raycast(Origin, Direction, Params)
+		if not Result then
+			return nil, Origin + Direction, Vector3.new(), Enum.Material.Air
+		elseif not IgnoreFunction(Result.Instance) then
+			return Result.Instance, Result.Position, Result.Normal, Result.Material
 		end
-		Ignore[#Ignore + 1] = Hit
-		R = Ray.new(Pos - UnitDirection * 0.01, UnitDirection * (R.Direction.magnitude - ((Pos - UnitDirection) - R.Origin).magnitude))
+		if not WarnedFor[Result.Instance] then
+			warn("S2 Ignoring", Result.Instance:GetFullName())
+			WarnedFor[Result.Instance] = true
+		end
+		Ignore[#Ignore + 1] = Result.Instance
+		Origin, Direction = Result.Position - UnitDirection * 0.01, UnitDirection * (Direction.magnitude - ((Result.Position - UnitDirection) - Origin).magnitude)
 	end
 end
 
@@ -849,7 +843,7 @@ if not Core.IsServer then
 	
 	function Core.UpdateLPlrsTarget()
 		local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
-		Core.LPlrsTarget = {Core.FindPartOnRayWithIgnoreFunction(Ray.new(UnitRay.Origin, UnitRay.Direction * 5000), Core.IgnoreFunction, {Players.LocalPlayer.Character})}
+		Core.LPlrsTarget = {Core.Raycast(UnitRay.Origin, UnitRay.Direction * 5000, Core.IgnoreFunction, {Players.LocalPlayer.Character})}
 	end
 	
 	local TargetFrame
