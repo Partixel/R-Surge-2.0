@@ -19,14 +19,15 @@ HeadRotRemote.Parent = game:GetService("ReplicatedStorage"):WaitForChild("S2")
 
 function HandleCharacter(Character)
 	local OldHead = Character:WaitForChild("Head")
+	PhysicsService:SetPartCollisionGroup(OldHead, "S2_ForcePenetration")
 	
-	local NewHead = OldHead:Clone()
-	CollectionService:AddTag(NewHead, "nopen")
-	CollectionService:AddTag(NewHead, "s2headdamage")
-	NewHead:ClearAllChildren()
+	local NewHead = Instance.new("Part")
+	NewHead.Size = Vector3.new(2, 1, 1)
 	NewHead.Massless = true
 	NewHead.Transparency = 1
 	NewHead.Name = "NewHead"
+	CollectionService:AddTag(NewHead, "nopen")
+	CollectionService:AddTag(NewHead, "s2headdamage")
 	
 	local OldWeld = Character:FindFirstChild("Neck", true)
 	while not OldWeld do
@@ -37,10 +38,12 @@ function HandleCharacter(Character)
 	NewWeld.Part1 = NewHead
 	NewWeld.Name = "NewNeck"
 	
-	PhysicsService:SetPartCollisionGroup(OldHead, "S2_NoCollide")
+	OldWeld:GetPropertyChangedSignal("Part0"):Connect(function()
+		NewWeld.Part0 = OldWeld.Part0
+	end)
 	
 	NewHead.Parent = OldHead.Parent
-	NewWeld.Parent = OldWeld.Parent
+	NewWeld.Parent = OldWeld.Parent == OldHead and NewHead or OldWeld.Parent
 end
 
 function PlayerAdded(Plr)
