@@ -865,7 +865,7 @@ end
 if Core.IsServer then
 	require(game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("ServerCore"))(Core, script)
 else
-	require(script:WaitForChild("ClientCore"))(Core, script)
+	require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("S2"):WaitForChild("ClientCore"))(Core, script)
 end
 
 return Core
