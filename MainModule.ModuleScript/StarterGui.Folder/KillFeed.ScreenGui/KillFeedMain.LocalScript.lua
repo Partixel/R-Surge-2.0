@@ -250,6 +250,8 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 			
 			ThemeUtil.BindUpdate(KillerFrame.KillerName, {TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
 			
+			KillerFrame.Parent = NewFeed.LeftFrame.Container.List
+			
 			if DeathInfo.Assister then
 				AutoSizeText(KillerFrame.Percent)
 				
@@ -271,11 +273,12 @@ game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("RemoteKill
 				
 				ThemeUtil.BindUpdate(AssisterFrame.KillerName, {TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
 				ThemeUtil.BindUpdate(AssisterFrame.Percent, {TextColor3 = "Negative_Color3", TextTransparency = "Primary_TextTransparency", Primary_BackgroundTransparency = UpdateContrastTextStroke})
+				
+				
+				AssisterFrame.Parent = NewFeed.LeftFrame.Container.List
 			else
 				KillerFrame.Percent:Destroy()
 			end
-			
-			KillerFrame.Parent = NewFeed.LeftFrame.Container.List
 			
 			ThemeUtil.BindUpdate(NewFeed.Type, {ImageColor3 = "Primary_TextColor", ImageTransparency = "Primary_TextTransparency", BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
 			ThemeUtil.BindUpdate({NewFeed.LeftFrame.Container.BackgroundMiddle, NewFeed.RightFrame.Container.BackgroundMiddle}, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
