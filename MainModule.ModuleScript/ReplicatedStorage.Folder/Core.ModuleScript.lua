@@ -2,47 +2,16 @@ local Players, ContextActionService, CollectionService = game:GetService("Player
 
 local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")), IsServer = game:GetService("RunService"):IsServer()}
 
-if not Core.IsServer then
-	game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config").Parent = nil
-end
-
 local TimeSync
 if not Core.IsServer then
+	game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config").Parent = nil
+	
 	TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
 end
 
 Core.WeaponTypes = {}
 Core.Events = {}
-if Core.IsServer then
-	local SharedWeaponTypesFolder = game:GetService("ReplicatedStorage"):WaitForChild("S2"):FindFirstChild("SharedWeaponTypes")
-	if not SharedWeaponTypesFolder then
-		SharedWeaponTypesFolder = Instance.new("Folder")
-		SharedWeaponTypesFolder.Name = "SharedWeaponTypes"
-		SharedWeaponTypesFolder.Parent = game:GetService("ReplicatedStorage"):FindFirstChild("S2")
-	end
-	
-	local function AddWeaponType(Module)
-		local SharedWeaponType
-		if Module:FindFirstChild("Shared") then
-			local Shared = Module.Shared
-			SharedWeaponType = require(Shared)(Core)
-			Shared.Name = Module.Name
-			Shared.Parent = SharedWeaponTypesFolder
-		end
-		local WeaponType = SharedWeaponType and setmetatable(require(Module)(Core), {__index = SharedWeaponType}) or require(Module)(Core)
-		
-		WeaponType.ServerSided = SharedWeaponType == nil or nil
-		WeaponType.Events = {}
-		WeaponType.AttackEvent = Instance.new("BindableEvent")
-		Core.WeaponTypes[Module.Name] = WeaponType
-	end
-	
-	local DefualtWeaponTypes = game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("DefaultWeaponTypes")
-	DefualtWeaponTypes.ChildAdded:Connect(AddWeaponType)
-	for _, Module in ipairs(DefualtWeaponTypes:GetChildren()) do
-		AddWeaponType(Module)
-	end
-else
+if not Core.IsServer then
 	function AddWeaponType(Module)
 		local WeaponType = require(Module)(Core)
 		WeaponType.Events = {}

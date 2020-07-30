@@ -1,6 +1,35 @@
 local Players, CollectionService, PhysicsService = game:GetService("Players"), game:GetService("CollectionService"), game:GetService("PhysicsService")
 
 return function(Core, script)
+	local SharedWeaponTypesFolder = game:GetService("ReplicatedStorage"):WaitForChild("S2"):FindFirstChild("SharedWeaponTypes")
+	if not SharedWeaponTypesFolder then
+		SharedWeaponTypesFolder = Instance.new("Folder")
+		SharedWeaponTypesFolder.Name = "SharedWeaponTypes"
+		SharedWeaponTypesFolder.Parent = game:GetService("ReplicatedStorage"):FindFirstChild("S2")
+	end
+	
+	local function AddWeaponType(Module)
+		local SharedWeaponType
+		if Module:FindFirstChild("Shared") then
+			local Shared = Module.Shared
+			SharedWeaponType = require(Shared)(Core)
+			Shared.Name = Module.Name
+			Shared.Parent = SharedWeaponTypesFolder
+		end
+		local WeaponType = SharedWeaponType and setmetatable(require(Module)(Core), {__index = SharedWeaponType}) or require(Module)(Core)
+		
+		WeaponType.ServerSided = SharedWeaponType == nil or nil
+		WeaponType.Events = {}
+		WeaponType.AttackEvent = Instance.new("BindableEvent")
+		Core.WeaponTypes[Module.Name] = WeaponType
+	end
+	
+	local DefualtWeaponTypes = game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("DefaultWeaponTypes")
+	DefualtWeaponTypes.ChildAdded:Connect(AddWeaponType)
+	for _, Module in ipairs(DefualtWeaponTypes:GetChildren()) do
+		AddWeaponType(Module)
+	end
+	
 	if not pcall(PhysicsService.GetCollisionGroupId, PhysicsService, "S2") then
 		
 		PhysicsService:CreateCollisionGroup("S2")
