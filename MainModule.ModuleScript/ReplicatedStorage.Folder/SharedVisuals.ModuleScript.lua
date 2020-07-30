@@ -20,7 +20,7 @@ end
 
 Core.WeaponTypes.Sword.Events.AttackAnimation = Core.WeaponTypes.Sword.AttackEvent.Event:Connect(function(StatObj, User, Type)
 	local Run
-	if Core.IsServer  then
+	if Core.IsServer then
 		Run = not Core.GetWeapon(StatObj).Placeholder
 	elseif typeof(User) == "Instance" then
 		Run = true

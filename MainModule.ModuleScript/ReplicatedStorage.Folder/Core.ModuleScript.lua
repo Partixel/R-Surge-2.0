@@ -2,30 +2,8 @@ local Players, ContextActionService, CollectionService = game:GetService("Player
 
 local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")), IsServer = game:GetService("RunService"):IsServer()}
 
-local TimeSync
-if not Core.IsServer then
-	game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config").Parent = nil
-	
-	TimeSync = require(game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("TimeSync"))
-end
-
 Core.WeaponTypes = {}
 Core.Events = {}
-if not Core.IsServer then
-	function AddWeaponType(Module)
-		local WeaponType = require(Module)(Core)
-		WeaponType.Events = {}
-		WeaponType.AttackEvent = Instance.new("BindableEvent")
-		Core.WeaponTypes[Module.Name] = WeaponType
-	end
-	
-	local SharedWeaponTypesFolder = game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("SharedWeaponTypes")
-	SharedWeaponTypesFolder.Parent = nil
-	SharedWeaponTypesFolder.ChildAdded:Connect(AddWeaponType)
-	for _, Module in ipairs(SharedWeaponTypesFolder:GetChildren()) do
-		AddWeaponType(Module)
-	end
-end
 
 local Heartbeat = game:GetService("RunService").Heartbeat
 function Core.HeartbeatWait(num)
@@ -108,7 +86,7 @@ function Core.RunSelected()
 					if Weapon.ReplicatedWindupState ~= nil then
 						local Step = Step
 						if Weapon.ReplicatedWindupTime then
-							Step = TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
+							Step = Core.TimeSync.GetServerTime() - Weapon.ReplicatedWindupTime
 							Weapon.ReplicatedWindupTime = nil
 						end
 						if Weapon.ReplicatedWindupState then
@@ -398,7 +376,6 @@ end
 if not Core.IsServer then
 	Core.HoldReplication = script:WaitForChild("HoldReplication")
 end
-
 Core.HoldStart = Instance.new("BindableEvent")
 Core.HoldEnd = Instance.new("BindableEvent")
 function Core.SetMouseDown(Weapon)
@@ -408,7 +385,7 @@ function Core.SetMouseDown(Weapon)
 			if Core.IsServer then		
 				coroutine.wrap(Core.HandleHoldReplication)(Weapon.User, Weapon.StatObj, tick( ))
 			else
-				Core.HoldReplication:FireServer(Weapon.StatObj, TimeSync.GetServerTime())
+				Core.HoldReplication:FireServer(Weapon.StatObj, Core.TimeSync.GetServerTime())
 			end
 		end
 		Core.HoldStart:Fire(Weapon.StatObj)
@@ -466,7 +443,7 @@ function Core.SetWindup(Weapon, Value, Placeholder)
 				if Core.IsServer then		
 					coroutine.wrap(Core.HandleWindupReplication)(Weapon.User, Weapon.StatObj, tick())
 				else
-					Core.WindupReplication:FireServer(Weapon.StatObj, TimeSync.GetServerTime())
+					Core.WindupReplication:FireServer(Weapon.StatObj, Core.TimeSync.GetServerTime())
 				end
 			end
 		else
@@ -475,7 +452,7 @@ function Core.SetWindup(Weapon, Value, Placeholder)
 				if Core.IsServer then		
 					coroutine.wrap(Core.HandleWindupReplication)(Weapon.User, Weapon.StatObj, tick(), true)
 				else
-					Core.WindupReplication:FireServer(Weapon.StatObj, TimeSync.GetServerTime(), true)
+					Core.WindupReplication:FireServer(Weapon.StatObj, Core.TimeSync.GetServerTime(), true)
 				end
 			end
 		end
@@ -805,30 +782,6 @@ function Core.CalculateDamageFor(WeaponStat, Hit, DistancePercent)
 end
 
 if not Core.IsServer then
-	Core.CurrentFrame = 0
-	game:GetService("RunService").RenderStepped:Connect(function()
-		Core.CurrentFrame += 1
-	end)
-	
-	function Core.UpdateLPlrsTarget()
-		local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
-		Core.LPlrsTarget = {Core.Raycast(UnitRay.Origin, UnitRay.Direction * 5000, Core.IgnoreFunction, {Players.LocalPlayer.Character})}
-	end
-	
-	local TargetFrame
-	function Core.GetLPlrsTarget()
-		if TargetFrame ~= Core.CurrentFrame then
-			Core.UpdateLPlrsTarget()
-			TargetFrame = Core.CurrentFrame
-		end
-		
-		return Core.LPlrsTarget
-	end
-	
-	function Core.GetLPlrsTargetForRaycast()
-		return nil, Core.GetLPlrsTarget()[2]
-	end
-	
 	Core.ClientDamage = script:WaitForChild("ClientDamage")
 	Core.ClientDamage.OnClientEvent:Connect(function(DamageSplits, Attacker)
 		if type(Attacker) == "string" then
@@ -912,80 +865,7 @@ end
 if Core.IsServer then
 	require(game:GetService("ServerStorage"):WaitForChild("S2"):WaitForChild("ServerCore"))(Core, script)
 else
-	Core.HandlePlr(Players.LocalPlayer)
-	
-	function Core.HandleServerReplication(User, StatObj, Time, ...)
-		Core.WeaponReplication:FireServer(StatObj, Time + TimeSync.ServerOffset, ...)
-	end
-	
-	Core.WeaponReplication = script:WaitForChild("WeaponReplication")
-	Core.WeaponReplication.OnClientEvent:Connect(function(User, StatObj, ...)
-		if StatObj and StatObj.Parent then
-			local WeaponType = Core.GetWeaponType(StatObj)
-			if WeaponType then
-				if WeaponType.HandleClientReplication then
-					WeaponType.HandleClientReplication(StatObj, User, ...)
-				end
-			else
-				warn(User.Name .. " sent an invalid client S2 replication request: WeaponType doesn't exist\n", User, StatObj, ...)
-			end
-		else
-			warn(User.Name .. " sent an invalid client S2 replication request: StatObj doesn't exist\n", User, StatObj, ...)
-		end
-	end)
-	
-	Core.WindupReplication = script:WaitForChild("WindupReplication")
-	Core.WindupReplication.OnClientEvent:Connect(function(User, StatObj, Time, State)
-		if StatObj and StatObj.Parent then
-			local WeaponType = Core.GetWeaponType(StatObj)
-			if WeaponType then
-				local Weapon = Core.GetWeapon(StatObj)
-				if not Weapon then
-					Weapon = Core.Setup(StatObj, User, true)
-					
-					Core.WeaponTick[Weapon] = true
-					
-					Core.Selected[User] = Core.Selected[User] or {}
-					Core.Selected[User][Weapon] = tick()
-					if not Core.SelectedHB then
-						Core.RunSelected()
-					end
-				end
-				
-				Weapon.ReplicatedWindupTime = Time
-				Weapon.ReplicatedWindupState = State or false
-			else
-				warn(User.Name .. " sent an invalid client S2 replication request: WeaponType doesn't exist\n", User, StatObj, Time, State)
-			end
-		else
-			warn(User.Name .. " sent an invalid client S2 replication request: StatObj doesn't exist\n", User, StatObj, Time, State)
-		end
-	end)
-	
-	Core.DisableBackpack = {}
-	Core.BackpackStateChanged = Instance.new("BindableEvent")
-	local StarterGui = game:GetService("StarterGui")
-	
-	local PrevCoreBackpack
-	function Core.SetBackpackDisabled(Key, State)
-		if State then
-			if not next(Core.DisableBackpack) then
-				Core.BackpackStateChanged:Fire(true)
-				PrevCoreBackpack = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Backpack)
-				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
-			end
-			
-			Core.DisableBackpack[Key] = true
-		elseif PrevCoreBackpack ~= nil then
-			Core.DisableBackpack[Key] = nil
-			
-			if not next(Core.DisableBackpack) then
-				Core.BackpackStateChanged:Fire(false)
-				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, PrevCoreBackpack)
-				PrevCoreBackpack = nil
-			end
-		end
-	end
+	require(script:WaitForChild("ClientCore"))(Core, script)
 end
 
 return Core
