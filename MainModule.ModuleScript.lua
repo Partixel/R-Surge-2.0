@@ -1,39 +1,50 @@
-local SetupModel = game:GetService("ServerScriptService"):FindFirstChild("S2") or game:GetService("ServerScriptService"):FindFirstChild("S2.0")
-local Config = require(SetupModel and SetupModel:WaitForChild("Config") or game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config"))
-
-local CoroutineErrorHandling = require(game:GetService("ReplicatedStorage"):FindFirstChild("CoroutineErrorHandling") or game:GetService("ServerStorage"):FindFirstChild("CoroutineErrorHandling") and game:GetService("ServerStorage").CoroutineErrorHandling:FindFirstChild("MainModule") or 4851605998)
-
-require(game:GetService("ServerStorage"):FindFirstChild("TimeSync") and game:GetService("ServerStorage").TimeSync:FindFirstChild("MainModule") or 4698309617) -- TimeSync
-require(game:GetService("ServerStorage"):FindFirstChild("MenuLib") and game:GetService("ServerStorage").MenuLib:FindFirstChild("MainModule") or 3717582194) -- MenuLib
-
-local LoaderModule = require(game:GetService("ServerStorage"):FindFirstChild("LoaderModule") and game:GetService("ServerStorage").LoaderModule:FindFirstChild("MainModule") or 03593768376)("S2", Config.Disabled or {})
-LoaderModule(script:WaitForChild("ReplicatedStorage"))
-
-if SetupModel then
-	SetupModel.Config.Parent = game:GetService("ReplicatedStorage"):WaitForChild("S2")
-	SetupModel:Destroy()
-end
-
-LoaderModule(script:WaitForChild("ServerStorage"), nil, false)
-LoaderModule(script:WaitForChild("ServerScriptService"))
-LoaderModule(script:WaitForChild("StarterPlayerScripts"))
-LoaderModule(script:WaitForChild("StarterCharacterScripts"))
-LoaderModule(script:WaitForChild("StarterGui"))
-LoaderModule(script:WaitForChild("MenuModules"), game:GetService("ServerStorage"):WaitForChild("MenuModules"), nil, {["S2VIP"] = true})
-
-local LuaRequire = function (...) return require(...) end
-
-if Config.DebugEnabled ~= false then
-	CoroutineErrorHandling.CoroutineWithStack(require, game:GetService("ServerStorage"):FindFirstChild("DebugUtil") and game:GetService("ServerStorage").DebugUtil:FindFirstChild("MainModule") or 953754819)
-end
-
-CoroutineErrorHandling.CoroutineWithStack(require, game:GetService("ServerStorage"):FindFirstChild("ThemeUtil") and game:GetService("ServerStorage").ThemeUtil:FindFirstChild("MainModule") or 2230572960)
-
-if not game:GetService("ServerStorage"):FindFirstChild("VH_Command_Modules") then
-	local Folder = Instance.new("Folder")
-	Folder.Name = "VH_Command_Modules"
-	Folder.Parent = game:GetService("ServerStorage")
-end
-LoaderModule(script:WaitForChild("VH_Command_Modules"), game:GetService("ServerStorage").VH_Command_Modules)
-
-return nil
+return {
+	Get = function()
+		local Config = require(game:GetService("ServerScriptService"):WaitForChild("S2 Setup"):WaitForChild("Config"))
+		local Version = Config.Version
+		
+		if Version == nil then
+			error("S2 - The specified module version does not exist so loading has aborted: Version specified in config: " .. tostring(Version) .. " - s" .. tostring(Config.SetupVersion))
+		elseif script:FindFirstChild(Version) then
+			return script:FindFirstChild(Version)
+		else
+			local Target = Version:split(".")
+			for i = 1, 3 do
+				Target[i] = tonumber(Target[i]) or Target[i]
+			end
+			if type(Target[1]) == "number" and type(Target[2]) == "number" and type(Target[3]) == "number" then
+				error("S2 - The specified module version does not exist so loading has aborted: Version specified in config: " .. Version .. " - s" .. Config.SetupVersion)
+			end
+			
+			local Max, MaxModule
+			for _, Module in ipairs(script:GetChildren()) do
+				local MyVersion = Module.Name:split(".")
+				for i = 1, 3 do
+					MyVersion[i] = tonumber(MyVersion[i])
+				end
+				
+				if Target[1] == MyVersion[1] or (type(Target[1]) == "string" and (not Max or Max[1] <= MyVersion[1])) then
+					if Max and type(Target[1]) == "string" and Max[1] < MyVersion[1] then Max = nil end
+					if Target[2] == MyVersion[2] or (type(Target[2]) == "string" and (not Max or Max[2] <= MyVersion[2])) then
+						if Max and type(Target[2]) == "string" and Max[2] < MyVersion[2] then Max = nil end
+						if Target[3] == MyVersion[3] or (type(Target[3]) == "string" and (not Max or Max[3] < MyVersion[3])) then
+							Max, MaxModule = MyVersion, Module
+						end
+					end
+				end
+			end
+			
+			if Max then
+				return MaxModule
+			else
+				error("S2 - The specified module version does not exist so loading has aborted: Version specified in config: " .. Version .. " - s" .. Config.SetupVersion)
+			end
+		end
+	end,
+	Run = function(self)
+		local Module = self:Get()
+		
+		print("S2 - Loading version " .. Module.Name .. " - s" .. require(game:GetService("ServerScriptService"):WaitForChild("S2 Setup"):WaitForChild("Config")).SetupVersion)
+		return require(Module)
+	end,
+}
