@@ -619,7 +619,7 @@ function Core.DoExplosion(User, WeaponStat, Position, Options)
 			-----------------------------------------------------------------check for both parts in range of joints
 			Part:BreakJoints()
 			--[[Part.CFrame = Part.CFrame + Vector3.new(0, 0.01, 0)-----------------------REMOVE THIS ONCE https://devforum.roblox.com/t/pgs-changing-velocity-of-a-part-doesnt-wake-it/73708 IS FIXED PLAES FASE GSDFG DS GHSE EGFD SSGDF GSFDGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-			Part.Velocity = Part.Velocity + (CFrame.new(Explosion.Position, Part.Position).lookVector * Distance * Explosive * 30)]]
+			Part.Velocity = Part.Velocity + (CFrame.new(Explosion.Position, Part.Position).LookVector * Distance * Explosive * 30)]]
 		end
 	end)
 

@@ -36,7 +36,7 @@ LocalPlayer.CharacterAdded:Connect(HandleCharacter)
 
 function UpdateHead()
 	if Root and Neck and workspace.CurrentCamera.CameraSubject and workspace.CurrentCamera.CameraSubject:IsA("Humanoid") and workspace.CurrentCamera.CameraSubject.Parent == LocalPlayer.Character then
-		local CameraDirection = Root.CFrame:toObjectSpace(workspace.CurrentCamera.CFrame).lookVector.unit
+		local CameraDirection = Root.CFrame:toObjectSpace(workspace.CurrentCamera.CFrame).LookVector.unit
 		if R6 then
 			Neck.C0 = CFrame.new(Neck.C0.p) * CFrame.Angles(0, -math.asin(CameraDirection.x), 0) * CFrame.Angles(-math.pi/2 + math.asin(CameraDirection.y), 0, math.pi)
 		else

@@ -508,7 +508,7 @@ local function RenderLightning( User, WeaponStats, Start, End, Thickness, Branch
 			
 			local BranchLen = BranchFactor * Dist
 			
-			local Direction = ( DVect * ( CFrame.Angles( 0, 0, math.random( ) * math.pi * 2 ) * CFrame.Angles( 0, math.random( ) * Theta, 0 ) ) ).lookVector
+			local Direction = ( DVect * ( CFrame.Angles( 0, 0, math.random( ) * math.pi * 2 ) * CFrame.Angles( 0, math.random( ) * Theta, 0 ) ) ).LookVector
 			
 			local Branch = Direction * BranchLen + MidPoint		
 
@@ -612,7 +612,7 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 		
 		local CF = CFrame.new( Barrel.Position, End )
 		
-		Bullet.CFrame = CF + CF.lookVector * ( ( Barrel.Position - End ).magnitude / 2 )
+		Bullet.CFrame = CF * CFrame.new(0, 0, -( Barrel.Position - End ).magnitude / 2)
 		
 		Bullet.Parent = workspace.CurrentCamera
 		
@@ -680,7 +680,7 @@ Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect
 			
 			Bullet.Size = Vector3.new( Size, Size, CurSize )
 			
-			Bullet.CFrame = CF + CF.lookVector * ( Cur + CurSize / 2 )
+			Bullet.CFrame = CF * CFrame.new(0, 0, -( Cur + CurSize / 2 ))
 			
 			local Delta = RunService.Heartbeat:wait( )
 			

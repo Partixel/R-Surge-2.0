@@ -40,7 +40,7 @@ return function(Core)
 			end
 			
 			local Target = CFrame.new(Origin.Position, NearestPart.Position)
-			return nil, (Target + Target.lookVector * 5000).p
+			return nil, (Target * CFrame.new(0, 0, -5000)).p
 		elseif Weapon.PreventFireWithoutSnap then
 			return nil
 		else
@@ -168,6 +168,9 @@ return function(Core)
 				end
 			end
 		end,
+		GetOrigin = function(Weapon, Barrel)
+			return (not Weapon.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild("NewHead") or Barrel or type(Weapon.BarrelPart) == "table" and Weapon.BarrelPart[Weapon.CurBarrel] or Weapon.BarrelPart).Position
+		end,
 		Attack = function(Weapon)
 			if Weapon.Clip ~= 0 and Weapon.Reloading and Weapon.Reloading ~= Weapon.MouseDown then
 				Weapon.AbortReload = true
@@ -225,16 +228,16 @@ return function(Core)
 							local IgnoreWater = Weapon.BulletType and (Weapon.BulletType.Name == "Fire" or Weapon.BulletType.Name == "Lightning")
 							if IgnoreWater then
 								if workspace.Terrain:ReadVoxels(Region3.new(Barrel.Position - Vector3.new(2, 2, 2), Barrel.Position + Vector3.new(2, 2, 2)):ExpandToGrid(4), 4)[1][1][1] == Enum.Material.Water then
-									Hit, End, Normal, Material = workspace.Terrain, Barrel.Position, -Barrel.CFrame.lookVector, Enum.Material.Water
+									Hit, End, Normal, Material = workspace.Terrain, Barrel.Position, -Barrel.CFrame.LookVector, Enum.Material.Water
 								end
 							end
 							
 							if not Hit then
-								local Origin = not Weapon.UseBarrelAsOrigin and Weapon.User and Weapon.User.Character and Weapon.User.Character:FindFirstChild("NewHead") or Barrel
+								local Origin = WeaponType.GetOrigin(Weapon, Barrel)
 								local _, Target = Weapon.Target(Weapon.StatObj, Origin)
 								if Target then
-									Target = CFrame.new(Origin.Position, Target) * CFrame.Angles(0, 0, math.rad(math.random(0, 3599) / 10))
-									Hit, End, Normal, Material = Core.Raycast(Origin.Position, CFrame.new(Origin.Position, (Target + Target.lookVector * 1000 + Target.UpVector * math.random(0, 1000 / WeaponType.GetAccuracy(Weapon) / 2)).p).LookVector * Weapon.Range, Core.IgnoreFunction, TableCopy(Weapon.Ignore), not IgnoreWater)
+									Target = CFrame.new(Origin, Target) * CFrame.Angles(0, 0, math.rad(math.random(0, 3599) / 10))
+									Hit, End, Normal, Material = Core.Raycast(Origin, CFrame.new(Origin, (Target * CFrame.new(0, math.random(0, 1000 / WeaponType.GetAccuracy(Weapon) / 2), -1000)).p).LookVector * Weapon.Range, Core.IgnoreFunction, TableCopy(Weapon.Ignore), not IgnoreWater)
 								else
 									Hit = false
 								end
