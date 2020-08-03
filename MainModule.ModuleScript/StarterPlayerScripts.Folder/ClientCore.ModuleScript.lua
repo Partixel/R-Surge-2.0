@@ -24,20 +24,29 @@ return function(Core, script)
 		Core.CurrentFrame += 1
 	end)
 	
-	function Core.UpdateLPlrsTarget()
-		local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
-		Core.LPlrsTarget = {Core.Raycast(UnitRay.Origin, UnitRay.Direction * 5000, Core.IgnoreFunction, {Players.LocalPlayer.Character})}
-	end
-	
 	local TargetFrame
+	local LPlrsTarget
 	function Core.GetLPlrsTarget()
 		if TargetFrame ~= Core.CurrentFrame then
-			Core.UpdateLPlrsTarget()
+			local UnitRay = workspace.CurrentCamera:ScreenPointToRay(Core.GetLPlrsInputPos())
+			LPlrsTarget = {Core.Raycast(UnitRay.Origin, UnitRay.Direction * 5000, Core.IgnoreFunction, {Players.LocalPlayer.Character})}
 			TargetFrame = Core.CurrentFrame
 		end
 		
-		return Core.LPlrsTarget
+		return LPlrsTarget
 	end
+	
+	--[[local ActualTargetFrame
+	local ActualLPlrsTarget
+	function Core.GetLPlrsActualTarget(Weapon)
+		if ActualTargetFrame ~= Core.CurrentFrame then
+			local Origin = Weapon.WeaponType.GetOrigin(Weapon)
+			ActualLPlrsTarget = {Core.Raycast(Origin, Core.GetLPlrsTarget()[2] - Origin, Core.IgnoreFunction, {Players.LocalPlayer.Character})}
+			ActualTargetFrame = Core.CurrentFrame
+		end
+		
+		return ActualLPlrsTarget
+	end]]
 	
 	function Core.GetLPlrsTargetForRaycast()
 		return nil, Core.GetLPlrsTarget()[2]
