@@ -104,7 +104,7 @@ return function(Core)
 			local Needed
 			if Weapon.ClipReloadPerSecond and Weapon.Clip < Weapon.ClipSize and (not Weapon.AmmoType or WeaponType.GetStoredAmmo(Weapon) ~= 0) then
 				Needed = true
-				if not Weapon.Reloading and Weapon.LastClick and (Weapon.LastClick + (Weapon.ClipsReloadDelay or 0)) <= tick() then
+				if not Weapon.Reloading and (not Weapon.LastClick or (Weapon.LastClick + (Weapon.ClipsReloadDelay or 0)) <= tick()) then
 					local Amnt = (Weapon.ClipRemainder or 0) + Weapon.ClipReloadPerSecond * Step
 					Weapon.ClipRemainder = Amnt % 1
 					Amnt = math.min(math.floor(Amnt), Weapon.ClipSize - Weapon.Clip)
