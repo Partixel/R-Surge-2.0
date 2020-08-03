@@ -496,16 +496,15 @@ function Core.IgnoreFunction(Part)
 end
 
 local WarnedFor = setmetatable({}, {__mode = "k"})
+local S2RaycastParams = RaycastParams.new()
+S2RaycastParams.CollisionGroup = "S2"
 function Core.Raycast(Origin, Direction, IgnoreFunction, Ignore, IgnoreWater)
+	S2RaycastParams.IgnoreWater = IgnoreWater == nil and true or IgnoreWater
+	S2RaycastParams.FilterDescendantsInstances = Ignore
 	local UnitDirection = Direction.Unit
 	local Result
 	while true do
-		local Params = RaycastParams.new()
-		Params.IgnoreWater = IgnoreWater == nil and true or IgnoreWater
-		Params.CollisionGroup = "S2"
-		Params.FilterDescendantsInstances = Ignore
-		
-		Result = workspace:Raycast(Origin, Direction, Params)
+		Result = workspace:Raycast(Origin, Direction, S2RaycastParams)
 		if not Result then
 			return nil, Origin + Direction, Vector3.new(), Enum.Material.Air
 		elseif not IgnoreFunction(Result.Instance) then
