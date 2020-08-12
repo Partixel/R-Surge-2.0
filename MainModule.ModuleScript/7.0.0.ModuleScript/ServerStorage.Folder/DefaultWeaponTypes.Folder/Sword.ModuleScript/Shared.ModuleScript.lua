@@ -5,7 +5,7 @@ local function GetMass(Parent)
 			Total = Total + Obj:GetMass()
 		end
 		
-		Total = Total + GetMass(Obj)		
+		Total = Total + GetMass(Obj)
 	end
 	return Total
 end
@@ -19,7 +19,6 @@ return function(Core)
 		OnHit = function(Weapon, Part, PartIndex)
 			if (not Weapon.DamageCooldown or tick() >= Weapon.DamageCooldown) and Core.CanAttack(Weapon) then
 				local Damageable = Core.GetValidDamageable(Part)
-				local Dmgable = Part:FindFirstChild("Health") or Part.Parent:FindFirstChildOfClass("Humanoid") or Part.Parent:FindFirstChild("Health") or Part.Parent.Parent:FindFirstChildOfClass("Humanoid") or Part.Parent.Parent:FindFirstChild("Health")
 				if Damageable and Core.CanDamage(Weapon.User, Weapon, Part, nil, Damageable) then
 					Weapon.DamageCooldown = tick() + 1/30
 					coroutine.wrap(Core.HandleServerReplication)(Weapon.User, Weapon.StatObj, tick(), Part, PartIndex)

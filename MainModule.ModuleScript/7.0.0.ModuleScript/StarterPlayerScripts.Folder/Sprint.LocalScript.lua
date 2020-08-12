@@ -1,4 +1,5 @@
 local TweenService = game:GetService("TweenService")
+local CollectionService = game:GetService("CollectionService")
 local Plr = game:GetService("Players").LocalPlayer
 
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
@@ -89,6 +90,13 @@ function HandleChar(Char)
 			UpdateCamera()
 		end
 	end)
+	
+	Char.ChildAdded:Connect(function(Obj)
+		local WeaponStat = Core.FindWeaponStat(Obj)
+		if not WeaponStat or not Core.GetWeapon(WeaponStat) then
+			KBU.SetToggle("Sprint", false)
+		end
+	end)
 end
 HandleChar(Plr.Character or Plr.CharacterAdded:Wait())
 Plr.CharacterAdded:Connect(HandleChar)
@@ -139,8 +147,11 @@ KBU.AddBind{Name = "Sprint", Category = "Surge 2.0", Callback = function(Began, 
 						if not Weapon.AllowSprint or Weapon.Reloading then
 							return false
 						end
-					elseif not Core.Config.WeaponTypeOverrides.All.AllowSprint then
-						return false
+					else
+						local Tool = Plr.Character:FindFirstChildOfClass("Tool")
+						if Tool or not Core.Config.WeaponTypeOverrides.All.AllowSprint then
+							return false
+						end
 					end
 					
 					PU.SetPose("Sprinting", true)

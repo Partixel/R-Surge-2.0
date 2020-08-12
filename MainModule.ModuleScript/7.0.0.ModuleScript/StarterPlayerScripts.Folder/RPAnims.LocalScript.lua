@@ -60,7 +60,7 @@ KBU.AddBind{Name = "Salute", Category = "Surge 2.0", Callback = function(Began, 
 			if Began then
 				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):GetState() ~= Enum.HumanoidStateType.Dead then
 					local Weapon = Core.Selected[LocalPlayer] and next(Core.Selected[LocalPlayer])
-					if Weapon or SurrenderAnimation or not Core.Config.AllowSalute or not Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"] then
+					if Weapon or LocalPlayer.Character:FindFirstChildOfClass("Tool") or SurrenderAnimation or not Core.Config.AllowSalute or not Core.Config[AnimationWrapper.Humanoid.RigType.Name .. "SaluteAnimation"] then
 						return false
 					end
 					
@@ -163,8 +163,11 @@ KBU.AddBind{Name = "At_ease", Category = "Surge 2.0", Callback = function(Began,
 						if not Weapon.AllowAtEase or Weapon.Reloading then
 							return false
 						end
-					elseif not Core.Config.WeaponTypeOverrides.All.AllowAtEase then
-						return false
+					else
+						local Tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+						if Tool or not Core.Config.WeaponTypeOverrides.All.AllowAtEase then
+							return false
+						end
 					end
 					
 					if not (Weapon or Core.Config.WeaponTypeOverrides.All)[AnimationWrapper.Humanoid.RigType.Name .. "AtEaseAnimation"] then
