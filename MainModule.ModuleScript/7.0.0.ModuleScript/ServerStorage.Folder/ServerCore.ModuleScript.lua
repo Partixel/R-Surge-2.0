@@ -133,9 +133,9 @@ return function(Core, script)
 	Core.ReplicateWeaponMode.Parent = script
 	
 	----[[DAMAGE]]----
-	local ClientDamage = Instance.new("RemoteEvent")
-	ClientDamage.Name = "ClientDamage"
-	ClientDamage.Parent = script
+	Core.ClientDamage = Instance.new("RemoteEvent")
+	Core.ClientDamage.Name = "ClientDamage"
+	Core.ClientDamage.Parent = script
 	
 	local function CalculateResistances(Attacker, WeaponStat, DamageType, Resistances, Instances)
 		local Resistance = 1
@@ -229,11 +229,11 @@ return function(Core, script)
 			ExtraInformation.DamageSplits = DamageSplits
 			
 			if Players:GetPlayerFromCharacter(Damageable.Parent) then
-				ClientDamage:FireClient(Players:GetPlayerFromCharacter(Core.GetTopDamageable(Damageable).Parent), DamageSplits, Attacker.Name, ExtraInformation)
+				Core.ClientDamage:FireClient(Players:GetPlayerFromCharacter(Core.GetTopDamageable(Damageable).Parent), DamageSplits, Attacker.Name, ExtraInformation)
 			end
 			
 			if typeof(Attacker) == "Instance" then
-				ClientDamage:FireClient(Attacker, DamageSplits, ExtraInformation)
+				Core.ClientDamage:FireClient(Attacker, DamageSplits, ExtraInformation)
 			end
 			
 			Core.ObjDamaged:Fire(Attacker, WeaponStat, DamageType, ExtraInformation)
