@@ -197,7 +197,7 @@ return function(Core)
 			
 			local LastClick = 1 / Weapon.FireRate
 			local Start = Weapon.LastClick or tick()
-		
+			
 			local DelayBetweenShots = Weapon.DelayBetweenShots or 0
 			Weapon.LastClick = Start + LastClick + (DelayBetweenShots * ShotsPerClick)
 			local CurWeaponMode = Weapon.CurWeaponMode
@@ -219,7 +219,7 @@ return function(Core)
 							Weapon.CurBarrel = Weapon.CurBarrel + 1
 						end
 					end
-		
+					
 					ActualFired = ActualFired + 1
 					
 					if Core.CanAttack(Weapon) then
@@ -302,6 +302,10 @@ return function(Core)
 				elseif not Weapon.Reloading and Weapon.Windup and Weapon.Windup >= Weapon.WindupTime then
 					Core.Attack(Weapon)
 				end
+			end
+			
+			if Weapon.ReloadOnEmpty and Weapon.Clip == 0 then
+				Core.Reload(Weapon)
 			end
 		end,
 		EndAttack = function(Weapon)
@@ -415,7 +419,7 @@ return function(Core)
 					local Dist = (Barrel.Position - End).magnitude / Weapon.Range
 					
 					local Damageables = {}
-						
+					
 					local Material, Occupancy = workspace.Terrain:ReadVoxels(Region3.new(End - Vector3.new(2, 2, 2), End + Vector3.new(2, 2, 2)):ExpandToGrid(4), 4)
 					if Material[1][1][1] == Enum.Material.Water then
 						local Radius = Weapon.BulletType.Radius or 15
