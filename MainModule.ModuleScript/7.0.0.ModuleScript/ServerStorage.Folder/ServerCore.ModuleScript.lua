@@ -39,7 +39,7 @@ return function(Core, script)
 		
 		PhysicsService:CreateCollisionGroup("S2_NoPenetration")
 		for _, Group in ipairs(PhysicsService:GetCollisionGroups()) do
-			if Group.Name ~= "S2" then
+			if Group.name ~= "S2" then
 				PhysicsService:CollisionGroupSetCollidable("S2_NoPenetration", Group.name, false)
 			end
 		end
