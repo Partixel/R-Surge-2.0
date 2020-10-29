@@ -4,7 +4,7 @@ local HttpService = game:GetService("HttpService")
 
 local CloseColors = require(script:WaitForChild("Client"):WaitForChild("CloseColors"))
 
-local VIPs = {{7166243, 382816939}, {7166248, 382753196}, {7166253, 382751732}, {7171209}}
+local VIPs = {{11470718, 7166243, 382816939}, {11470721, 7166248, 382753196}, {11470723, 7166253, 382751732}, {11470748, 7171209}}
 
 local OwnedCache = setmetatable({}, {__mode = "k"})
 local function PlayerOwnsAsset(Plr, VIP)
