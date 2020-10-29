@@ -16,7 +16,7 @@ return function(Core)
 		local UnitRay, MyHumanoid, Nearest, NearestDist = Weapon.User:GetMouse().UnitRay, Weapon.User.Character:FindFirstChildOfClass("Humanoid"), nil, Weapon.SnapMaxDist or 25
 		for Damageable, _ in pairs(Core.Damageables) do
 			if Damageable:IsA("Humanoid") and Damageable ~= MyHumanoid and Damageable.Health > 0 and (Weapon.Damage > 0 or Damageable.Health < Damageable.MaxHealth) and not CollectionService:HasTag(Damageable, "s2nokos") and Damageable.RootPart and (Weapon.SnapTo == "All" or (Weapon.SnapTo == "Team" and not Core.CheckTeamkill(Weapon, Weapon.User, Damageable)) or (Weapon.SnapTo == "Enemy" and Core.CheckTeamkill(Weapon, Weapon.User, Damageable))) then
-				local Dist = math.max(UnitRay:Distance(Damageable.RootPart.Position), (Origin.Position - Damageable.RootPart.Position).magnitude - Weapon.Range + (Weapon.SnapMaxDist or 25))
+				local Dist = math.max(UnitRay:Distance(Damageable.RootPart.Position), (Origin - Damageable.RootPart.Position).magnitude - Weapon.Range + (Weapon.SnapMaxDist or 25))
 				if Dist < NearestDist and Dist >= (Weapon.SnapMinDist or 0) then
 					Nearest, NearestDist = Damageable, Dist
 				end
@@ -39,7 +39,7 @@ return function(Core)
 				end
 			end
 			
-			local Target = CFrame.new(Origin.Position, NearestPart.Position)
+			local Target = CFrame.new(Origin, NearestPart.Position)
 			return nil, (Target * CFrame.new(0, 0, -5000)).p
 		elseif Weapon.PreventFireWithoutSnap then
 			return nil
