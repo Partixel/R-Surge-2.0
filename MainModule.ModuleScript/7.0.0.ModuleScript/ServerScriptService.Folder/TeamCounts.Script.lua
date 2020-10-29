@@ -13,6 +13,11 @@ if Core.Config.TeamCounts then
 		Obj.Value = Team
 		Obj.Parent = Teams
 		
+		local OriginalName = Instance.new("ObjectValue")
+		OriginalName.Name = "OriginalName"
+		OriginalName.Value = Obj
+		OriginalName.Parent = Team
+		
 		Team.PlayerAdded:Connect(function()
 			Team.Name = Core.Config.TeamCounts:gsub("%%(%w*)%%", {["PlayerCount"] = #Team:GetPlayers(), ["TeamName"] = Name})
 		end)
