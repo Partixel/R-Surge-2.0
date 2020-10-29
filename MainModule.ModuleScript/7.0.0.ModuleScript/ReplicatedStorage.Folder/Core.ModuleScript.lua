@@ -1,5 +1,7 @@
 local Players, ContextActionService, CollectionService = game:GetService("Players"), game:GetService("ContextActionService"), game:GetService("CollectionService")
 
+local CoroutineErrorHandling = require(game:GetService("ReplicatedStorage"):FindFirstChild("CoroutineErrorHandling") or game:GetService("ServerStorage"):FindFirstChild("CoroutineErrorHandling") and game:GetService("ServerStorage").CoroutineErrorHandling:FindFirstChild("MainModule") or 4851605998)
+
 local Core = {Config = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Config")), IsServer = game:GetService("RunService"):IsServer()}
 
 Core.WeaponTypes = {}
@@ -111,13 +113,13 @@ function Core.RunSelected()
 				end
 			elseif Weapon.MouseDown then
 				if Weapon.WindupTime == nil or Weapon.WindupTime == 0 then
-					coroutine.wrap(Core.Attack)(Weapon)
+					CoroutineErrorHandling.CoroutineWithStack(Core.Attack, Weapon)
 				elseif Weapon.Reloading then
 					if Weapon.Windup then
 						Core.SetWindup(Weapon, math.max(Weapon.Windup - (Step * 2), 0))
 					end
 				elseif Weapon.Windup and Weapon.Windup >= Weapon.WindupTime then
-					coroutine.wrap(Core.Attack)(Weapon)
+					CoroutineErrorHandling.CoroutineWithStack(Core.Attack, Weapon)
 				else
 					Core.SetWindup(Weapon, (Weapon.Windup or 0) + Step)
 				end
@@ -131,7 +133,7 @@ function Core.RunSelected()
 				
 				if Weapon.MaxHoldTime and Weapon.HoldStart then
 					if (tick() - Weapon.HoldStart) >= Weapon.MaxHoldTime then
-						coroutine.wrap(Core.SetMouseUp)(Weapon)
+						CoroutineErrorHandling.CoroutineWithStack(Core.SetMouseUp, Weapon)
 					else
 						Needed = true
 					end
@@ -383,7 +385,7 @@ function Core.SetMouseDown(Weapon)
 		Weapon.HoldStart = tick()
 		if Weapon.HeldDamagePctIncreasePerSecond then
 			if Core.IsServer then		
-				coroutine.wrap(Core.HandleHoldReplication)(Weapon.User, Weapon.StatObj, tick( ))
+				CoroutineErrorHandling.CoroutineWithStack(Core.HandleHoldReplication, Weapon.User, Weapon.StatObj, tick( ))
 			else
 				Core.HoldReplication:FireServer(Weapon.StatObj, Core.TimeSync.GetServerTime())
 			end
@@ -415,7 +417,7 @@ function Core.SetMouseUp(Weapon)
 				Weapon.HoldStart = nil
 				if Weapon.HeldDamagePctIncreasePerSecond then
 					if Core.IsServer then		
-						coroutine.wrap(Core.HandleHoldReplication)(Weapon.User, Weapon.StatObj)
+						CoroutineErrorHandling.CoroutineWithStack(Core.HandleHoldReplication, Weapon.User, Weapon.StatObj)
 					else
 						Core.HoldReplication:FireServer(Weapon.StatObj)
 					end
@@ -441,7 +443,7 @@ function Core.SetWindup(Weapon, Value, Placeholder)
 			if Weapon.WindupRampingUp then
 				Weapon.WindupRampingUp = nil
 				if Core.IsServer then		
-					coroutine.wrap(Core.HandleWindupReplication)(Weapon.User, Weapon.StatObj, tick())
+					CoroutineErrorHandling.CoroutineWithStack(Core.HandleWindupReplication, Weapon.User, Weapon.StatObj, tick())
 				else
 					Core.WindupReplication:FireServer(Weapon.StatObj, Core.TimeSync.GetServerTime())
 				end
@@ -450,7 +452,7 @@ function Core.SetWindup(Weapon, Value, Placeholder)
 			if not Weapon.WindupRampingUp then
 				Weapon.WindupRampingUp = true
 				if Core.IsServer then		
-					coroutine.wrap(Core.HandleWindupReplication)(Weapon.User, Weapon.StatObj, tick(), true)
+					CoroutineErrorHandling.CoroutineWithStack(Core.HandleWindupReplication, Weapon.User, Weapon.StatObj, tick(), true)
 				else
 					Core.WindupReplication:FireServer(Weapon.StatObj, Core.TimeSync.GetServerTime(), true)
 				end
