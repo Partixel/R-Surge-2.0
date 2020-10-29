@@ -148,6 +148,29 @@ UIS.InputEnded:Connect(function(Input, Handled)
 	end
 end)
 
+function Module.SetSavedBinds(SavedBinds)
+	Module.SavedBinds = SavedBinds
+	
+	for Name, Bind in pairs(Module.Binds) do
+		if Module.SavedBinds[Name] then
+			if Module.SavedBinds[Name]["Key"] ~= nil then
+				Bind.Key = Module.SavedBinds[Name]["Key"]
+			end
+			if Module.SavedBinds[Name]["PadKey"] ~= nil then
+				Bind.PadKey = Module.SavedBinds[Name]["PadKey"]
+			end
+			if Module.SavedBinds[Name]["PadNum"] ~= nil then
+				Bind.PadNum = Module.SavedBinds[Name]["PadNum"]
+			end
+			if Module.SavedBinds[Name]["ToggleState"] ~= nil then
+				Bind.ToggleState = Module.SavedBinds[Name]["ToggleState"]
+			end
+		end
+	end
+	
+	Module.BindChanged:Fire()
+end
+
 -- Name, Category, Callback, Key, PadKey, PadNum, ToggleState, CanToggle, OffOnDeath, NonRebindable, NoHandled
 function Module.AddBind(Bind)
 	Bind.PadNum = Bind.PadNum or Enum.UserInputType.Gamepad1

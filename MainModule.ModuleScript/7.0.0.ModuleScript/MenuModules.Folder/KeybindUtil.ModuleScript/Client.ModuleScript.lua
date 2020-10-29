@@ -24,8 +24,7 @@ return {
 		ThemeUtil.BindUpdate(self.Gui, {BackgroundColor3 = "Primary_BackgroundColor", BackgroundTransparency = "Primary_BackgroundTransparency"})
 		
 		self.Remote.OnClientEvent:Connect(function(Binds)
-			KBU.SavedBinds = Binds
-			KBU.BindChanged:Fire()
+			KBU.SetSavedBinds(Binds)
 		end)
 		
 		KBU.BindChanged.Event:Connect(function(Name, Type, Value)
