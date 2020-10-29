@@ -1,4 +1,3 @@
-
 local Core = require(game:GetService("ReplicatedStorage"):WaitForChild("S2"):WaitForChild("Core"))
 local DataStore2 = require(3913891878)
 
@@ -260,6 +259,7 @@ RemoteKilled.Name = "RemoteKilled"
 RemoteKilled.Parent = game:GetService("ReplicatedStorage"):WaitForChild("S2")
 
 local Kills = setmetatable({}, {__mode = "k"})
+local DamageInfos = setmetatable({}, {__mode = "k"})
 Core.DamageableDied.Event:Connect(function(Damageable)
 	local Victim = Players:GetPlayerFromCharacter(Damageable.Parent)
 	if Victim then
@@ -268,7 +268,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 	end
 	
 	if not CollectionService:HasTag(Damageable, "s2nofeed") then
-		if not Core.DamageInfos[Damageable] or not Core.DamageInfos[Damageable].LastDamageInfo then
+		if not DamageInfos[Damageable] or not DamageInfos[Damageable].LastDamageInfo or not DamageInfos[Damageable].LastDamageInfo[1].Parent then
 			local DeathInfo = {
 				VictimInfos = {
 					{
@@ -301,11 +301,11 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				end
 			end
 		else
-			local Killer, WeaponName, TypeName = Core.DamageInfos[Damageable].LastDamageInfo[1], Core.DamageInfos[Damageable].LastDamageInfo[4].WeaponName or Core.DamageInfos[Damageable].LastDamageInfo[2].Value, Core.DamageInfos[Damageable].LastDamageInfo[3]
+			local Killer, WeaponName, TypeName = DamageInfos[Damageable].LastDamageInfo[1], DamageInfos[Damageable].LastDamageInfo[4].WeaponName or DamageInfos[Damageable].LastDamageInfo[2].Value, DamageInfos[Damageable].LastDamageInfo[3]
 			if Kills[Killer] and Kills[Killer][WeaponName .. TypeName] and not Kills[Killer][WeaponName .. TypeName][Damageable] then
-				Kills[Killer][WeaponName .. TypeName][Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[4]
+				Kills[Killer][WeaponName .. TypeName][Damageable] = DamageInfos[Damageable].LastDamageInfo[4]
 			else
-				local Killed = {[Damageable] = Core.DamageInfos[Damageable].LastDamageInfo[4]}
+				local Killed = {[Damageable] = DamageInfos[Damageable].LastDamageInfo[4]}
 				Kills[Killer] = Kills[Killer] or {}
 				Kills[Killer][WeaponName .. TypeName] = Killed
 				
@@ -343,8 +343,8 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 							ExtraInformation = ExtraInformation
 						}
 						
-						if Core.DamageInfos[Damageable] then
-							for a, b in pairs(Core.DamageInfos[Damageable]) do
+						if DamageInfos[Damageable] then
+							for a, b in pairs(DamageInfos[Damageable]) do
 								if a ~= "LastDamageInfo" then
 									Assisters[a] = (Assisters[a] or 0) + b
 								end
@@ -354,9 +354,7 @@ Core.DamageableDied.Event:Connect(function(Damageable)
 				end
 				
 				DeathInfo.KillerDamage = Assisters[Killer]
-				if not DeathInfo.KillerDamage then
-					warn("SHOW PARTIXEL THIS: No killer damage")
-				end
+				
 				local Assister, AssisterDamage
 				for a, b in pairs(Assisters) do
 					DeathInfo.TotalDamage = DeathInfo.TotalDamage + b
@@ -431,18 +429,18 @@ Core.ObjDamaged.Event:Connect(function(Attacker, WeaponStat, DamageType, ExtraIn
 		
 		if TotalDamage > 0 then
 			for _, DamageSplit in ipairs(ExtraInformation.DamageSplits) do
-				Core.DamageInfos[DamageSplit[1]] = Core.DamageInfos[DamageSplit[1]] or {}
-				Core.DamageInfos[DamageSplit[1]][Attacker] = (Core.DamageInfos[DamageSplit[1]][Attacker] or 0) + DamageSplit[2]
-				Core.DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, WeaponStat, DamageType, ExtraInformation}
+				DamageInfos[DamageSplit[1]] = DamageInfos[DamageSplit[1]] or {}
+				DamageInfos[DamageSplit[1]][Attacker] = (DamageInfos[DamageSplit[1]][Attacker] or 0) + DamageSplit[2]
+				DamageInfos[DamageSplit[1]].LastDamageInfo = {Attacker, WeaponStat, DamageType, ExtraInformation}
 				
 				wait(30)
 				
-				if Core.DamageInfos[DamageSplit[1]] and Core.DamageInfos[DamageSplit[1]][Attacker] then
-					Core.DamageInfos[DamageSplit[1]][Attacker] = Core.DamageInfos[DamageSplit[1]][Attacker] - DamageSplit[2]
-					if Core.DamageInfos[DamageSplit[1]][Attacker] <= 0 then
-						Core.DamageInfos[DamageSplit[1]][Attacker] = nil
-						if not next(Core.DamageInfos[DamageSplit[1]]) then
-							Core.DamageInfos[DamageSplit[1]] = nil
+				if DamageInfos[DamageSplit[1]] and DamageInfos[DamageSplit[1]][Attacker] then
+					DamageInfos[DamageSplit[1]][Attacker] = DamageInfos[DamageSplit[1]][Attacker] - DamageSplit[2]
+					if DamageInfos[DamageSplit[1]][Attacker] <= 0 then
+						DamageInfos[DamageSplit[1]][Attacker] = nil
+						if not next(DamageInfos[DamageSplit[1]]) then
+							DamageInfos[DamageSplit[1]] = nil
 						end
 					end
 				end

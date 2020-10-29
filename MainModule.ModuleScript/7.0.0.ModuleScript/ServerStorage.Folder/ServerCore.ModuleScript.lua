@@ -31,7 +31,6 @@ return function(Core, script)
 	end
 	
 	if not pcall(PhysicsService.GetCollisionGroupId, PhysicsService, "S2") then
-		
 		PhysicsService:CreateCollisionGroup("S2")
 		
 		PhysicsService:CreateCollisionGroup("S2_ForcePenetration")
@@ -160,7 +159,6 @@ return function(Core, script)
 	end
 	--Attacker, Hit, WeaponStat, DamageType, DamageSplits{Damageable, Damage}
 	Core.ObjDamaged = Instance.new("BindableEvent")
-	Core.DamageInfos = setmetatable({}, {__mode = "k"})
 	
 	function Core.ApplyDamage(Attacker, WeaponStat, DamageType, Hit, DistancePercent, ExtraInformation, Damageable, Dmg, DamageSplits, RemainingDamage)
 		local WeaponStats = type(WeaponStat) == "table" and WeaponStat or Core.GetWeapon(WeaponStat) or Core.GetWeaponStats(WeaponStat)
