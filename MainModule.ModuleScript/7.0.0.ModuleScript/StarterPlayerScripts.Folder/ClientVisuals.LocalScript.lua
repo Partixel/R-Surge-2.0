@@ -540,7 +540,7 @@ local function RenderLightning( User, WeaponStats, Start, End, Thickness, Branch
 	
 end
 
-Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, _, Humanoids )
+Core.Events.BulletEffect = Core.WeaponTypes.RaycastGun.AttackEvent.Event:Connect( function ( StatObj, User, Barrel, Hit, End, Normal, Material, Offset, FirstShot, Humanoids )
 	
 	if not Barrel then return end
 	
